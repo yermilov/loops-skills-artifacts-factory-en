@@ -1,0 +1,207 @@
+/* === BASE LAYER ===
+ * The presentation shell, the fixed 1920×1080 stage, and the default type of
+ * every slide. Per-layout styles live in src/styles/slide-layouts.css. */
+
+/* Presentation container: stage area on top, input bar below. */
+.presentation {
+  width: 100vw;
+  height: var(--vh-full);
+  background: var(--ww-paper);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Fills the space above the input bar; the stage is centred in it. A child
+ * wider than the container still centres (it overflows equally both ways). */
+.slide-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* === STAGE ===
+ * Every slide is composed on a 1920×1080 canvas — the template's own 16:9 —
+ * and scaled as one picture. `--stage-scale` is set on .slide-container by
+ * Presentation.tsx from the container's measured size. */
+.stage {
+  flex-shrink: 0;
+  width: var(--stage-width);
+  height: var(--stage-height);
+  transform: scale(var(--stage-scale, 1));
+  transform-origin: center center;
+  position: relative;
+  overflow: hidden;
+  background: var(--ww-paper);
+  box-shadow: 0 0 0 1px var(--terminal-border);
+}
+
+/* The slide fills the stage; layouts position themselves inside it. */
+.slide {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: var(--ww-text);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-normal);
+  text-align: left;
+  animation: slideIn var(--transition-normal) var(--ease);
+}
+
+/* Slides with a `title` get the standard title band (top-left, like the
+ * template's content slides) and a padded body below it. */
+.slide--titled {
+  padding: calc(var(--stage-pad-y) + 200px) var(--stage-pad-x) var(--stage-pad-y);
+  display: flex;
+  flex-direction: column;
+}
+
+.slide h2.slide-title {
+  position: absolute;
+  top: var(--stage-pad-y);
+  left: var(--stage-pad-x);
+  right: var(--stage-pad-x);
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-heading);
+  font-weight: 400;
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--ww-purple);
+  z-index: 3;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Headings */
+.slide h1 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-heading);
+  font-weight: 400;
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--ww-purple);
+}
+
+.slide h1.hero {
+  font-size: var(--font-size-hero);
+}
+
+.slide h2 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-heading);
+  font-weight: 400;
+  line-height: var(--line-height-tight);
+  color: var(--ww-purple);
+}
+
+/* h3 is a body-tier label: hierarchy by weight + capitals, not size. */
+.slide h3 {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-caps);
+  color: var(--ww-magenta);
+  margin-bottom: var(--space-xs);
+}
+
+.slide p {
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-relaxed);
+  margin-bottom: var(--space-md);
+  color: var(--ww-text);
+}
+
+.slide p strong,
+.slide p b,
+.slide li strong {
+  font-weight: 600;
+  color: var(--ww-text-strong);
+}
+
+.slide p em {
+  color: var(--ww-magenta);
+  font-style: normal;
+}
+
+/* Lists — a short magenta bar instead of a bullet glyph. */
+.slide ul,
+.slide ol {
+  list-style: none;
+  margin: 0;
+}
+
+.slide li {
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-normal);
+  margin-bottom: var(--space-md);
+  padding-left: var(--space-lg);
+  position: relative;
+}
+
+.slide ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 20px;
+  height: 4px;
+  background: var(--ww-magenta);
+}
+
+.slide ol {
+  counter-reset: slide-counter;
+}
+
+.slide ol li::before {
+  counter-increment: slide-counter;
+  content: counter(slide-counter, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  font-weight: 600;
+  color: var(--ww-magenta);
+}
+
+.slide ol li {
+  padding-left: var(--space-xl);
+}
+
+/* Inline code: 0.88em of the surrounding text (deck-design-system rule). */
+.slide code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--ww-lavender);
+  color: var(--ww-purple);
+  padding: 2px 10px;
+  border-radius: 8px;
+}
+
+.slide a {
+  color: var(--ww-purple);
+  text-decoration: none;
+  border-bottom: 3px solid var(--ww-mint);
+}
+
+.slide blockquote {
+  border-left: 8px solid var(--ww-magenta);
+  padding-left: var(--space-lg);
+  color: var(--ww-text);
+}
+
+/* Measured by Presentation.tsx to compute --stage-scale. */
+.stage-host {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

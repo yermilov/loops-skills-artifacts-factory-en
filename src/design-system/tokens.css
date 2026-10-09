@@ -1,0 +1,139 @@
+/* === WAWTECH 2026 — DESIGN TOKENS ===
+ * The deck wears the conference's light template, «WAWTECH_Template_white»
+ * (Google Slides, sent by the organisers on 07.09.2026). Every colour below
+ * was sampled from that template's PDF export; fonts are the two it embeds.
+ *
+ * The deck is drawn on a FIXED 1920×1080 stage (see .stage in base.css) that
+ * Presentation.tsx scales to fit the window, so every length here is a plain
+ * stage pixel — no clamp(), no vw. One template point = 2.667 stage px. */
+:root {
+  /* === DYNAMIC VIEWPORT HEIGHT === */
+  --vh-full: 100vh;
+  --vh-full: 100dvh;
+
+  /* === STAGE === */
+  --stage-width: 1920px;
+  --stage-height: 1080px;
+  /* Safe margins of the template's own layouts (~40pt / ~30pt). */
+  --stage-pad-x: 112px;
+  --stage-pad-y: 88px;
+
+  /* === WAWTECH PALETTE === */
+  --ww-paper: #fdfdfb;          /* slide background */
+  --ww-card: #f3f3f3;           /* soft grey card */
+  --ww-purple: #3f078d;         /* the template's text + block colour */
+  --ww-violet: #9141e5;         /* gradient mid / ring colour */
+  --ww-lavender: #e8dcfb;       /* faded rings, hairline fills */
+  --ww-mint: #02feb9;           /* accent 1 (logo box, stat cards) */
+  --ww-magenta: #fc00ab;        /* accent 2 (subtitle box, pills) */
+  --ww-ink: #0a0418;            /* title box on the title slide */
+  --ww-white: #ffffff;
+
+  /* Text roles */
+  --ww-text: var(--ww-purple);
+  --ww-text-strong: var(--ww-ink);
+  --ww-text-muted: color-mix(in srgb, var(--ww-purple) 62%, var(--ww-paper));
+  --ww-on-dark: var(--ww-white);
+  --ww-rule: color-mix(in srgb, var(--ww-purple) 85%, transparent);
+
+  /* Gradients used across the template */
+  --ww-grad-magenta: linear-gradient(110deg, var(--ww-magenta) 0%, var(--ww-violet) 100%);
+  --ww-grad-mint: linear-gradient(160deg, var(--ww-mint) 0%, color-mix(in srgb, var(--ww-mint) 70%, var(--ww-violet)) 100%);
+  --ww-grad-fade: linear-gradient(180deg, color-mix(in srgb, var(--ww-paper) 0%, transparent) 0%, color-mix(in srgb, var(--ww-violet) 45%, var(--ww-paper)) 45%, var(--ww-purple) 100%);
+  --ww-grad-card: linear-gradient(180deg, color-mix(in srgb, var(--ww-card) 90%, transparent) 0%, color-mix(in srgb, var(--ww-violet) 70%, var(--ww-paper)) 100%);
+
+  /* === CHROME ALIASES ===
+   * The engine's chrome (input bar, timer, progress, code block) still reads
+   * the old `--terminal-*` names; they are mapped onto the WAWTech palette
+   * here so those components need no edits. Slides should use `--ww-*`. */
+  --terminal-bg: var(--ww-paper);
+  --terminal-bg-secondary: var(--ww-white);
+  --terminal-bg-input: var(--ww-white);
+  --terminal-bg-elevated: var(--ww-card);
+  --terminal-white: var(--ww-purple);
+  --terminal-white-dim: var(--ww-purple);
+  --terminal-white-muted: var(--ww-text-muted);
+  --terminal-orange: var(--ww-magenta);
+  --terminal-orange-dim: var(--ww-magenta);
+  --terminal-orange-bright: var(--ww-magenta);
+  --terminal-orange-glow: transparent;
+  --terminal-green: #0a8a63;    /* mint is too light for text on paper; this is its readable shade */
+  --terminal-green-dim: #0a8a63;
+  --terminal-green-bright: #0a8a63;
+  --terminal-green-glow: transparent;
+  --terminal-blue: var(--ww-violet);
+  --terminal-blue-glow: transparent;
+  --terminal-purple: var(--ww-violet);
+  --terminal-purple-glow: transparent;
+  --terminal-red: #d0103a;
+  --terminal-red-glow: transparent;
+  --terminal-cyan: var(--ww-violet);
+  --terminal-cyan-glow: transparent;
+  --terminal-yellow: #b07800;
+  --terminal-border: color-mix(in srgb, var(--ww-purple) 16%, transparent);
+  --terminal-border-bright: color-mix(in srgb, var(--ww-purple) 32%, transparent);
+  --terminal-border-focus: var(--ww-magenta);
+
+  /* === TYPOGRAPHY ===
+   * IBM Plex Sans carries every title and body line in the template;
+   * Inter Tight its small print. Both have Cyrillic. */
+  --font-sans: 'IBM Plex Sans', 'Inter Tight', system-ui, sans-serif;
+  --font-display: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-tight: 'Inter Tight', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'JetBrains Mono', 'SF Mono', monospace;
+
+  /* Four tiers, and only four (presentation-dev → deck-design-system).
+   * Hierarchy inside a tier comes from weight, colour and capitals. */
+  --font-size-hero: 96px;     /* title slide only */
+  --font-size-heading: 80px;  /* every other slide title */
+  --font-size-body: 32px;     /* everything else */
+  --font-size-code: 24px;     /* code blocks + machine panels */
+
+  /* Chrome: the input bar lives OUTSIDE the scaled stage, so it keeps a
+   * fluid size of its own. */
+  --font-size-input: clamp(0.95rem, 1vw, 1.25rem);
+  --font-size-small: clamp(0.8rem, 0.8vw, 1rem);
+
+  --line-height-tight: 1.12;
+  --line-height-normal: 1.4;
+  --line-height-relaxed: 1.55;
+
+  --letter-spacing-tight: -0.01em;
+  --letter-spacing-caps: 0.02em;
+
+  /* === SPACING (stage px) === */
+  --space-xs: 8px;
+  --space-sm: 16px;
+  --space-md: 24px;
+  --space-lg: 40px;
+  --space-xl: 64px;
+  --space-2xl: 96px;
+  --space-3xl: 144px;
+
+  /* === RADII === */
+  --radius-card: 24px;        /* the template's rounded cards */
+  --radius-pill: 999px;
+  --radius-block: 0;          /* the template's flat purple blocks */
+  --input-border-radius: 0.5rem; /* chrome (outside the stage) */
+
+  /* === INPUT BAR (chrome, viewport px) === */
+  --input-height: 3rem;
+  --input-padding-x: 1.25rem;
+
+  /* === MOTION === */
+  --transition-instant: 50ms ease;
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease-out;
+  --transition-slow: 500ms ease-out;
+  --ease: cubic-bezier(0.19, 1, 0.22, 1);
+
+  /* No glow anywhere in this skin — kept as names for the chrome. */
+  --glow-text-orange: none;
+  --glow-text-green: none;
+}
+
+@media (max-width: 480px) {
+  :root {
+    --input-height: 2.5rem;
+  }
+}

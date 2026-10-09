@@ -1,0 +1,99 @@
+/* === REUSABLE PATTERNS LAYER ===
+ * Text utilities, the <SlideItem>/<SectionHeader>/<Code>/<Emphasis>
+ * primitives, and the reveal animations. No CRT overlay in this skin. */
+
+/* === TEXT UTILITIES === */
+.text-purple { color: var(--ww-purple); }
+.text-violet { color: var(--ww-violet); }
+.text-magenta { color: var(--ww-magenta); }
+.text-mint { color: var(--terminal-green); }
+.text-ink { color: var(--ww-ink); }
+.text-muted { color: var(--ww-text-muted); }
+.text-white { color: var(--ww-white); }
+.text-caps { text-transform: uppercase; letter-spacing: var(--letter-spacing-caps); }
+.text-strong { font-weight: 600; }
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+/* === SECTION HEADER — small caps label above a block === */
+.section-header {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-caps);
+  margin-bottom: var(--space-xs);
+}
+.section-header--purple { color: var(--ww-purple); }
+.section-header--magenta { color: var(--ww-magenta); }
+.section-header--violet { color: var(--ww-violet); }
+
+/* === INLINE CODE VARIANTS === */
+code.code-inline {
+  background: var(--ww-lavender);
+  color: var(--ww-purple);
+}
+code.code-inline--magenta {
+  background: color-mix(in srgb, var(--ww-magenta) 12%, var(--ww-paper));
+  color: var(--ww-magenta);
+}
+code.code-inline--mint {
+  background: color-mix(in srgb, var(--ww-mint) 30%, var(--ww-paper));
+  color: var(--ww-ink);
+}
+
+/* === SLIDE LIST ITEM PRIMITIVE (<SlideItem>) === */
+.slide-item {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  align-items: start;
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-normal);
+  margin-bottom: var(--space-md);
+  color: var(--ww-text);
+}
+.slide-item__prefix {
+  display: block;
+  width: 20px;
+  height: 4px;
+  margin-top: 0.62em;
+  background: var(--ww-magenta);
+}
+
+/* === LINKS === */
+.slide-link {
+  color: var(--ww-purple);
+  border-bottom: 3px solid var(--ww-mint);
+}
+
+/* === EMPHASIS === */
+.text-emphasis { font-weight: 600; }
+.text-emphasis--magenta { color: var(--ww-magenta); }
+.text-emphasis--violet { color: var(--ww-violet); }
+.text-emphasis--mint {
+  color: var(--ww-ink);
+  background: color-mix(in srgb, var(--ww-mint) 55%, transparent);
+  padding: 0 6px;
+}
+.text-quote { font-style: italic; color: var(--ww-violet); }
+
+/* === REVEAL ANIMATIONS === */
+@keyframes slideItemFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideItemReveal {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Reveal by visibility, not by unmounting, so layouts never jump
+ * (presentation-dev → deck-engine, "Reveal stages"). */
+.reveal-hidden { visibility: hidden; }
+.reveal-in {
+  animation: slideItemFadeIn 0.35s var(--ease) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide, .reveal-in { animation: none; }
+}

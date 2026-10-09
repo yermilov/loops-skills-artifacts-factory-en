@@ -1,0 +1,301 @@
+/* === COMPONENTS LAYER ===
+ * Chrome and reusable UI components: bottom bar (Timer + Input +
+ * Progress), code blocks,
+ * rotate hint, mobile responsive tweaks for these elements. */
+
+/* === BOTTOM BAR === */
+/* Strip at the bottom that wraps Timer + TerminalInput + SlideProgress.
+ * Replaces three separately-positioned fixed elements with one
+ * horizontally-laid-out chrome bar. */
+.input-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-xl);
+  background: var(--ww-white);
+  border-top: 1px solid var(--terminal-border);
+  position: relative;
+  z-index: 1001;
+}
+
+/* === TERMINAL INPUT === */
+.terminal-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.terminal-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  background: var(--terminal-bg-input);
+  border: 1px solid var(--terminal-border);
+  border-radius: var(--input-border-radius);
+  padding: 0 var(--input-padding-x);
+  transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.terminal-input-wrapper:focus-within {
+  border-color: var(--terminal-orange);
+}
+
+.terminal-input-prompt {
+  color: var(--terminal-orange);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-input);
+  font-weight: bold;
+  text-shadow: var(--glow-text-orange);
+  flex-shrink: 0;
+}
+
+.terminal-input-field {
+  flex: 1;
+  height: var(--input-height);
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--terminal-white);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-input);
+  caret-color: var(--terminal-orange);
+}
+
+.terminal-input-field::placeholder {
+  color: var(--terminal-white-muted);
+}
+
+.terminal-input-field::selection {
+  background: var(--terminal-orange);
+  color: var(--terminal-bg);
+}
+
+/* Blinking cursor effect */
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.terminal-input-cursor {
+  width: 10px;
+  height: 1.2em;
+  background: var(--terminal-orange);
+  animation: cursor-blink 1s step-end infinite;
+  flex-shrink: 0;
+}
+
+/* === SLIDE PROGRESS === */
+.slide-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-bar {
+  width: 120px;
+  height: 4px;
+  background: var(--terminal-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--terminal-orange);
+  transition: width var(--transition-normal);
+}
+
+.progress-text {
+  color: var(--terminal-white-muted);
+  font-size: var(--font-size-small);
+  font-family: var(--font-mono);
+}
+
+.progress-text--glow {
+  color: var(--terminal-green-bright);
+  font-weight: 600;
+  animation: progressGlow 1.5s ease-in-out infinite;
+}
+
+@keyframes progressGlow {
+  0%, 100% {
+    text-shadow:
+      0 0 5px var(--terminal-green),
+      0 0 15px var(--terminal-green-glow),
+      0 0 30px var(--terminal-green-glow),
+      0 0 45px var(--terminal-green-glow);
+  }
+  50% {
+    text-shadow:
+      0 0 10px var(--terminal-green),
+      0 0 25px var(--terminal-green-glow),
+      0 0 50px var(--terminal-green-glow),
+      0 0 75px var(--terminal-green-glow),
+      0 0 100px var(--terminal-green-glow);
+  }
+}
+
+/* === TIMER === */
+.timer-countdown {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* === CODE BLOCK === */
+.code-block {
+  text-align: left;
+  margin: var(--space-lg) 0;
+  border-radius: var(--input-border-radius);
+  overflow: hidden;
+  border: none;
+  /* The template's grey card; CodeBlock.tsx draws ink-on-light. */
+  background: var(--ww-card);
+  border-left: 12px solid var(--ww-mint);
+}
+
+.code-block-header {
+  background: color-mix(in srgb, var(--ww-purple) 55%, var(--ww-ink));
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  border-bottom: none;
+}
+
+/* Traffic lights */
+.code-block-dots {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.code-block-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--terminal-white-muted);
+}
+
+.code-block-dot--red { background: var(--ww-magenta); }
+.code-block-dot--yellow { background: var(--ww-violet); }
+.code-block-dot--green { background: var(--ww-mint); }
+
+.code-block-filename {
+  flex: 1;
+  color: var(--terminal-white-muted);
+  font-size: var(--font-size-code);
+  font-family: var(--font-mono);
+  text-align: center;
+}
+
+/* Copy button */
+.code-block-copy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--terminal-white-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.code-block-copy:hover {
+  color: var(--terminal-white);
+  background: var(--terminal-bg-secondary);
+  border-color: var(--terminal-border);
+}
+
+.code-block-copy.copied {
+  color: var(--terminal-green);
+}
+
+.code-block-copy svg {
+  width: 16px;
+  height: 16px;
+}
+
+.code-block pre {
+  margin: 0 !important;
+  padding: var(--space-md) !important;
+  background: transparent !important;
+  font-size: var(--font-size-code) !important;
+  line-height: var(--line-height-relaxed) !important;
+}
+
+.code-block code {
+  background: transparent !important;
+  color: var(--ww-ink);
+  padding: 0 !important;
+  border: none !important;
+  font-family: var(--font-mono) !important;
+}
+
+
+
+/* === MOBILE: BOTTOM BAR ELEMENT SIZING === */
+@media (max-width: 768px) and (pointer: coarse) {
+  .input-bar {
+    padding: var(--space-sm) var(--space-md);
+    gap: var(--space-sm);
+  }
+
+  .progress-bar {
+    width: 60px;
+  }
+
+  /* Hide progress text on narrow screens; the bar alone communicates progress */
+  .progress-text,
+  .progress-text--glow {
+    display: none;
+  }
+}
+
+
+/* === END MOBILE BOTTOM BAR — ROTATE HINT BELOW === */
+
+/* === ROTATE HINT (portrait phones only) === */
+.rotate-hint {
+  display: none;
+}
+@media (orientation: portrait) and (max-width: 640px) {
+  .rotate-hint {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    background: var(--terminal-bg);
+    color: var(--terminal-white);
+    font-family: var(--font-mono);
+    text-align: center;
+    padding: var(--space-lg);
+    pointer-events: none;
+  }
+  .rotate-hint__icon {
+    font-size: var(--font-size-input);
+    color: var(--terminal-orange);
+    line-height: 1;
+    transform: rotate(-90deg);
+    text-shadow: var(--glow-text-orange);
+  }
+  .rotate-hint__text {
+    font-size: var(--font-size-small);
+    color: var(--terminal-white-dim);
+    max-width: 18rem;
+  }
+}

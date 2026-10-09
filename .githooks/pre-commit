@@ -1,0 +1,6 @@
+#!/bin/sh
+# Refuse unstaged changes the checks would read (they read the working tree,
+# git commits the index), then run the deck checks.
+git diff --quiet && [ -z "$(git ls-files --others --exclude-standard -- src scripts deck-lint.config.json)" ] ||
+  { echo "pre-commit: unstaged or untracked changes the checks would read — stage or stash them first"; exit 1; }
+exec bun run check

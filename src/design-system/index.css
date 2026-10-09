@@ -1,0 +1,13 @@
+/* Design system entry point.
+ *
+ * Layer order matters: tokens establish the variables; base sets up
+ * fundamental slide/typography rules; patterns adds reusable utilities
+ * and CRT effects on top; components wire chrome.
+ *
+ * Per-slide layouts live separately at `../styles/slide-layouts.css`
+ * (imported alongside this in App.tsx). They are not part of the
+ * design system — they apply to one slide each. */
+@import './tokens.css';
+@import './base.css';
+@import './patterns.css';
+@import './components.css';

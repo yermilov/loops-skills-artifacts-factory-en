@@ -1,0 +1,526 @@
+/* === SLIDE LAYOUTS — WAWTech template ===
+ * One block per layout, named after the template slide it re-draws
+ * (numbers = page of «WAWTECH_Template_white»). All lengths are stage px on
+ * the fixed 1920×1080 canvas. Sizes come only from the four type tiers. */
+
+/* ─── Kit pieces (src/components/wawtech) ─────────────────────────────── */
+
+.ww-icon { display: block; object-fit: contain; }
+
+.ww-corner-rings {
+  position: absolute;
+  width: 1034px;
+  opacity: 0.2;          /* the template draws these at ~20% violet */
+  pointer-events: none;
+  z-index: 0;
+}
+.ww-corner-rings--bottom-left  { left: 0;  bottom: 0; }
+.ww-corner-rings--top-right    { right: 0; top: 0;    transform: rotate(180deg); }
+.ww-corner-rings--bottom-right { right: 0; bottom: 0; transform: scaleX(-1); }
+.ww-corner-rings--top-left     { left: 0;  top: 0;    transform: scaleY(-1); }
+
+/* Flow content on titled slides must paint above the (positioned) rings. */
+.slide--titled > :not(.ww-corner-rings):not(.ww-bottom-fade):not(.ww-full-bg):not(.slide-title) {
+  position: relative;
+  z-index: 1;
+}
+
+.ww-logo { display: block; height: auto; }
+
+.ww-bottom-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--ww-grad-fade);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ww-full-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.ww-pill {
+  display: inline-block;
+  padding: 6px 32px;
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-code);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-caps);
+}
+.ww-pill--magenta { background: var(--ww-magenta); color: var(--ww-white); }
+.ww-pill--outline { border: 2px solid var(--ww-purple); color: var(--ww-purple); }
+
+.ww-arrow { font-weight: 300; line-height: 1; }
+
+.ww-card {
+  border-radius: var(--radius-card);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.ww-card--grey     { background: var(--ww-card); color: var(--ww-purple); }
+.ww-card--purple   { background: var(--ww-purple); color: var(--ww-white); }
+.ww-card--ink      { background: var(--ww-ink); color: var(--ww-white); }
+.ww-card--magenta  { background: var(--ww-grad-magenta); color: var(--ww-white); }
+.ww-card--mint     { background: var(--ww-grad-mint); color: var(--ww-purple); }
+.ww-card--gradient { background: var(--ww-grad-card); color: var(--ww-purple); }
+
+.ww-stat__value {
+  font-size: var(--font-size-heading);
+  font-weight: 500;
+  line-height: 1;
+}
+.ww-stat__label { font-size: var(--font-size-body); line-height: var(--line-height-normal); }
+
+.ww-block {
+  background: var(--ww-purple);
+  color: var(--ww-white);
+  padding: var(--space-lg) var(--space-xl);
+}
+
+/* ─── 1 · Title ──────────────────────────────────────────────────────── */
+
+.ww-title {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ww-title__stack {
+  display: grid;
+  justify-items: start;
+  max-width: 1500px;
+}
+.ww-title__logo {
+  background: var(--ww-mint);
+  padding: 22px 36px 18px;
+}
+.ww-title__name {
+  background: var(--ww-ink);
+  color: var(--ww-white);
+  padding: 28px 36px 36px;
+  font-size: var(--font-size-hero);
+  font-weight: 500;
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+}
+.ww-title__sub {
+  justify-self: end;
+  max-width: 900px;
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+  padding: 28px 40px 32px;
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-normal);
+}
+
+/* ─── 2 · Speaker / name + date ───────────────────────────────────────── */
+
+.ww-speaker {
+  position: absolute;
+  inset: 0;
+  padding: var(--stage-pad-y) var(--stage-pad-x);
+  display: flex;
+  flex-direction: column;
+}
+.ww-speaker__rings {
+  position: absolute;
+  right: -160px;
+  top: 0;
+  height: 100%;
+  opacity: 0.9;
+  z-index: 0;
+}
+.ww-speaker__title {
+  margin-top: var(--space-2xl);
+  max-width: 1100px;
+  font-size: var(--font-size-heading);
+  font-weight: 500;
+  line-height: var(--line-height-tight);
+  color: var(--ww-magenta);
+}
+.ww-speaker__meta {
+  margin-top: auto;
+  display: grid;
+  gap: var(--space-xs);
+  font-size: var(--font-size-body);
+}
+.ww-speaker__meta strong { font-weight: 600; color: var(--ww-purple); }
+
+/* ─── 3 · Agenda ──────────────────────────────────────────────────────── */
+
+.ww-agenda {
+  position: absolute;
+  top: var(--stage-pad-y);
+  bottom: var(--stage-pad-y);
+  left: 780px;
+  right: var(--stage-pad-x);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.ww-agenda__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: var(--space-sm);
+  border-top: 2px solid var(--ww-rule);
+  font-size: var(--font-size-heading);
+  line-height: 1;
+  color: var(--ww-purple);
+}
+.ww-agenda__row:first-child { border-top-color: transparent; }
+.ww-agenda__label { font-weight: 600; text-transform: uppercase; }
+.ww-agenda__num { font-weight: 300; }
+.ww-agenda__row--dim { color: var(--ww-text-muted); }
+
+/* ─── 4 · Section break (title + purple fade) ─────────────────────────── */
+
+.ww-section {
+  position: absolute;
+  inset: 0;
+  padding: var(--stage-pad-y) var(--stage-pad-x);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-content: start;
+  column-gap: var(--space-xl);
+}
+.ww-section__lead { display: grid; gap: var(--space-md); justify-items: start; }
+.ww-section__eyebrow {
+  font-size: var(--font-size-code);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-caps);
+}
+.ww-section__title {
+  font-size: var(--font-size-heading);
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+}
+.ww-section__col { padding-top: 6px; }
+.ww-section__num {
+  position: absolute;
+  right: var(--stage-pad-x);
+  bottom: var(--stage-pad-y);
+  font-size: var(--font-size-hero);
+  font-weight: 300;
+  color: var(--ww-white);
+  z-index: 1;
+}
+
+/* ─── 5 · Two columns of text ─────────────────────────────────────────── */
+
+.ww-columns {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 2), 1fr);
+  gap: var(--space-xl);
+  margin-top: var(--space-md);
+}
+.ww-columns p { margin: 0; }
+
+/* ─── 6 · Icon cards row ──────────────────────────────────────────────── */
+
+.ww-icon-row {
+  margin-top: auto;
+  align-self: flex-start;
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  border-radius: calc(var(--radius-card) + var(--space-sm));
+  background: var(--ww-card);
+}
+.ww-icon-row .ww-card {
+  width: 340px;
+  min-height: 400px;
+  justify-content: flex-end;
+  gap: var(--space-md);
+}
+
+/* ─── 7 · Stats row ───────────────────────────────────────────────────── */
+
+.ww-stats {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: var(--space-md);
+}
+.ww-stats .ww-card { min-height: 340px; justify-content: space-between; }
+.ww-stats__lead { font-size: var(--font-size-body); font-weight: 500; }
+
+/* ─── 8 · Feature grid (title left, 2×2 cards right) ──────────────────── */
+
+.ww-split {
+  position: absolute;
+  inset: 0;
+  padding: var(--stage-pad-y) var(--stage-pad-x);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
+}
+.ww-split__text { display: flex; flex-direction: column; gap: var(--space-lg); }
+.ww-split__text h2 { margin: 0; }
+.ww-split__text p { margin-top: auto; }
+.ww-feature-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  align-content: center;
+}
+.ww-feature-grid .ww-card { min-height: 380px; align-items: center; text-align: center; justify-content: center; }
+.ww-feature-grid h3 { color: var(--ww-purple); margin: 0; }
+.ww-feature-grid p { margin: 0; }
+
+/* ─── 9 · Big number (96%) ────────────────────────────────────────────── */
+
+.ww-bignum {
+  position: absolute;
+  left: var(--stage-pad-x);
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-sm);
+}
+.ww-bignum__main {
+  width: 640px;
+  min-height: 820px;
+  border-top: 16px solid var(--ww-mint);
+  justify-content: space-between;
+  display: flex;
+  flex-direction: column;
+}
+.ww-bignum__value {
+  font-size: var(--font-size-hero);
+  font-weight: 300;
+  line-height: 1;
+  color: var(--ww-mint);
+  transform: scale(2.4);   /* deck-lint-allow font-size: the 96% number is a picture, scaled from the hero tier */
+  transform-origin: left top;
+  height: 240px;
+}
+.ww-bignum__side { width: 640px; min-height: 500px; }
+.ww-bignum__aside {
+  position: absolute;
+  right: var(--stage-pad-x);
+  top: var(--stage-pad-y);
+  width: 640px;
+}
+
+/* ─── 10 · Statement box ──────────────────────────────────────────────── */
+
+.ww-statement {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ww-statement .ww-block {
+  max-width: 1100px;
+  border-radius: 12px;
+  font-size: var(--font-size-heading);
+  line-height: var(--line-height-tight);
+  padding: var(--space-xl) var(--space-xl) var(--space-2xl);
+}
+
+/* ─── 11 · Timeline (overlapping circles) ─────────────────────────────── */
+
+.ww-timeline {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: repeat(var(--steps, 4), 1fr);
+}
+.ww-timeline__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-sm);
+}
+.ww-timeline__circle {
+  width: 400px;
+  height: 400px;
+  margin: 0 -60px;
+  border: 3px solid var(--ww-magenta);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-heading);
+  font-weight: 300;
+  color: var(--ww-magenta);
+  position: relative;
+}
+.ww-timeline__circle::after {
+  content: '';
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  width: 3px;
+  height: 160px;
+  background: var(--ww-magenta);
+}
+.ww-timeline__label { margin-top: 60px; max-width: 360px; }
+
+/* ─── 12 · Accordion list ─────────────────────────────────────────────── */
+
+.ww-accordion {
+  margin: auto auto 0;
+  width: 1000px;
+  display: grid;
+  gap: var(--space-xs);
+}
+.ww-accordion__item {
+  background: var(--ww-purple);
+  color: var(--ww-white);
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-body);
+}
+.ww-accordion__item--open {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-xs);
+  border-left: 12px solid var(--ww-mint);
+}
+.ww-accordion__head { display: flex; justify-content: space-between; font-weight: 500; }
+.ww-accordion__body { opacity: 0.85; }
+
+/* ─── 13 · Code ───────────────────────────────────────────────────────── */
+
+.ww-code { margin-top: var(--space-md); max-width: 1500px; }
+
+/* ─── 14 · Image ──────────────────────────────────────────────────────── */
+
+.ww-image {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ww-image img,
+.ww-image video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--radius-card);
+}
+.ww-image__placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-card);
+  background: var(--ww-grad-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ww-purple);
+}
+
+/* ─── 15 · Break ──────────────────────────────────────────────────────── */
+
+.ww-break {
+  position: absolute;
+  inset: 0;
+  padding: var(--stage-pad-y) var(--stage-pad-x);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  color: var(--ww-white);
+}
+.ww-break__title {
+  font-size: var(--font-size-hero);
+  font-weight: 400;
+  line-height: var(--line-height-tight);
+}
+.ww-break__note { max-width: 560px; text-align: right; }
+
+/* ─── 16 · Big closing title (template's «Break Slide») ────────────────── */
+
+.ww-bigtitle {
+  position: absolute;
+  inset: auto var(--stage-pad-x) var(--stage-pad-y);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-xl);
+}
+.ww-bigtitle__text {
+  font-size: var(--font-size-hero);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ww-purple);
+  transform: scale(1.5);   /* deck-lint-allow font-size: display title drawn from the hero tier */
+  transform-origin: left bottom;
+}
+.ww-bigtitle__pills { display: flex; flex-wrap: wrap; gap: var(--space-xs); justify-content: flex-end; max-width: 640px; }
+
+/* ─── 17 · Contacts + QR ──────────────────────────────────────────────── */
+
+.ww-contacts {
+  position: absolute;
+  inset: 0;
+  padding: var(--stage-pad-y) var(--stage-pad-x);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--space-2xl);
+}
+.ww-contacts h2 {
+  font-size: var(--font-size-heading);
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: var(--space-xl);
+}
+.ww-contacts__list { display: grid; gap: var(--space-md); }
+.ww-contacts__row { display: flex; align-items: center; gap: var(--space-md); }
+.ww-contacts__dot {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--ww-mint);
+  flex-shrink: 0;
+}
+.ww-contacts__qr {
+  padding: var(--space-md);
+  background: var(--ww-white);
+  border-radius: var(--radius-card);
+}
+
+/* ─── 18 · Thank you ──────────────────────────────────────────────────── */
+
+.ww-thanks {
+  position: absolute;
+  inset: 0;
+  padding: var(--stage-pad-y) var(--stage-pad-x);
+  display: flex;
+  flex-direction: column;
+}
+.ww-thanks__title {
+  margin-top: auto;
+  font-size: var(--font-size-hero);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ww-purple);
+  transform: scale(2);    /* deck-lint-allow font-size: display title drawn from the hero tier */
+  transform-origin: left bottom;
+  margin-bottom: var(--space-2xl);
+}
+.ww-thanks__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--space-xl);
+}
+.ww-thanks__foot p { margin: 0; max-width: 960px; }
