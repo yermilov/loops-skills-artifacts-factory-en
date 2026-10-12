@@ -3,19 +3,96 @@
  * Progress), code blocks,
  * rotate hint, mobile responsive tweaks for these elements. */
 
-/* === BOTTOM BAR === */
-/* Strip at the bottom that wraps Timer + TerminalInput + SlideProgress.
- * Replaces three separately-positioned fixed elements with one
- * horizontally-laid-out chrome bar. */
-.input-bar {
+/* === BOTTOM CHROME === */
+/* One thin strip under the stage: the talk track (TalkTrack.tsx). The
+ * terminal is not parked here — it floats over the slide on Esc
+ * (`.command-overlay`). */
+.deck-chrome {
+  padding: var(--space-xs) var(--space-lg);
+  background: var(--ww-paper);
+  position: relative;
+  z-index: 1001;
+}
+
+/* === TALK TRACK === */
+/* Fill = the material, tick = the clock. See TalkTrack.tsx for the why. */
+.talk-track {
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  padding: var(--space-md) var(--space-xl);
-  background: var(--ww-white);
-  border-top: 1px solid var(--terminal-border);
+}
+
+.talk-track__rail {
   position: relative;
-  z-index: 1001;
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ww-purple) 12%, transparent);
+}
+
+.talk-track__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 3px;
+  background: var(--ww-magenta);
+  transition: width var(--transition-normal);
+}
+
+.talk-track__tick {
+  position: absolute;
+  top: -5px;
+  width: 3px;
+  height: 16px;
+  margin-left: -1.5px;
+  border-radius: 1.5px;
+  background: var(--ww-purple);
+  transition: left 1s linear;
+}
+
+.talk-track__clock {
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  font-variant-numeric: tabular-nums;
+  color: var(--terminal-green);
+}
+
+.talk-track--warn .talk-track__clock { color: var(--terminal-yellow); }
+.talk-track--late .talk-track__clock { color: var(--terminal-red); }
+.talk-track--late .talk-track__tick { background: var(--terminal-red); }
+
+/* === COMMAND OVERLAY === */
+/* The terminal, called up over the slide by Esc. */
+.command-overlay {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-2xl);
+  width: min(900px, 90vw);
+  transform: translateX(-50%);
+  z-index: 1200;
+  animation: commandOverlayIn var(--transition-fast) ease-out;
+}
+
+.command-overlay .terminal-input-wrapper {
+  background: var(--ww-white);
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--ww-purple) 18%, transparent);
+}
+
+@keyframes commandOverlayIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(var(--space-sm));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .command-overlay { animation: none; }
+  .talk-track__fill,
+  .talk-track__tick { transition: none; }
 }
 
 /* === TERMINAL INPUT === */
@@ -82,69 +159,6 @@
   height: 1.2em;
   background: var(--terminal-orange);
   animation: cursor-blink 1s step-end infinite;
-  flex-shrink: 0;
-}
-
-/* === SLIDE PROGRESS === */
-.slide-progress {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  flex-shrink: 0;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
-.progress-bar {
-  width: 120px;
-  height: 4px;
-  background: var(--terminal-border);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--terminal-orange);
-  transition: width var(--transition-normal);
-}
-
-.progress-text {
-  color: var(--terminal-white-muted);
-  font-size: var(--font-size-small);
-  font-family: var(--font-mono);
-}
-
-.progress-text--glow {
-  color: var(--terminal-green-bright);
-  font-weight: 600;
-  animation: progressGlow 1.5s ease-in-out infinite;
-}
-
-@keyframes progressGlow {
-  0%, 100% {
-    text-shadow:
-      0 0 5px var(--terminal-green),
-      0 0 15px var(--terminal-green-glow),
-      0 0 30px var(--terminal-green-glow),
-      0 0 45px var(--terminal-green-glow);
-  }
-  50% {
-    text-shadow:
-      0 0 10px var(--terminal-green),
-      0 0 25px var(--terminal-green-glow),
-      0 0 50px var(--terminal-green-glow),
-      0 0 75px var(--terminal-green-glow),
-      0 0 100px var(--terminal-green-glow);
-  }
-}
-
-/* === TIMER === */
-.timer-countdown {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-small);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
   flex-shrink: 0;
 }
 
@@ -244,21 +258,15 @@
 
 
 
-/* === MOBILE: BOTTOM BAR ELEMENT SIZING === */
+/* === MOBILE: BOTTOM CHROME === */
 @media (max-width: 768px) and (pointer: coarse) {
-  .input-bar {
-    padding: var(--space-sm) var(--space-md);
-    gap: var(--space-sm);
+  .deck-chrome {
+    padding: var(--space-xs) var(--space-md);
   }
 
-  .progress-bar {
-    width: 60px;
-  }
-
-  /* Hide progress text on narrow screens; the bar alone communicates progress */
-  .progress-text,
-  .progress-text--glow {
-    display: none;
+  .command-overlay {
+    bottom: var(--space-xl);
+    width: 94vw;
   }
 }
 

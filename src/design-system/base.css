@@ -2,7 +2,7 @@
  * The presentation shell, the fixed 1920×1080 stage, and the default type of
  * every slide. Per-layout styles live in src/styles/slide-layouts.css. */
 
-/* Presentation container: stage area on top, input bar below. */
+/* Presentation container: stage area on top, the thin talk track below. */
 .presentation {
   width: 100vw;
   height: var(--vh-full);
@@ -13,7 +13,7 @@
   position: relative;
 }
 
-/* Fills the space above the input bar; the stage is centred in it. A child
+/* Fills the space above the talk track; the stage is centred in it. A child
  * wider than the container still centres (it overflows equally both ways). */
 .slide-container {
   flex: 1;
@@ -38,7 +38,6 @@
   position: relative;
   overflow: hidden;
   background: var(--ww-paper);
-  box-shadow: 0 0 0 1px var(--terminal-border);
 }
 
 /* The slide fills the stage; layouts position themselves inside it. */

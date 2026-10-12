@@ -5,8 +5,7 @@ import { NavigationContext } from '../context/NavigationContext';
 import { useTouchNavigation } from '../hooks/useTouchNavigation';
 import { Slide } from './Slide';
 import { TerminalInput } from './TerminalInput';
-import { SlideProgress } from './SlideProgress';
-import { Timer } from './Timer';
+import { TalkTrack } from './TalkTrack';
 import { RotateHint } from './RotateHint';
 import { preloadSlideAssets } from '../utils/preloadAssets';
 import { exportRegistry } from './exportRegistry';
@@ -49,16 +48,22 @@ export function Presentation({ slides, initialSlide = 0 }: PresentationProps) {
     initialSlide
   );
 
-  // Fit the fixed 1920×1080 stage into whatever space the input bar leaves.
+  // Fill the whole space above the bottom strip, edge to edge. The scale is
+  // still the one that fits a 1920×1080 canvas, but the stage then GROWS along
+  // the longer axis to the container's own aspect, so a wider screen gets a
+  // wider stage instead of paper bars at the sides. Layouts anchor to the
+  // stage's edges, so they spread with it. In export mode the viewport is
+  // exactly 1920×1080 and the stage is the template's own canvas, 1:1.
   const stageHostRef = useRef<HTMLDivElement>(null);
-  const [stageScale, setStageScale] = useState(1);
+  const [stage, setStage] = useState({ scale: 1, width: STAGE_WIDTH, height: STAGE_HEIGHT });
   useLayoutEffect(() => {
     const el = stageHostRef.current;
     if (!el) return;
     const measure = () => {
       const { width, height } = el.getBoundingClientRect();
       if (width > 0 && height > 0) {
-        setStageScale(Math.min(width / STAGE_WIDTH, height / STAGE_HEIGHT));
+        const scale = Math.min(width / STAGE_WIDTH, height / STAGE_HEIGHT);
+        setStage({ scale, width: Math.round(width / scale), height: Math.round(height / scale) });
       }
     };
     measure();
@@ -92,6 +97,31 @@ export function Presentation({ slides, initialSlide = 0 }: PresentationProps) {
 
   // Track current input text for interactive slides
   const [inputText, setInputText] = useState('');
+
+  // The terminal is hidden by default: Esc calls it up over the slide, and Esc
+  // (or running a command) dismisses it. Arrows, space and the clicker's
+  // PageUp/PageDown are on the window handler in useSlideNavigation, so the
+  // talk needs no visible input at all. Same pattern as claude-strangelove-ua.
+  const [commandOpen, setCommandOpen] = useState(false);
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      // Escape typed INSIDE the field bubbles up here too, so one key both
+      // opens and closes it.
+      setCommandOpen((open) => !open);
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, []);
+
+  // Leaving a slide drops any half-typed command with the overlay, so an
+  // interactive slide never inherits the previous one's text.
+  useEffect(() => {
+    setCommandOpen(false);
+    setInputText('');
+  }, [currentSlide]);
 
   // Warm the HTTP cache for every downstream slide asset while the title
   // slide is on screen. Deferred to idle so the first paint is unblocked.
@@ -144,6 +174,8 @@ export function Presentation({ slides, initialSlide = 0 }: PresentationProps) {
   }, [currentSlide]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCommand = useCallback((command: string) => {
+    // A command is a one-shot: the overlay closes behind it.
+    setCommandOpen(false);
     handleNavCommand(command);
   }, [handleNavCommand]);
 
@@ -182,7 +214,13 @@ export function Presentation({ slides, initialSlide = 0 }: PresentationProps) {
         <div
           ref={stageHostRef}
           className="stage-host"
-          style={{ '--stage-scale': stageScale } as CSSProperties}
+          style={
+            {
+              '--stage-scale': stage.scale,
+              '--stage-width': `${stage.width}px`,
+              '--stage-height': `${stage.height}px`,
+            } as CSSProperties
+          }
         >
         <Slide
           isActive
@@ -196,24 +234,23 @@ export function Presentation({ slides, initialSlide = 0 }: PresentationProps) {
         </Slide>
         </div>
       </div>
-      {!isExportMode && (
-        <div className="input-bar">
-          <Timer
-            elapsedSeconds={timerSeconds}
-            progress={totalUnits > 0 ? consumedUnits / totalUnits : 0}
-          />
+      {!isExportMode && commandOpen && (
+        <div className="command-overlay">
           <TerminalInput
             onCommand={handleCommand}
             onInputChange={setInputText}
             onArrowLeft={revealPrev}
             onArrowRight={revealNext}
-            placeholder="type anything to continue, 'prev' to go back, or slide number..."
+            placeholder="slide number, 'prev', 'last' — or esc to hide"
           />
-          <SlideProgress
-            current={consumedUnits}
-            total={totalUnits}
-            isFirst={currentSlide === Math.floor(slides.length / 2)}
-            hidden={(currentSlide + 1) / slides.length <= 0.5}
+        </div>
+      )}
+      {!isExportMode && (
+        <div className="deck-chrome">
+          <TalkTrack
+            elapsedSeconds={timerSeconds}
+            progress={totalUnits > 0 ? consumedUnits / totalUnits : 0}
+            onOpenCommand={() => setCommandOpen((open) => !open)}
           />
         </div>
       )}

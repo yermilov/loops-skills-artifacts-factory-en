@@ -49,11 +49,11 @@ src/
 │   └── exportContract.ts         # async-slide allow-lists for the build check
 ├── components/
 │   ├── wawtech/index.tsx         # layout kit: CornerRings, Logo, BottomFade, Card, Stat, Block, Pill, Icon, Reveal
-│   ├── Presentation.tsx          # navigation, timer, stage scaling, export API
+│   ├── Presentation.tsx          # navigation, timer, Esc command overlay, stage scaling, export API
 │   ├── Slide.tsx                 # .stage (1920×1080) > .slide; optional title band
 │   ├── CodeBlock.tsx             # Prism with a WAWTech light theme
 │   ├── SlideElements.tsx         # SlideItem, SectionHeader, Code, Emphasis, Quote, SlideLink
-│   ├── TerminalInput.tsx / Timer.tsx / SlideProgress.tsx / RotateHint.tsx   # chrome
+│   ├── TalkTrack.tsx / TerminalInput.tsx / RotateHint.tsx   # chrome: bottom track, Esc terminal
 │   └── exportRegistry.ts         # settle protocol for the PDF export
 ├── design-system/                # tokens.css · base.css · patterns.css · components.css
 ├── styles/slide-layouts.css      # one `ww-…` block per layout
@@ -103,19 +103,23 @@ export const MySlide: SlideDefinition = {
 
 ## Navigation
 
-Type in the input bar (or use the keyboard when it is not focused):
+The input is hidden: **Esc** calls the terminal over the slide (Esc again, or running a command,
+hides it; on a phone, tap the clock). Arrow keys, Space and PageUp/PageDown work without it.
+Commands:
 - `next` / `n` → next reveal stage, then next slide
 - `prev` / `back` / `p` / `b` → back
 - a number → that slide; `first` / `home`, `last` / `end`
 - `reveal` / `r` → next reveal stage
-- Arrow keys, Space, PageUp/PageDown also work. The timer starts when you leave the title slide
-  and counts down 45:00.
+- The bottom strip is the talk track: the magenta fill is how far the deck has got, the purple
+  tick is where it should be by the clock. The clock starts when you leave the title slide and
+  counts down 45:00; it turns amber, then red, when the tick runs ahead of the fill.
 
 ## Verify every change visually
 
 After any change to slides, styles or config, open the dev server (or `bun run pdf`) and look at
-the slide before calling it done — at 1920×1080 and once at a small viewport (the stage only
-scales, so a layout bug shows the same everywhere).
+the slide before calling it done — at 1920×1080 (the PDF), and once at a wider and a taller
+aspect (e.g. 1920×1000 and 1440×1000): the stage stretches to the screen's aspect, so a layout that
+assumes exactly 1920×1080 shows a gap there.
 
 ## Deployment
 

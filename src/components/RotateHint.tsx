@@ -1,7 +1,7 @@
 /**
  * Portrait-orientation hint shown only on small screens.
  * The deck is calibrated for landscape; in portrait on a phone the long
- * axis of the device is wasted and chrome (.input-bar, useTouchNavigation
+ * axis of the device is wasted and chrome (.deck-chrome, useTouchNavigation
  * zone math) lives outside any stage transform and assumes portrait means
  * thin vertical strip. Cheaper and more reliable: ask the user to rotate.
  */

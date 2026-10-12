@@ -12,19 +12,26 @@ the rings, logo, gradient and icons are its own images (`src/assets/wawtech/`). 
 template's vocabulary: white paper, deep purple text and blocks, one magenta and one mint accent,
 faded violet rings in a corner, purple gradients rising from the bottom edge.
 
-Venue: WAWTech 2026, Warsaw, 26–27 November — a hall. **45-minute slot, no Q&A** (the timer in
-`Timer.tsx` counts down 45:00).
+Venue: WAWTech 2026, Warsaw, 26–27 November — a hall. **45-minute slot, no Q&A** (the talk track in
+`TalkTrack.tsx` counts down 45:00).
 
 ## The stage
 
-Every slide is composed on a **fixed 1920×1080 canvas** (`.stage`, `base.css`) that
-`Presentation.tsx` scales to fit the space above the input bar (`--stage-scale`, measured with a
-ResizeObserver). So:
+Every slide is composed for a **1920×1080 canvas** (`.stage`, `base.css`). `Presentation.tsx`
+picks the scale that fits 1920×1080 into the space above the bottom strip (`--stage-scale`,
+measured with a ResizeObserver) and then **grows the stage along the longer axis** to that space's
+own aspect (`--stage-width` / `--stage-height`), so the slide fills the screen edge to edge — a
+wider screen gets a wider stage, never paper bars. So:
+
+- **anchor layouts to the stage's edges** (`left`/`right`/`top`/`bottom`, flex/grid) rather than
+  assuming exactly 1920 px of width: on a 16:9 projector with the strip below, the stage is ~2000 px
+  wide; on a 16:10 laptop it is taller than 1080;
 
 - **all lengths in slide CSS are stage pixels** — no `vw`, no `clamp()`;
 - one template point = 2.667 stage px, if you are copying a position from the Google Slides file;
-- the input bar lives OUTSIDE the stage and keeps fluid chrome sizes (`--font-size-input`,
-  `--font-size-small`);
+- the chrome lives OUTSIDE the stage and keeps fluid sizes (`--font-size-input`,
+  `--font-size-small`): a thin talk track at the bottom (fill = material, tick = clock), and the
+  terminal input, hidden until Esc calls it over the slide;
 - the PDF export (`bun run pdf`) captures at 1920×1080, i.e. the stage at scale 1.
 
 ## Where things live
@@ -34,7 +41,7 @@ ResizeObserver). So:
 | Tokens — palette, type tiers, spacing, radii, motion | `src/design-system/tokens.css` |
 | Stage, slide defaults, headings, lists, inline code | `src/design-system/base.css` |
 | Text utilities, `<SlideItem>` / `<SectionHeader>` / `<Emphasis>` styles, reveal animations | `src/design-system/patterns.css` |
-| Chrome — input bar, progress, code block, rotate hint | `src/design-system/components.css` |
+| Chrome — talk track, command overlay, code block, rotate hint | `src/design-system/components.css` |
 | Layout kit styles, one block per template layout (`ww-…`) | `src/styles/slide-layouts.css` |
 | Layout kit components — `CornerRings`, `Logo`, `BottomFade`, `Card`, `Stat`, `Block`, `Pill`, `Icon`, `Reveal` | `src/components/wawtech/index.tsx` |
 | One worked example of every layout | `src/slides/Layout*.tsx` (the "layout gallery") |
