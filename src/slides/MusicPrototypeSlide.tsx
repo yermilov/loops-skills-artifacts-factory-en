@@ -60,27 +60,37 @@ function clock(ms: number): string {
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
 }
 
-/** macOS Music, already playing — the thing the AppleScript is asking about. */
-function MusicApp({ song, played }: { song: Song; played: number }) {
+/**
+ * macOS Music, already playing — the thing the AppleScript is asking about.
+ *
+ * `elapsedMs` is driven by the slide's clock, so the counter and the scrubber
+ * really move: the first track is already part-way through (a record that has
+ * been playing while he worked), the one it skips to starts at 0:00.
+ */
+function MusicApp({ song, elapsedMs }: { song: Song; elapsedMs: number }) {
   const cover = COVERS[`../assets/music/${song.cover}`];
   const artists = song.artists.join(', ');
+  const elapsed = Math.max(0, Math.min(elapsedMs, song.durationMs));
+  const played = song.durationMs > 0 ? elapsed / song.durationMs : 0;
   return (
     <div className="ww-music">
       <div className="ww-music__chrome">
-        <span className="ww-dot ww-dot--red" />
-        <span className="ww-dot ww-dot--amber" />
-        <span className="ww-dot ww-dot--green" />
+        <div className="ww-music__lights">
+          <span className="ww-dot ww-dot--red" />
+          <span className="ww-dot ww-dot--amber" />
+          <span className="ww-dot ww-dot--green" />
+        </div>
         <div className="ww-music__now">
           <img src={cover} alt="" />
           <div className="ww-music__nowtext">
             <strong>{song.name}</strong>
             <span>{artists}</span>
             <div className="ww-music__bar">
-              <span className="ww-music__time">{clock(song.durationMs * played)}</span>
+              <span className="ww-music__time">{clock(elapsed)}</span>
               <div className="ww-music__track">
                 <div className="ww-music__fill" style={{ width: `${played * 100}%` }} />
               </div>
-              <span className="ww-music__time">-{clock(song.durationMs * (1 - played))}</span>
+              <span className="ww-music__time">-{clock(song.durationMs - elapsed)}</span>
             </div>
           </div>
         </div>
@@ -158,10 +168,14 @@ export const MusicPrototypeSlide: SlideDefinition = {
 function PrototypeSession() {
   const t = useClock();
   // Two distinct favourites per mount: one playing, one it skips to.
-  const [first, second] = useMemo(() => {
+  const [first, second, firstOffsetMs] = useMemo(() => {
     const i = Math.floor(Math.random() * SONGS.length);
     const j = (i + 1 + Math.floor(Math.random() * (SONGS.length - 1))) % SONGS.length;
-    return [SONGS[i]!, SONGS[j]!];
+    const song = SONGS[i]!;
+    // Somewhere in the middle of the record, never near its end: the track has
+    // to outlast the session, or the counter would run out mid-slide.
+    const offset = Math.floor(song.durationMs * (0.15 + Math.random() * 0.35));
+    return [song, SONGS[j]!, offset];
   }, []);
 
   const CMD = 'bun run cli.ts';
@@ -214,6 +228,15 @@ function PrototypeSession() {
   // moment `play next track` returns.
   const skipped = t >= at.result2;
   const playing = skipped ? second : first;
+  // The clock is MAX_SAFE_INTEGER in export mode, which would run every track
+  // to its end, so the PDF gets the same two states a viewer sees early on.
+  const elapsedMs = EXPORT_MODE
+    ? skipped
+      ? 6_000
+      : firstOffsetMs
+    : skipped
+      ? t - at.result2
+      : firstOffsetMs + t;
 
   return (
     <div className="ww-proto">
@@ -284,7 +307,7 @@ function PrototypeSession() {
           {t >= at.end && <Prompt>{CARET}</Prompt>}
         </div>
       </div>
-      <MusicApp song={playing} played={skipped ? 0.04 : 0.42} />
+      <MusicApp song={playing} elapsedMs={elapsedMs} />
     </div>
   );
 }

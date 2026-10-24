@@ -338,29 +338,46 @@
   overflow: hidden;
   font-family: var(--font-sans);
 }
-.ww-music__chrome { background: var(--music-chrome); height: 150px; align-items: center; }
+/* The toolbar: traffic lights pinned left, the now-playing field centred in
+   the window the way macOS Music centres it. */
+.ww-music__chrome {
+  position: relative;
+  background: var(--music-chrome);
+  height: 150px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-md);
+}
+/* The lights keep the window's corner while the field stays centred. */
+.ww-music__lights {
+  position: absolute;
+  left: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 12px;
+}
 .ww-music__now {
-  flex: 1;
+  width: 56%;
   min-width: 0;
-  height: 118px;
+  height: 112px;
   box-sizing: border-box;
   overflow: hidden;
   display: flex;
-  gap: 14px;
+  gap: var(--space-sm);
   align-items: center;
-  margin-left: var(--space-sm);
-  padding: 8px 16px;
+  padding: 12px 20px 12px 12px;
   background: var(--music-bg);
-  border-radius: 8px;
+  border-radius: 12px;
 }
-.ww-music__now img { width: 86px; height: 86px; border-radius: 4px; flex-shrink: 0; }
+.ww-music__now img { width: 84px; height: 84px; border-radius: 6px; flex-shrink: 0; }
 .ww-music__nowtext {
   flex: 1;
   min-width: 0;
   display: grid;
-  gap: 2px;
+  gap: 1px;
   font-size: var(--font-size-code);
-  line-height: 1.25;
+  line-height: 1.2;
 }
 .ww-music__nowtext strong,
 .ww-music__nowtext span {
@@ -370,32 +387,67 @@
 }
 .ww-music__nowtext strong { font-weight: 600; }
 .ww-music__nowtext span { color: var(--music-dim); }
-.ww-music__bar { display: flex; align-items: center; gap: 10px; }
-.ww-music__time { color: var(--music-dim); font-variant-numeric: tabular-nums; }
-.ww-music__track { flex: 1; height: 5px; border-radius: 3px; background: var(--music-chrome); }
-.ww-music__fill { height: 100%; border-radius: 3px; background: var(--music-dim); }
+.ww-music__bar { display: flex; align-items: center; gap: var(--space-sm); margin-top: 6px; }
+/* The mini player's timecodes are chrome inside a recreated app window, not
+   deck copy: at the body tier they dwarf the track title, which is the
+   opposite of what macOS Music does. */
+.ww-music__time {
+  font-size: 24px; /* deck-lint-allow font-size: recreated app chrome, not deck copy */
+  color: var(--music-dim);
+  font-variant-numeric: tabular-nums;
+}
+.ww-music__track {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--music-dim) 45%, transparent);
+}
+.ww-music__fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--music-fg);
+}
 .ww-music__body { flex: 1; min-height: 0; display: flex; }
 .ww-music__sidebar {
-  width: 240px;
+  width: 220px;
+  flex-shrink: 0;
   white-space: nowrap;
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-md) var(--space-sm);
   background: var(--music-chrome);
   font-size: var(--font-size-code);
 }
-.ww-music__section { color: var(--music-dim); margin: var(--space-sm) 0 6px; }
-.ww-music__row { padding: 6px 10px; border-radius: 6px; }
-.ww-music__row--on { background: var(--music-accent); color: var(--music-fg); }
+.ww-music__section {
+  color: var(--music-dim);
+  margin: var(--space-sm) 0 6px;
+  padding: 0 var(--space-sm);
+}
+.ww-music__section:first-child { margin-top: 0; }
+.ww-music__row { padding: 8px var(--space-sm); border-radius: 8px; }
+/* macOS Music marks the open library item with a tinted row, not a red slab —
+   the red belongs to the artist line and the app's own accent. */
+.ww-music__row--on {
+  background: color-mix(in srgb, var(--music-accent) 22%, transparent);
+  color: var(--music-accent);
+  font-weight: 600;
+}
+/* On the 1920 stage the window is ~848px wide, so the art and the sidebar have
+   to leave the title a column it can actually live in. */
 .ww-music__main {
   flex: 1;
+  min-width: 0;
   min-height: 0;
   display: flex;
   gap: var(--space-md);
   align-items: center;
-  padding: var(--space-md) var(--space-lg);
+  padding: var(--space-md);
 }
-.ww-music__art { width: 280px; height: 280px; border-radius: 10px; flex-shrink: 0; }
-.ww-music__meta { display: grid; gap: 8px; min-width: 0; }
-.ww-music__title { font-size: var(--font-size-body); font-weight: 600; }
+.ww-music__art { width: 220px; height: 220px; border-radius: 10px; flex-shrink: 0; }
+.ww-music__meta { display: grid; gap: var(--space-xs); min-width: 0; }
+.ww-music__title {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+}
 .ww-music__artist { font-size: var(--font-size-code); color: var(--music-accent); }
 .ww-music__album { font-size: var(--font-size-code); color: var(--music-dim); }
 
