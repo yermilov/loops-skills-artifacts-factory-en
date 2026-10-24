@@ -328,7 +328,7 @@
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 50%;
+  width: 56%;
   height: 76%;
   display: flex;
   flex-direction: column;
@@ -409,9 +409,12 @@
 }
 .ww-music__body { flex: 1; min-height: 0; display: flex; }
 .ww-music__sidebar {
-  width: 220px;
+  /* Wide enough for the longest row («Yarik's Top 100») at the code tier: the
+     rows do not wrap, so a narrower rail spills them over the main panel. */
+  width: 290px;
   flex-shrink: 0;
   white-space: nowrap;
+  overflow: hidden;
   padding: var(--space-md) var(--space-sm);
   background: var(--music-chrome);
   font-size: var(--font-size-code);
@@ -422,7 +425,12 @@
   padding: 0 var(--space-sm);
 }
 .ww-music__section:first-child { margin-top: 0; }
-.ww-music__row { padding: 8px var(--space-sm); border-radius: 8px; }
+.ww-music__row {
+  padding: 8px var(--space-sm);
+  border-radius: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 /* macOS Music marks the open library item with a tinted row, not a red slab —
    the red belongs to the artist line and the app's own accent. */
 .ww-music__row--on {
@@ -441,7 +449,7 @@
   align-items: center;
   padding: var(--space-md);
 }
-.ww-music__art { width: 220px; height: 220px; border-radius: 10px; flex-shrink: 0; }
+.ww-music__art { width: 190px; height: 190px; border-radius: 10px; flex-shrink: 0; }
 .ww-music__meta { display: grid; gap: var(--space-xs); min-width: 0; }
 .ww-music__title {
   font-size: var(--font-size-body);
