@@ -4,7 +4,8 @@
 
 The deck for **«Loops, Skills, Artifacts, Factory: How I Turned AI Buzzwords Into a Personal
 Assistant That Actually Improved My Life»** — Yaroslav Yermilov (Principal Engineer at Preply) at
-**WAWTech 2026** by DOU, Warsaw, 26–27 November 2026. English. **45-minute slot, no Q&A.**
+**WAWTech 2026** by DOU, Warsaw, 26–27 November 2026. English. **45-minute slot, no Q&A —
+26 November, 12:00–12:45, ENGINEERING stage (#AI).**
 Hosted on GitHub Pages at https://yermilov.github.io/loops-skills-artifacts-factory-en/
 
 It wears the conference's light template, «WAWTECH_Template_white», re-drawn as React on a fixed
@@ -39,12 +40,15 @@ src/
 ├── index.css                     # font imports (IBM Plex Sans / Mono, Inter Tight) + reset
 ├── slides/
 │   ├── index.ts                  # THE SLIDE ORDER — register slides here
-│   ├── TitleSlide.tsx            # template p.1
-│   ├── SpeakerSlide.tsx          # template p.2
+│   ├── TitleSlide.tsx            # template p.1 + p.2: talk, subtitle, speaker, venue
+│   ├── AboutMeSlide.tsx          # about me, no title band — Preply / Grammarly / photo + LinkedIn QR
+│   ├── AboutPreplySlide.tsx      # PLACEHOLDER — «Інформація про Преплі»
+│   ├── history.tsx               # «Origins of AI agents» 2022 + 2023 — Remotion clips
+│   ├── MusicPrototypeSlide.tsx   # 2024 — live Ghostty/oh-my-zsh terminal + macOS Music, random song
 │   ├── AgendaSlide.tsx           # template p.3 — exports AGENDA (the four words)
 │   ├── sectionSlide.tsx          # factory for section openers (template p.11/18)
 │   ├── sections.tsx              # one opener per AGENDA word
-│   ├── Layout*.tsx               # LAYOUT GALLERY — one example of every layout
+│   ├── Layout*.tsx               # LAYOUT GALLERY — examples only, not shown in the deck
 │   ├── FinalSlide.tsx            # template p.27 «Thank You!»
 │   └── exportContract.ts         # async-slide allow-lists for the build check
 ├── components/
@@ -58,6 +62,8 @@ src/
 ├── design-system/                # tokens.css · base.css · patterns.css · components.css
 ├── styles/slide-layouts.css      # one `ww-…` block per layout
 ├── assets/wawtech/               # the template's own images: rings, logo, gradient, icons
+├── assets/history/               # the history clips, rendered from video/
+├── assets/music/                 # album covers + songs.json for the 2024 slide's random track
 ├── hooks/                        # useSlideNavigation, useTouchNavigation
 └── utils/preloadAssets.ts        # warms every src/assets/** file while the title is up
 ```
@@ -69,8 +75,9 @@ src/
 2. Import it in `src/slides/index.ts` and put it in the `slides` array where it belongs.
 3. `bun run dev`, look at it; `bun run check`.
 
-The **layout gallery** (`LAYOUT_GALLERY` in `src/slides/index.ts`) is scaffolding: delete its
-entries and files once the real slides exist.
+The **layout gallery** (`LAYOUT_GALLERY` in `src/slides/index.ts`) is reference code, not part of
+the deck: it is exported but deliberately left out of `slides`, so only real slides show. Copy from
+it; delete the entries and files once none is needed.
 
 ```tsx
 import { SlideDefinition } from '../types/slides';
@@ -120,6 +127,35 @@ After any change to slides, styles or config, open the dev server (or `bun run p
 the slide before calling it done — at 1920×1080 (the PDF), and once at a wider and a taller
 aspect (e.g. 1920×1000 and 1440×1000): the stage stretches to the screen's aspect, so a layout that
 assumes exactly 1920×1080 shows a gap there.
+
+## The history clips (`video/`)
+
+The «origins of AI agents» slides play MP4s rendered with **Remotion** from `video/` (its own
+npm project, outside the deck's Bun build):
+
+```bash
+cd video && npm install
+npx remotion studio                       # preview
+npx remotion render src/index.ts <Id> out/<Id>.mp4
+# ids → deck assets: Tweet2022 → tweet2022.mp4 · ChatUi2022 → chatui2022.mp4
+#                   HackerNews2023 → hackernews2023.mp4 · GptShellSession2023 → gptshellsession2023.mp4
+# (2024 is not a clip: src/slides/MusicPrototypeSlide.tsx plays itself in React)
+```
+
+Then transcode into the deck — Remotion writes full-range `yuvj420p`, which browsers refuse to
+play. Back in the REPO ROOT (the block above left you in `video/`):
+
+```bash
+cd ..
+ffmpeg -y -i video/out/<Id>.mp4 -vf "scale=in_range=full:out_range=tv,format=yuv420p" \
+  -c:v libx264 -profile:v high -crf 21 -color_range tv -colorspace bt709 \
+  -movflags +faststart -an src/assets/history/<id>.mp4
+```
+
+**A recreated interface is a factual claim.** The slides carry no captions — the dates and sources
+are spoken, and they live in each slide's `notes`. What is reconstructed says «reconstruction» on
+the frame itself; what is verbatim (the gpt-shell run, the tweet) is marked as such in the
+composition's own comment. Keep both when editing.
 
 ## Deployment
 

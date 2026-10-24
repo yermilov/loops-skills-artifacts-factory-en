@@ -41,3 +41,6 @@ src/assets/generated/*
 
 # TypeScript cache
 *.tsbuildinfo
+
+# Remotion render output (the deck keeps only the transcoded clips in src/assets/history)
+video/out/

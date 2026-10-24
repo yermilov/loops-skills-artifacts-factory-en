@@ -28,6 +28,28 @@
   --ww-magenta: #fc00ab;        /* accent 2 (subtitle box, pills) */
   --ww-ink: #0a0418;            /* title box on the title slide */
   --ww-white: #ffffff;
+  --ww-linkedin: #0a66c2;       /* the LinkedIn QR on the about-me slide */
+
+  /* ── Machine palette ────────────────────────────────────────────────────
+   * Not part of the WAWTech template: these are the colours of the two
+   * interfaces the 2024 history slide RECREATES — a Ghostty window running
+   * zsh with oh-my-zsh, and macOS Music. They are measured from those apps,
+   * so they belong to the thing being quoted, not to the deck's own palette.
+   * Never use them for the deck's own surfaces. */
+  --term-bg: #16161e;
+  --term-chrome: #22222c;
+  --term-fg: #c8d0e0;
+  --term-dim: #7b8294;
+  --term-green: #7ddb8a;
+  --term-cyan: #4fd6d2;
+  --term-blue: #7aa2f7;
+  --term-red: #f7768e;
+  --term-yellow: #e0af68;
+  --music-bg: #1c1c1e;
+  --music-chrome: #2a2a2c;
+  --music-fg: #f2f2f7;
+  --music-dim: #8e8e93;
+  --music-accent: #fa233b;
 
   /* Text roles */
   --ww-text: var(--ww-purple);
@@ -86,8 +108,8 @@
    * Hierarchy inside a tier comes from weight, colour and capitals. */
   --font-size-hero: 96px;     /* title slide only */
   --font-size-heading: 80px;  /* every other slide title */
-  --font-size-body: 32px;     /* everything else */
-  --font-size-code: 24px;     /* code blocks + machine panels */
+  --font-size-body: 40px;     /* everything else — the floor for a big hall */
+  --font-size-code: 30px;     /* code blocks + machine panels */
 
   /* Chrome: the input bar lives OUTSIDE the scaled stage, so it keeps a
    * fluid size of its own. */

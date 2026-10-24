@@ -1,5 +1,8 @@
 import { TitleSlide } from './TitleSlide';
-import { SpeakerSlide } from './SpeakerSlide';
+import { AboutMeSlide } from './AboutMeSlide';
+import { AboutPreplySlide } from './AboutPreplySlide';
+import { ChatGptLaunchSlide, GptShellSlide } from './history';
+import { MusicPrototypeSlide } from './MusicPrototypeSlide';
 import { AgendaSlide } from './AgendaSlide';
 import { LoopsSection, SkillsSection, ArtifactsSection, FactorySection } from './sections';
 import { LayoutTwoColumns } from './LayoutTwoColumns';
@@ -19,10 +22,11 @@ import { LayoutContacts } from './LayoutContacts';
 import { FinalSlide } from './FinalSlide';
 
 /**
- * LAYOUT GALLERY — one example of every WAWTech layout. Copy the one you
- * need into a real slide, then delete these (and their files) before the talk.
+ * LAYOUT GALLERY — one example of every WAWTech layout, kept as reference code
+ * only: it is deliberately NOT in `slides`, so the deck shows real slides alone.
+ * Copy the one you need into a real slide; delete these files once none is needed.
  */
-const LAYOUT_GALLERY = [
+export const LAYOUT_GALLERY = [
   LayoutTwoColumns,
   LayoutBullets,
   LayoutIconCards,
@@ -41,12 +45,15 @@ const LAYOUT_GALLERY = [
 
 export const slides = [
   TitleSlide,
-  SpeakerSlide,
+  AboutMeSlide,
+  AboutPreplySlide,
+  ChatGptLaunchSlide,
+  GptShellSlide,
+  MusicPrototypeSlide,
   AgendaSlide,
   LoopsSection,
   SkillsSection,
   ArtifactsSection,
   FactorySection,
-  ...LAYOUT_GALLERY,
   FinalSlide,
 ];

@@ -114,8 +114,25 @@
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-tight);
 }
+.ww-title__head {
+  display: flex;
+  align-items: stretch;
+}
+.ww-title__where {
+  display: flex;
+  align-items: center;
+  background: var(--ww-ink);
+  color: var(--ww-white);
+  padding: 0 32px;
+  font-family: var(--font-tight);
+  font-size: var(--font-size-code);
+  font-weight: 500;
+  letter-spacing: var(--letter-spacing-caps);
+}
 .ww-title__sub {
   justify-self: end;
+  display: grid;
+  gap: var(--space-xs);
   max-width: 900px;
   background: var(--ww-magenta);
   color: var(--ww-white);
@@ -123,39 +140,306 @@
   font-size: var(--font-size-body);
   line-height: var(--line-height-normal);
 }
+.ww-title__sub strong { font-weight: 600; }
+.ww-title__sub span { font-family: var(--font-tight); }
 
-/* ─── 2 · Speaker / name + date ───────────────────────────────────────── */
+/* ─── 2 · About me (three beats: now, before, me) ─────────────────────── */
 
-.ww-speaker {
+.ww-about {
   position: absolute;
-  inset: 0;
-  padding: var(--stage-pad-y) var(--stage-pad-x);
+  inset: var(--stage-pad-y) var(--stage-pad-x);
+  display: grid;
+  grid-template-columns: 1fr 520px;
+  gap: var(--space-xl);
+  align-items: stretch;
+}
+.ww-about__col {
+  /* Rows size to their content: the dense card gets the room it needs and the
+     short one stops looking padded out. */
+  display: grid;
+  grid-template-rows: auto auto;
+  align-content: center;
+  gap: var(--space-lg);
+  min-height: 0;
+}
+
+.ww-about__card {
+  position: relative;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-xl);
+  background: var(--ww-card);
+  border-radius: var(--radius-card);
 }
-.ww-speaker__rings {
+.ww-about__card--now {
+  background: var(--ww-ink);
+  color: var(--ww-on-dark);
+}
+/* The company's own wordmark, parked in the card's top-right corner. */
+.ww-about__logo {
   position: absolute;
-  right: -160px;
-  top: 0;
-  height: 100%;
-  opacity: 0.9;
-  z-index: 0;
+  top: var(--space-lg);
+  right: var(--space-lg);
+  height: 80px;
+  width: auto;
 }
-.ww-speaker__title {
-  margin-top: var(--space-2xl);
-  max-width: 1100px;
+.ww-about__logo--invert { filter: brightness(0) invert(1); }
+.ww-about__role {
+  /* keeps a long role off the mark parked in the card's corner */
+  padding-right: 140px;
+  font-family: var(--font-display);
   font-size: var(--font-size-heading);
   font-weight: 500;
   line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+}
+.ww-about__card .ww-about__line {
+  color: inherit;
+  opacity: 0.8;
+  max-width: 1100px;
+}
+
+/* LinkedIn's own QR screen: round avatar, handle, big code. */
+.ww-about__me {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  justify-items: center;
+  align-content: center;
+  gap: var(--space-md);
+}
+.ww-about__photo {
+  width: 220px;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 8px solid var(--ww-linkedin);
+}
+.ww-about__qr {
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+}
+.ww-about__qr-text {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-family: var(--font-tight);
+  font-weight: 600;
+  color: var(--ww-text);
+}
+.ww-about__in {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: var(--ww-linkedin);
+  color: var(--ww-white);
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ─── 2024 · the prototype (Ghostty + oh-my-zsh, and macOS Music) ─────── */
+
+.ww-proto {
+  position: absolute;
+  inset: var(--stage-pad-y) var(--stage-pad-x);
+}
+.ww-dot { width: 18px; height: 18px; border-radius: 50%; display: inline-block; }
+.ww-dot--red { background: #ff5f57; }       /* deck-lint-allow colour: macOS window controls */
+.ww-dot--amber { background: #febc2e; }     /* deck-lint-allow colour: macOS window controls */
+.ww-dot--green { background: #28c840; }     /* deck-lint-allow colour: macOS window controls */
+
+.ww-proto__term {
+  position: absolute;
+  inset: 0 46% 0 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--term-bg);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.ww-proto__chrome,
+.ww-music__chrome {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 22px;
+  height: 64px;
+  background: var(--term-chrome);
+}
+.ww-proto__title {
+  margin-left: var(--space-sm);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  color: var(--term-dim);
+}
+.ww-proto__body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: var(--space-md) var(--space-lg);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  line-height: 1.6;
+  color: var(--term-fg);
+  /* A real terminal scrolls: the newest line stays in view and the history
+     leaves at the top. */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.ww-proto__line { display: block; margin-bottom: var(--space-xs); }
+.ww-proto__line > span { margin-right: 10px; }
+.ww-proto__arrow { color: var(--term-green); font-weight: 700; }
+.ww-proto__cwd { color: var(--term-cyan); font-weight: 700; }
+.ww-proto__git { color: var(--term-blue); margin-right: 0 !important; }
+.ww-proto__branch { color: var(--term-red); margin-right: 0 !important; }
+.ww-proto__dirty { color: var(--term-yellow); }
+.ww-proto__cmd { color: var(--term-fg); }
+.ww-proto__you { color: var(--term-dim); }
+.ww-proto__line--you { color: var(--term-fg); margin: var(--space-sm) 0; }
+.ww-proto__bullet { color: var(--music-fg); }
+/* Indented, not ruled: a CLI prints its tool block with whitespace. */
+.ww-proto__tool {
+  margin: var(--space-sm) 0;
+  padding-left: var(--space-md);
+}
+.ww-proto__toolname { color: var(--term-blue); }
+.ww-proto__exec { color: var(--term-yellow); white-space: pre-wrap; }
+.ww-proto__out { color: var(--term-dim); margin-top: 4px; }
+.ww-proto__answer { margin: var(--space-sm) 0; color: var(--term-fg); }
+.ww-proto__caret {
+  display: inline-block;
+  width: 14px;
+  height: 26px;
+  vertical-align: -5px;
+  background: var(--term-fg);
+}
+.ww-proto__caret--thin { width: 10px; opacity: 0.8; }
+
+/* macOS Music, overlapping the terminal's lower-right corner. */
+.ww-music {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50%;
+  height: 76%;
+  display: flex;
+  flex-direction: column;
+  background: var(--music-bg);
+  color: var(--music-fg);
+  border-radius: 14px;
+  overflow: hidden;
+  font-family: var(--font-sans);
+}
+.ww-music__chrome { background: var(--music-chrome); height: 150px; align-items: center; }
+.ww-music__now {
+  flex: 1;
+  min-width: 0;
+  height: 118px;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-left: var(--space-sm);
+  padding: 8px 16px;
+  background: var(--music-bg);
+  border-radius: 8px;
+}
+.ww-music__now img { width: 86px; height: 86px; border-radius: 4px; flex-shrink: 0; }
+.ww-music__nowtext {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  font-size: var(--font-size-code);
+  line-height: 1.25;
+}
+.ww-music__nowtext strong,
+.ww-music__nowtext span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ww-music__nowtext strong { font-weight: 600; }
+.ww-music__nowtext span { color: var(--music-dim); }
+.ww-music__bar { display: flex; align-items: center; gap: 10px; }
+.ww-music__time { color: var(--music-dim); font-variant-numeric: tabular-nums; }
+.ww-music__track { flex: 1; height: 5px; border-radius: 3px; background: var(--music-chrome); }
+.ww-music__fill { height: 100%; border-radius: 3px; background: var(--music-dim); }
+.ww-music__body { flex: 1; min-height: 0; display: flex; }
+.ww-music__sidebar {
+  width: 240px;
+  white-space: nowrap;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--music-chrome);
+  font-size: var(--font-size-code);
+}
+.ww-music__section { color: var(--music-dim); margin: var(--space-sm) 0 6px; }
+.ww-music__row { padding: 6px 10px; border-radius: 6px; }
+.ww-music__row--on { background: var(--music-accent); color: var(--music-fg); }
+.ww-music__main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: var(--space-md);
+  align-items: center;
+  padding: var(--space-md) var(--space-lg);
+}
+.ww-music__art { width: 280px; height: 280px; border-radius: 10px; flex-shrink: 0; }
+.ww-music__meta { display: grid; gap: 8px; min-width: 0; }
+.ww-music__title { font-size: var(--font-size-body); font-weight: 600; }
+.ww-music__artist { font-size: var(--font-size-code); color: var(--music-accent); }
+.ww-music__album { font-size: var(--font-size-code); color: var(--music-dim); }
+
+/* ─── Placeholder (a slide whose content is still to be written) ──────── */
+
+.ww-placeholder {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  justify-items: start;
+  align-content: center;
+  gap: var(--space-md);
+}
+.ww-placeholder__mark { height: 120px; width: auto; }
+.ww-placeholder p { margin: 0; }
+.ww-placeholder .ww-placeholder__hint {
+  font-family: var(--font-tight);
   color: var(--ww-magenta);
 }
-.ww-speaker__meta {
-  margin-top: auto;
+
+/* ─── History (a recreated interface, filling the stage) ──────────────── */
+
+.ww-history {
+  position: absolute;
+  inset: 0;
   display: grid;
-  gap: var(--space-xs);
-  font-size: var(--font-size-body);
+  place-items: center;
 }
-.ww-speaker__meta strong { font-weight: 600; color: var(--ww-purple); }
+.ww-history video {
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+}
+.ww-history__caption {
+  position: absolute;
+  left: var(--stage-pad-x);
+  bottom: var(--stage-pad-y);
+  max-width: 1100px;
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+  padding: var(--space-sm) var(--space-md);
+  font-weight: 600;
+}
 
 /* ─── 3 · Agenda ──────────────────────────────────────────────────────── */
 

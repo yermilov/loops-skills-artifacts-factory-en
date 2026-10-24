@@ -12,7 +12,8 @@ the rings, logo, gradient and icons are its own images (`src/assets/wawtech/`). 
 template's vocabulary: white paper, deep purple text and blocks, one magenta and one mint accent,
 faded violet rings in a corner, purple gradients rising from the bottom edge.
 
-Venue: WAWTech 2026, Warsaw, 26–27 November — a hall. **45-minute slot, no Q&A** (the talk track in
+Venue: WAWTech 2026, Warsaw, 26–27 November — a hall. **The slot is 26 November, 12:00–12:45,
+ENGINEERING stage: 45 minutes, no Q&A** (the talk track in
 `TalkTrack.tsx` counts down 45:00).
 
 ## The stage
@@ -73,8 +74,8 @@ bottom fade on section slides), `--ww-grad-card` (image placeholders). Derive ti
 |---|---|---|---|
 | Hero | `--font-size-hero` | 96 | the title slide; the closing «Thank You!» and other display words (scaled up with `transform`, see below) |
 | Heading | `--font-size-heading` | 80 | every other slide title; agenda rows; stat values |
-| Body | `--font-size-body` | 32 | everything else — paragraphs, bullets, card text, labels |
-| Code | `--font-size-code` | 24 | code blocks, pills, the section eyebrow |
+| Body | `--font-size-body` | 40 | everything else — paragraphs, bullets, card text, labels |
+| Code | `--font-size-code` | 30 | code blocks, pills, the section eyebrow |
 
 Hierarchy inside a tier comes from **weight** (Plex 300 / 400 / 500 / 600 / 700), **colour** and
 **capitals** — never from a fifth size. The template's huge display words («Thank You!», «96%»,
@@ -91,8 +92,8 @@ Start every new slide by copying the closest `src/slides/Layout*.tsx`:
 
 | Gallery slide | Template page | Shape |
 |---|---|---|
-| `TitleSlide` | 1 | rings backdrop, mint logo box, ink title, magenta subtitle |
-| `SpeakerSlide` | 2 | logo, magenta title, name / role / event |
+| `TitleSlide` | 1 + 2 | rings backdrop, mint logo box + venue chip, ink title, magenta box with subtitle and speaker |
+| `AboutMeSlide` | — | no title band: two logo cards (ink «now», grey «before»), portrait with the LinkedIn QR on it |
 | `AgendaSlide` | 3 | caps rows with numbers; stages spotlight one row |
 | `sectionSlide()` | 11 / 18 | eyebrow + title + optional pill and columns, purple fade, big number |
 | `LayoutTwoColumns` | 5 | title band + two text columns |
@@ -121,7 +122,7 @@ Rules the template implies:
   the only one with two.
 - **Accents are areas, not hairlines**: magenta and mint appear as boxes, cards, pills and bars.
 - **Reveal with `<Reveal at stage>`** (visibility, not unmounting) so nothing jumps.
-- **Split a dense slide rather than shrinking text.** 32px on the stage is the floor for anything
+- **Split a dense slide rather than shrinking text.** 40px on the stage is the floor for anything
   the audience must read.
 
 ## Linting

@@ -1,0 +1,139 @@
+[
+  {
+    "rank": 1,
+    "name": "Silence Speaks",
+    "artists": [
+      "While She Sleeps",
+      "Oli Sykes"
+    ],
+    "album": "You Are We",
+    "spotifyId": "6gVhXhMUUhlnsGtQrc2tWE",
+    "durationMs": 267000,
+    "cover": "6gVhXhMUUhlnsGtQrc2tWE.jpg"
+  },
+  {
+    "rank": 3,
+    "name": "Карматреш",
+    "artists": [
+      "АННА"
+    ],
+    "album": "Карматреш",
+    "spotifyId": "1VCh3IiVFykfrtWxKrq26C",
+    "durationMs": 181000,
+    "cover": "1VCh3IiVFykfrtWxKrq26C.jpg"
+  },
+  {
+    "rank": 5,
+    "name": "Nihilist",
+    "artists": [
+      "Architects"
+    ],
+    "album": "All Our Gods Have Abandoned Us",
+    "spotifyId": "0LnNkDzIGaYKCvGbe5N9Wo",
+    "durationMs": 228000,
+    "cover": "0LnNkDzIGaYKCvGbe5N9Wo.jpg"
+  },
+  {
+    "rank": 8,
+    "name": "Say No Word",
+    "artists": [
+      "LANDMVRKS"
+    ],
+    "album": "Lost in the Waves",
+    "spotifyId": "0JV1aFfrtRF3rxuDVxVW24",
+    "durationMs": 215000,
+    "cover": "0JV1aFfrtRF3rxuDVxVW24.jpg"
+  },
+  {
+    "rank": 13,
+    "name": "the cost of giving up",
+    "artists": [
+      "Poppy"
+    ],
+    "album": "Negative Spaces",
+    "spotifyId": "2PcaKowfrJ2FDoBP5uxHaU",
+    "durationMs": 192000,
+    "cover": "2PcaKowfrJ2FDoBP5uxHaU.jpg"
+  },
+  {
+    "rank": 20,
+    "name": "Prisoner",
+    "artists": [
+      "NOVELISTS"
+    ],
+    "album": "Prisoner",
+    "spotifyId": "745kdUEA8U8K2AoigX7Myx",
+    "durationMs": 204000,
+    "cover": "745kdUEA8U8K2AoigX7Myx.jpg"
+  },
+  {
+    "rank": 28,
+    "name": "Cellophane",
+    "artists": [
+      "DON BROCO"
+    ],
+    "album": "Euphoria",
+    "spotifyId": "3HY8b7a1oBvtohM0G2sKNq",
+    "durationMs": 198000,
+    "cover": "3HY8b7a1oBvtohM0G2sKNq.jpg"
+  },
+  {
+    "rank": 36,
+    "name": "V.A.N",
+    "artists": [
+      "Bad Omens",
+      "Poppy"
+    ],
+    "album": "THE DRAIN",
+    "spotifyId": "4StunV1vEK8RQg8AorSHiR",
+    "durationMs": 213000,
+    "cover": "4StunV1vEK8RQg8AorSHiR.jpg"
+  },
+  {
+    "rank": 51,
+    "name": "Blind",
+    "artists": [
+      "Korn"
+    ],
+    "album": "Korn",
+    "spotifyId": "1pr9TZGOXeJUggIal1Wq3R",
+    "durationMs": 259000,
+    "cover": "1pr9TZGOXeJUggIal1Wq3R.jpg"
+  },
+  {
+    "rank": 64,
+    "name": "Крапка",
+    "artists": [
+      "Megamass"
+    ],
+    "album": "Крапка",
+    "spotifyId": "00rQF2UYdSCJy06NOdCHfb",
+    "durationMs": 176000,
+    "cover": "00rQF2UYdSCJy06NOdCHfb.jpg"
+  },
+  {
+    "rank": 79,
+    "name": "повільна",
+    "artists": [
+      "АНТАЙТЛД",
+      "Septa",
+      "Guerilla Noir"
+    ],
+    "album": "повільна",
+    "spotifyId": "2EzRU4IfUxhD9G9onU21fD",
+    "durationMs": 203000,
+    "cover": "2EzRU4IfUxhD9G9onU21fD.jpg"
+  },
+  {
+    "rank": 92,
+    "name": "liMOusIne",
+    "artists": [
+      "Bring Me The Horizon",
+      "AURORA"
+    ],
+    "album": "POST HUMAN: NeX GEn",
+    "spotifyId": "6tVahG14lCjexVQnYWKgwF",
+    "durationMs": 222000,
+    "cover": "6tVahG14lCjexVQnYWKgwF.jpg"
+  }
+]
