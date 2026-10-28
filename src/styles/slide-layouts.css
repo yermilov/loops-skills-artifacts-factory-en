@@ -459,22 +459,37 @@
 .ww-music__artist { font-size: var(--font-size-code); color: var(--music-accent); }
 .ww-music__album { font-size: var(--font-size-code); color: var(--music-dim); }
 
-/* ─── Placeholder (a slide whose content is still to be written) ──────── */
+/* ─── Preply (company stats, product panels) ─────────────────────────── */
 
-.ww-placeholder {
+.ww-preply-co {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: var(--space-md);
+  min-height: 0;
+}
+.ww-preply-co__lead { grid-row: span 2; justify-content: space-between; }
+.ww-preply-co > div { display: flex; }
+.ww-preply-co .ww-stat { flex: 1; min-height: 280px; justify-content: space-between; }
+
+.ww-preply-product {
   flex: 1;
   min-height: 0;
   display: grid;
-  justify-items: start;
-  align-content: center;
-  gap: var(--space-md);
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
+  align-items: end;
 }
-.ww-placeholder__mark { height: 120px; width: auto; }
-.ww-placeholder p { margin: 0; }
-.ww-placeholder .ww-placeholder__hint {
-  font-family: var(--font-tight);
-  color: var(--ww-magenta);
+.ww-preply-product__col { display: flex; flex-direction: column; gap: var(--space-sm); }
+.ww-preply-product__col img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-card);
+  background: var(--ww-card);
 }
+.ww-preply-product__col h3 { margin: var(--space-sm) 0 0; text-transform: uppercase; }
+.ww-preply-product__col p { margin: 0; }
 
 /* ─── History (a recreated interface, filling the stage) ──────────────── */
 
