@@ -1,1 +1,22 @@
-{}
+{
+  "extraKnownMarketplaces": {
+    "juggernaut": {
+      "source": { "source": "github", "repo": "yermilov/juggernaut" }
+    },
+    "yystack": {
+      "source": { "source": "github", "repo": "yermilov/yystack" }
+    }
+  },
+  "enabledPlugins": {
+    "research@juggernaut": true,
+    "media@juggernaut": true,
+    "diagrams@juggernaut": true,
+    "personal-brand@juggernaut": true,
+    "design-workflows@juggernaut": true,
+    "presentation-dev@juggernaut": true,
+    "google@juggernaut": true,
+    "browser@juggernaut": true,
+    "engineering@juggernaut": true,
+    "meta@yystack": true
+  }
+}
