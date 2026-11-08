@@ -6,6 +6,10 @@ import tweet2022 from '../assets/history/tweet2022.mp4';
 import chatUi2022 from '../assets/history/chatui2022.mp4';
 import hackerNews2023 from '../assets/history/hackernews2023.mp4';
 import gptShellSession2023 from '../assets/history/gptshellsession2023.mp4';
+import cursorTab from '../assets/history/cursortab.mp4';
+import claudeCodeFirst from '../assets/history/claudecodefirst.mp4';
+import githubMcp from '../assets/history/githubmcp.mp4';
+import dayPlan from '../assets/history/dayplan.mp4';
 
 /**
  * «Origins of AI agents» — three years, three interfaces, each one a clip
@@ -108,3 +112,75 @@ export const GptShellSlide: SlideDefinition = {
     + 'so it reaches for curl by itself. Verbatim from jla/gpt-shell’s own run.',
 };
 
+/** The editor everyone moved into: a chat to agree what to build, and a tab
+ *  model that writes whole blocks and then jumps — down the file, and into the
+ *  next file the change breaks. */
+export const CursorTabSlide: SlideDefinition = {
+  id: 'history-cursor',
+  asyncSettle: true,
+  content: () => (
+    <div className="ww-history">
+      <Clip key="cursor" src={cursorTab} slideId="history-cursor" />
+    </div>
+  ),
+  notes:
+    'Cursor. First the chat on the right: you agree WHAT you want before a line is written. '
+    + 'Then Tab — not one line but a whole block, then Tab again to jump to the next place '
+    + 'the change needs, and finally the portal at the bottom: the edit this one forces in '
+    + 'another file. Reconstruction — the behaviour is from Cursor\'s own docs, the code is '
+    + 'invented.',
+};
+
+/**
+ * Claude Code, in two beats of one session: the first release that asked for
+ * everything, and then MCP, which changed WHAT it asks for. Beat 2 opens on
+ * beat 1's last frame — the clips share their transcript (video/src/
+ * claudeTerminal.tsx), so the reveal reads as the session carrying on.
+ */
+export const ClaudeCodeSlide: SlideDefinition = {
+  id: 'history-claude-code',
+  asyncSettle: true,
+  maxRevealStages: 2,
+  initialRevealStage: 1,
+  content: ({ revealStage }) => (
+    <div className="ww-history">
+      {revealStage >= 2 ? (
+        <Clip key="github-mcp" src={githubMcp} slideId="history-claude-code" />
+      ) : (
+        <Clip key="claude-code" src={claudeCodeFirst} slideId="history-claude-code" />
+      )}
+    </div>
+  ),
+  notes:
+    'Beat 1 — the first released Claude Code: 0.2.9 on npm, 24 February 2025, a research '
+    + 'preview on Claude 3.7 Sonnet. You chatted to it in the terminal and it asked before '
+    + 'everything: run a command, edit a file, run the SAME command again. '
+    + 'Beat 2 — MCP, announced 25 November 2024 with six servers on day one (Google Drive, '
+    + 'Slack, GitHub, Git, Postgres, Puppeteer). Same session, carried on: now the terminal '
+    + 'holds somebody else\'s API, and the permission is no longer «run npm test» but «use '
+    + 'github:list_issues» — one rule per TOOL, which is why he picks «don\'t ask again» twice. '
+    + 'That second option, in every box on both beats, is the whole story of the two years '
+    + 'after. Every string, glyph and colour is read off the published packages (0.2.9 and '
+    + '1.0.0); the session, the repo and the issue numbers are invented — a reconstruction.',
+};
+
+/** The terminal leaves the repo: two MCP servers that have nothing to do with
+ *  code, and what comes out is a plan for the day rather than a commit. */
+export const DayPlanSlide: SlideDefinition = {
+  id: 'history-day-plan',
+  asyncSettle: true,
+  content: () => (
+    <div className="ww-history">
+      <Clip key="day-plan" src={dayPlan} slideId="history-day-plan" />
+    </div>
+  ),
+  notes:
+    'Same terminal, and nothing here is a repository: cwd is my home directory, the servers are '
+    + 'Google Calendar and Slack, and what comes out is not a commit but my day. This is the '
+    + 'turn the whole talk is about — the moment the coding tool stopped being about code. Note '
+    + 'it reads BOTH and then reasons across them: the pickup in the calendar is what makes '
+    + '17:05 the leaving time, and the two-day-old thread is what buys the 10:00 slot. Banner '
+    + 'and panel are claude-code 1.0.0; the tool names are the real ones (list-events from the '
+    + 'google-calendar server, slack_get_channel_history from the reference Slack server, which '
+    + 'prefixes its own tools — hence slack:slack_…). The day itself is invented.',
+};

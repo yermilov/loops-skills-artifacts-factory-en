@@ -101,8 +101,6 @@ function MusicApp({ song, elapsedMs }: { song: Song; elapsedMs: number }) {
           <div className="ww-music__row ww-music__row--on">Songs</div>
           <div className="ww-music__row">Albums</div>
           <div className="ww-music__row">Artists</div>
-          <div className="ww-music__section">Playlists</div>
-          <div className="ww-music__row">Yarik&apos;s Top 100</div>
         </div>
         <div className="ww-music__main">
           <img className="ww-music__art" src={cover} alt={`${song.album} cover`} />

@@ -1,10 +1,14 @@
 import { TitleSlide } from './TitleSlide';
 import { AboutMeSlide } from './AboutMeSlide';
 import { PreplyCompanySlide, PreplyProductSlide, PreplyHiringSlide } from './preply';
-import { ChatGptLaunchSlide, GptShellSlide } from './history';
+import {
+  ChatGptLaunchSlide,
+  GptShellSlide,
+  CursorTabSlide,
+  ClaudeCodeSlide,
+  DayPlanSlide,
+} from './history';
 import { MusicPrototypeSlide } from './MusicPrototypeSlide';
-import { AgendaSlide } from './AgendaSlide';
-import { LoopsSection, SkillsSection, ArtifactsSection, FactorySection } from './sections';
 import { LayoutTwoColumns } from './LayoutTwoColumns';
 import { LayoutBullets } from './LayoutBullets';
 import { LayoutIconCards } from './LayoutIconCards';
@@ -52,10 +56,8 @@ export const slides = [
   ChatGptLaunchSlide,
   GptShellSlide,
   MusicPrototypeSlide,
-  AgendaSlide,
-  LoopsSection,
-  SkillsSection,
-  ArtifactsSection,
-  FactorySection,
+  CursorTabSlide,
+  ClaudeCodeSlide,
+  DayPlanSlide,
   FinalSlide,
 ];

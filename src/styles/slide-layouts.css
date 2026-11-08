@@ -282,7 +282,11 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  padding: var(--space-md) var(--space-lg);
+  /* The Music window overlaps this terminal's right edge (its left edge sits
+     at 44% of .ww-proto, i.e. ~81% of this body). Keep the text out of that
+     strip, so no line is half-covered: both figures are percentages of the
+     same box, so this holds at every stage aspect. */
+  padding: var(--space-md) 22% var(--space-md) var(--space-lg);
   font-family: var(--font-mono);
   font-size: var(--font-size-code);
   line-height: 1.6;
@@ -409,8 +413,8 @@
 }
 .ww-music__body { flex: 1; min-height: 0; display: flex; }
 .ww-music__sidebar {
-  /* Wide enough for the longest row («Yarik's Top 100») at the code tier: the
-     rows do not wrap, so a narrower rail spills them over the main panel. */
+  /* macOS Music keeps a wide rail whatever the rows say; the rows do not wrap,
+     so never narrow this below the longest of them at the code tier. */
   width: 290px;
   flex-shrink: 0;
   white-space: nowrap;
@@ -516,7 +520,11 @@
   font-weight: 600;
 }
 
-/* ─── 3 · Agenda ──────────────────────────────────────────────────────── */
+/* ─── Agenda and section openers ──────────────────────────────────────────
+   No slide uses these right now — the agenda and the four section openers were
+   taken out of the deck on 08.11.2026. The template's own layouts are kept for
+   the sections still to be written; the slides themselves are in git at
+   ea070a5 (src/slides/AgendaSlide.tsx, sectionSlide.tsx, sections.tsx). */
 
 .ww-agenda {
   position: absolute;

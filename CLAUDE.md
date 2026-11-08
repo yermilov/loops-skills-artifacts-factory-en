@@ -139,6 +139,8 @@ npx remotion studio                       # preview
 npx remotion render src/index.ts <Id> out/<Id>.mp4
 # ids → deck assets: Tweet2022 → tweet2022.mp4 · ChatUi2022 → chatui2022.mp4
 #                   HackerNews2023 → hackernews2023.mp4 · GptShellSession2023 → gptshellsession2023.mp4
+#                   CursorTab → cursortab.mp4 · ClaudeCodeFirst → claudecodefirst.mp4
+#                   GithubMcp → githubmcp.mp4 · DayPlan → dayplan.mp4
 # (2024 is not a clip: src/slides/MusicPrototypeSlide.tsx plays itself in React)
 ```
 
@@ -153,9 +155,25 @@ ffmpeg -y -i video/out/<Id>.mp4 -vf "scale=in_range=full:out_range=tv,format=yuv
 ```
 
 **A recreated interface is a factual claim.** The slides carry no captions — the dates and sources
-are spoken, and they live in each slide's `notes`. What is reconstructed says «reconstruction» on
-the frame itself; what is verbatim (the gpt-shell run, the tweet) is marked as such in the
-composition's own comment. Keep both when editing.
+are spoken, and they live in each slide's `notes`, which is also where a reconstruction says it is
+one. What is verbatim (the gpt-shell run, the tweet) is marked as such in the composition's own
+comment. Keep that when editing.
+
+**Read the interface off the shipped artefact, never off memory.** For anything that was released,
+the strings, glyphs and colours are still downloadable, and they are always slightly different from
+what you remember. The Claude Code clips were built this way:
+
+```bash
+cd "$(mktemp -d)" && npm pack @anthropic-ai/claude-code@0.2.9 && tar -xf *.tgz   # first release
+grep -o 'Do you want[^"]\{0,60\}' package/cli.mjs | sort -u                      # then grep cli.mjs
+```
+
+It settled things guessing would have got wrong: 0.2.9's options are NOT numbered (numbering came
+later), its banner says «research preview!» while 1.0.0's does not, 1.0.0 renders an MCP tool as
+`server:tool (MCP)` with a colon, and its «don't ask again» line says «commands» even for a tool
+that is not a command. npm keeps every version, so pick the one from the era the slide claims, and
+say in the composition's comment which version you read. The same trick works for any npm/PyPI
+tool, and for MCP servers it gives you the real tool names (`list-events`, `slack_get_channel_history`).
 
 ## Deployment
 

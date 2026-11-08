@@ -7,10 +7,10 @@ import grammarlyMark from '../assets/about/grammarly-mark.svg';
 
 const LINKEDIN_URL = 'https://www.linkedin.com/in/yarik-yermilov/';
 
-/** Who I am, in three beats: where I am now, where I come from, and how to find me. */
+/** Who I am: the photo and LinkedIn QR stand from the start, then where I am now and where I come from. */
 export const AboutMeSlide: SlideDefinition = {
   id: 'about-me',
-  maxRevealStages: 3,
+  maxRevealStages: 2,
   content: ({ revealStage }) => (
     <>
       <CornerRings corner="bottom-left" />
@@ -38,27 +38,25 @@ export const AboutMeSlide: SlideDefinition = {
             </div>
           </Reveal>
         </div>
-        <Reveal at={3} stage={revealStage}>
-          <div className="ww-about__me">
-            <img className="ww-about__photo" src={portrait} alt="Yaroslav Yermilov" />
-            <div className="ww-about__qr-text">
-              <span className="ww-about__in" aria-hidden="true">in</span>
-              <span>yarik-yermilov</span>
-            </div>
-            <QRCodeSVG
-              className="ww-about__qr"
-              value={LINKEDIN_URL}
-              size={440}
-              level="M"
-              fgColor="var(--ww-linkedin)"
-              bgColor="var(--ww-white)"
-            />
+        <div className="ww-about__me">
+          <img className="ww-about__photo" src={portrait} alt="Yaroslav Yermilov" />
+          <div className="ww-about__qr-text">
+            <span className="ww-about__in" aria-hidden="true">in</span>
+            <span>yarik-yermilov</span>
           </div>
-        </Reveal>
+          <QRCodeSVG
+            className="ww-about__qr"
+            value={LINKEDIN_URL}
+            size={440}
+            level="M"
+            fgColor="var(--ww-linkedin)"
+            bgColor="var(--ww-white)"
+          />
+        </div>
       </div>
     </>
   ),
   notes:
     'Three beats: Preply today (AI/agentic transformation of the SDLC), nine years at Grammarly '
-    + 'behind it, and the QR to LinkedIn for anyone who wants to carry on afterwards.',
+    + 'behind it; the photo and the QR to LinkedIn are up from the start.',
 };
