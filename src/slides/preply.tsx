@@ -6,21 +6,30 @@ import preplyLogo from '../assets/preply/logo.svg';
 import matchClip from '../assets/preply/match.mp4';
 import matchPoster from '../assets/preply/match-poster.jpg';
 import classroomShot from '../assets/preply/classroom.png';
-import practiceShot from '../assets/preply/practice.jpg';
+import insightsCards from '../assets/preply/insights.webp';
+import insightsPoster from '../assets/preply/insights-poster.png';
+import practiceShot from '../assets/preply/practice.png';
 
 /*
  * Two slides about Preply, wearing a blend of the two design systems: the WAWTech page (paper,
  * purple type, corner rings, the four type tiers) with Preply's colours in place of the WAWTech
- * accents — `.ww-preply` remaps them (slide-layouts.css), and the hub colours / AI gradient come
+ * accents — `.ww-preply` remaps them (slide-layouts.css), and the hub and step colours come
  * from the `--pp-*` tokens.
  *
  * Media provenance — what has already been shown in public, and what still needs Brand / PR:
  *   classroom.png PUBLIC precedent: Kyiv AI Day 2026 deck, slide 3 (the classroom laptop mockup),
  *                 shown on stage. Original image from that Google Slides deck, 2048 px.
+ *   insights.webp INTERNAL file: the lesson-insights cards GIF (431×508, transparent) from the
+ *                 «Engineering Management Offsite — 2027 Platform & AI Native Strategy» title slide,
+ *                 re-encoded as animated WebP because MP4 has no alpha; insights-poster.png is its
+ *                 frame 17 (grammar + vocabulary), used in PDF export mode. Public precedent for the
+ *                 content: Kyiv AI Day 2026, slide 25 shows the same cards (Total words, Vocabulary
+ *                 size, Speaking speed) beside a lesson in the classroom.
  *   logo.svg      public media kit (preply.com/en/about-us/media-kit/logos); file from
  *                 preply/design-system PreplyLogo, cropped to the wordmark (viewBox 0 0 775 210).
- *   practice.jpg  PUBLIC: Preply's App Store listing (id1352790442), screenshot «Practice what
- *                 matters.», 1290×2796, cropped to the phone (headline removed).
+ *   practice.png  PUBLIC: Preply's App Store listing (id1352790442), screenshot «Practice what
+ *                 matters.», 1290×2796, cropped to the phone (headline removed) and cut out of its
+ *                 gradient background (transparent PNG).
  *   match.mp4     The clip itself comes from the internal «Human led learning powered by AI» deck
  *                 (slide 11 GIF, first 5.5 s of 32 s), but the same screens are public: App Store
  *                 screenshot «Set your goals.» and Kyiv AI Day 2026, slide 27.
@@ -46,15 +55,15 @@ function Loop({ src, poster, contain = false }: { src: string; poster: string; c
 
 function Step({
   label,
-  ai = false,
+  tone,
   children,
 }: {
   label: string;
-  ai?: boolean;
+  tone: 'pink' | 'teal' | 'blue';
   children: React.ReactNode;
 }) {
   return (
-    <div className={`ww-preply-step${ai ? ' ww-preply-step--ai' : ''}`}>
+    <div className={`ww-preply-step ww-preply-step--${tone}`}>
       <div className="ww-preply-step__frame">{children}</div>
       <div className="ww-preply-step__label">
         <span>{label}</span>
@@ -73,22 +82,36 @@ export const PreplyProductSlide: SlideDefinition = {
       <CornerRings corner="bottom-left" />
       <img className="ww-preply-product__logo" src={preplyLogo} alt="Preply" />
       <div className="ww-preply ww-preply-product">
-        <Step label="Find your tutor">
-          <Loop src={matchClip} poster={matchPoster} contain />
+        <Step label="Find your tutor" tone="pink">
+          {/* The clip is a bare screen recording, so the deck draws the device around it. */}
+          <div className="ww-preply-device">
+            <Loop src={matchClip} poster={matchPoster} />
+          </div>
         </Step>
         <Reveal at={1} stage={revealStage}>
-          <Step label="Learn live, one-on-one, by video">
-            <img
-              className="ww-preply-step__media ww-preply-step__media--mockup"
-              src={classroomShot}
-              alt="A lesson in the Preply classroom: the learner on video, the tutor in the corner"
-            />
+          <Step label="Learn live, one-on-one, by video" tone="teal">
+            <div className="ww-preply-lesson">
+              <div className="ww-preply-lesson__box">
+                <img
+                  className="ww-preply-lesson__laptop"
+                  src={classroomShot}
+                  alt="A lesson in the Preply classroom: the learner on video, the tutor in the corner"
+                />
+                {/* An animated image is invisible to the PDF exporter's settle check, so export
+                    mode shows one fixed frame (grammar + vocabulary), as the clips show posters. */}
+                <img
+                  className="ww-preply-lesson__cards"
+                  src={EXPORT_MODE ? insightsPoster : insightsCards}
+                  alt="AI lesson insights: grammar corrections, vocabulary size, synonyms, speaking speed"
+                />
+              </div>
+            </div>
           </Step>
         </Reveal>
         <Reveal at={2} stage={revealStage}>
-          <Step label="Practice with AI" ai>
+          <Step label="Practice with AI" tone="blue">
             <img
-              className="ww-preply-step__media ww-preply-step__media--contain"
+              className="ww-preply-step__media ww-preply-step__media--cutout"
               src={practiceShot}
               alt="An AI listening exercise in the Preply app, built from your last lesson"
             />

@@ -42,7 +42,6 @@
   --pp-barcelona-teal: #3ddabe;
   --pp-newyork-blue: #2885fd;
   --pp-ink: #121117;            /* logo, text on the primaries */
-  --pp-grad-ai: linear-gradient(93deg, var(--pp-newyork-blue) 0%, var(--pp-tokyo-pink) 100%);
 
   /* ── Machine palette ────────────────────────────────────────────────────
    * Not part of the WAWTech template: these are the colours of the two

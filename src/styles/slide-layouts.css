@@ -495,15 +495,41 @@
   min-height: 0;
   border-radius: var(--radius-card);
   overflow: hidden;
-  background: var(--pp-pink-light);
-  border: 6px solid var(--pp-tokyo-pink);
+  border: 6px solid var(--step-tone);
+  background: color-mix(in srgb, var(--step-tone) 16%, var(--ww-white));
 }
-.ww-preply-step--ai .ww-preply-step__frame {
-  border: 6px solid transparent;
-  background: linear-gradient(var(--ww-white), var(--ww-white)) padding-box, var(--pp-grad-ai) border-box;
-}
+/* One Preply colour per step — the same tinted tile, in pink, teal and blue. */
+.ww-preply-step--pink { --step-tone: var(--pp-tokyo-pink); }
+.ww-preply-step--teal { --step-tone: var(--pp-barcelona-teal); }
+.ww-preply-step--blue { --step-tone: var(--pp-newyork-blue); }
 .ww-preply-step__media { display: block; width: 100%; height: 100%; object-fit: cover; }
 .ww-preply-step__media--contain { object-fit: contain; background: var(--ww-white); }
+/* A transparent cut-out (the App Store phone): no backdrop, a little air around it. */
+.ww-preply-step__media.ww-preply-step__media--cutout {
+  object-fit: contain;
+  padding: var(--space-md);
+  box-sizing: border-box;
+}
+
+/* Step 1 — a phone drawn around the bare screen recording (498×1080). */
+.ww-preply-step__frame:has(.ww-preply-device) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  container-type: size;
+}
+/* Whichever limit bites first — the tile's height or its width — sets the size; the aspect ratio
+ * does the rest, so the phone never overflows a narrow (tall-stage) tile. */
+.ww-preply-device {
+  width: min(84cqw, 92cqh * 498 / 1080 - 20px);
+  aspect-ratio: 498 / 1080;
+  box-sizing: content-box;
+  border: 10px solid var(--pp-ink);
+  border-radius: 48px;
+  overflow: hidden;
+  background: var(--ww-white);
+  box-shadow: 0 16px 36px color-mix(in srgb, var(--pp-ink) 22%, transparent);
+}
 .ww-preply-step__label {
   display: flex;
   align-items: flex-start;
@@ -513,10 +539,38 @@
   line-height: var(--line-height-tight);
   min-height: calc(2em * var(--line-height-tight));
 }
-.ww-preply-step__media.ww-preply-step__media--mockup {
-  object-fit: contain;
-  padding: var(--space-md);
-  box-sizing: border-box;
+/* Step 2 — the classroom on a laptop, and the AI insight cards floating over its right edge. */
+/* Step 2 — one fixed-shape (3:2) composition box, scaled as a whole to fit the tile, so the laptop
+ * and the cards keep their relative geometry on every stage aspect. In box units: the tutor's
+ * picture-in-picture (x 62–83 %, y 16–37 % of classroom.png) lands at x 49–66 %, y 13–27 %; the
+ * cards' opaque area (any frame) starts at y ≈ 30 %, so it never reaches the PiP. */
+.ww-preply-lesson {
+  height: 100%;
+  container-type: size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ww-preply-lesson__box {
+  position: relative;
+  width: min(100cqw - 32px, (100cqh - 32px) * 1.5);
+  aspect-ratio: 3 / 2;
+}
+.ww-preply-lesson__laptop {
+  position: absolute;
+  left: 0;
+  top: 2%;
+  width: 80%;
+  height: auto;
+  display: block;
+}
+.ww-preply-lesson__cards {
+  position: absolute;
+  right: 1%;
+  bottom: 1%;
+  width: 40%;
+  height: auto;
+  filter: drop-shadow(0 12px 28px color-mix(in srgb, var(--pp-ink) 14%, transparent));
 }
 
 .ww-preply-hiring {
