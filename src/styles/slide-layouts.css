@@ -20,7 +20,7 @@
 .ww-corner-rings--top-left     { left: 0;  top: 0;    transform: scaleY(-1); }
 
 /* Flow content on titled slides must paint above the (positioned) rings. */
-.slide--titled > :not(.ww-corner-rings):not(.ww-bottom-fade):not(.ww-full-bg):not(.slide-title) {
+.slide--titled > :not(.ww-corner-rings):not(.ww-bottom-fade):not(.ww-full-bg):not(.slide-title):not(.ww-preply-product__logo) {
   position: relative;
   z-index: 1;
 }
@@ -463,37 +463,138 @@
 .ww-music__artist { font-size: var(--font-size-code); color: var(--music-accent); }
 .ww-music__album { font-size: var(--font-size-code); color: var(--music-dim); }
 
-/* ─── Preply (company stats, product panels) ─────────────────────────── */
+/* ─── Preply (product loops, hiring) ─────────────────────────────────────
+ * The blend: WAWTech page + Preply colours. `.ww-preply` remaps the two
+ * WAWTech accents onto Preply's, so kit pieces inside it turn Preply. */
 
-.ww-preply-co {
-  margin-top: auto;
-  display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  gap: var(--space-md);
-  min-height: 0;
+.ww-preply {
+  --ww-magenta: var(--pp-tokyo-pink);
+  --ww-mint: var(--pp-barcelona-teal);
 }
-.ww-preply-co__lead { grid-row: span 2; justify-content: space-between; }
-.ww-preply-co > div { display: flex; }
-.ww-preply-co .ww-stat { flex: 1; min-height: 280px; justify-content: space-between; }
 
+.ww-preply-product__logo {
+  position: absolute;
+  top: var(--stage-pad-y);
+  right: var(--stage-pad-x);
+  width: 280px;
+  height: auto;
+  z-index: 1;
+}
 .ww-preply-product {
   flex: 1;
   min-height: 0;
+  margin-top: calc(-1 * var(--space-xl)); /* pull up under the title band: more height for the phones */
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-xl);
-  align-items: end;
+  grid-template-columns: 0.68fr 1.7fr 0.68fr;
+  gap: var(--space-lg);
 }
-.ww-preply-product__col { display: flex; flex-direction: column; gap: var(--space-sm); }
-.ww-preply-product__col img {
-  width: 100%;
-  height: auto;
+.ww-preply-product > div { display: flex; min-height: 0; }
+.ww-preply-step { flex: 1; display: flex; flex-direction: column; gap: var(--space-md); min-height: 0; }
+.ww-preply-step__frame {
+  flex: 1;
+  min-height: 0;
   border-radius: var(--radius-card);
-  background: var(--ww-card);
+  overflow: hidden;
+  background: var(--pp-pink-light);
+  border: 6px solid var(--pp-tokyo-pink);
 }
-.ww-preply-product__col h3 { margin: var(--space-sm) 0 0; text-transform: uppercase; }
-.ww-preply-product__col p { margin: 0; }
+.ww-preply-step--ai .ww-preply-step__frame {
+  border: 6px solid transparent;
+  background: linear-gradient(var(--ww-white), var(--ww-white)) padding-box, var(--pp-grad-ai) border-box;
+}
+.ww-preply-step__media { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ww-preply-step__media--contain { object-fit: contain; background: var(--ww-white); }
+.ww-preply-step__label {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+  min-height: calc(2em * var(--line-height-tight));
+}
+.ww-preply-step__media.ww-preply-step__media--mockup {
+  object-fit: contain;
+  padding: var(--space-md);
+  box-sizing: border-box;
+}
+
+.ww-preply-hiring {
+  position: absolute;
+  inset: 0;
+  padding: var(--stage-pad-y) var(--stage-pad-x);
+  display: grid;
+  grid-template-columns: 1fr 720px;
+  gap: var(--space-xl);
+}
+
+/* Left column — the booth at the top, the cities at the bottom. */
+.ww-preply-hiring__left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+}
+.ww-preply-hiring__booth { display: flex; flex-direction: column; gap: var(--space-lg); }
+.ww-preply-hiring__logo { width: 360px; height: auto; display: block; }
+.ww-preply-hiring__booth h2 {
+  margin: 0;
+  font-size: var(--font-size-heading);
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+}
+
+.ww-preply-hubs { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); }
+.ww-preply-hub {
+  border-radius: var(--radius-card);
+  padding: var(--space-lg) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  font-size: var(--font-size-body);
+  font-weight: 700;
+  color: var(--pp-ink);
+}
+.ww-preply-hub--yellow { background: var(--pp-kyiv-yellow); }
+.ww-preply-hub--teal { background: var(--pp-barcelona-teal); }
+.ww-preply-hub--pink { background: var(--pp-tokyo-pink); }
+.ww-preply-city__icon {
+  width: 200px;
+  height: 200px;
+  fill: none;
+  stroke: var(--pp-ink);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ww-preply-city__fill { fill: var(--ww-white); }
+
+/* Right column — «We are hiring» and the careers QR, inverted: paper, with the QR in pink. */
+.ww-preply-hiring__cta {
+  border: 6px solid var(--pp-tokyo-pink);
+  border-radius: var(--radius-card);
+  padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-lg);
+}
+.ww-preply-hiring__cta h2 {
+  margin: 0;
+  font-size: var(--font-size-heading);
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+}
+.ww-preply-hiring__qr { line-height: 0; }
+.slide a.ww-preply-hiring__url {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 0;
+}
 
 /* ─── History (a recreated interface, filling the stage) ──────────────── */
 

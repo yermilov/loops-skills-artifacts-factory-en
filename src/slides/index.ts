@@ -1,6 +1,6 @@
 import { TitleSlide } from './TitleSlide';
 import { AboutMeSlide } from './AboutMeSlide';
-import { PreplyCompanySlide, PreplyProductSlide, PreplyHiringSlide } from './preply';
+import { PreplyProductSlide, PreplyHiringSlide } from './preply';
 import {
   ChatGptLaunchSlide,
   GptShellSlide,
@@ -50,7 +50,6 @@ export const LAYOUT_GALLERY = [
 export const slides = [
   TitleSlide,
   AboutMeSlide,
-  PreplyCompanySlide,
   PreplyProductSlide,
   PreplyHiringSlide,
   ChatGptLaunchSlide,

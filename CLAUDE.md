@@ -42,7 +42,7 @@ src/
 │   ├── index.ts                  # THE SLIDE ORDER — register slides here
 │   ├── TitleSlide.tsx            # template p.1 + p.2: talk, subtitle, speaker, venue
 │   ├── AboutMeSlide.tsx          # about me, no title band — Preply / Grammarly / photo + LinkedIn QR
-│   ├── preply.tsx                # Preply: company stats, product (two panels), «We are hiring» + careers QR
+│   ├── preply.tsx                # Preply: product (three steps, reveal one by one), «We are hiring» — booth, cities, careers QR
 │   ├── history.tsx               # «Origins of AI agents» 2022 + 2023 — Remotion clips
 │   ├── MusicPrototypeSlide.tsx   # 2024 — live Ghostty/oh-my-zsh terminal + macOS Music, random song
 │   ├── AgendaSlide.tsx           # template p.3 — exports AGENDA (the four words)
@@ -178,9 +178,18 @@ tool, and for MCP servers it gives you the real tool names (`list-events`, `slac
 ## Deployment
 
 Push to `main` → `.github/workflows/deploy.yml` builds and deploys to Pages (source: GitHub
-Actions). Solo project: commit straight to `main`, messages `Add/Update/Fix/Remove …`. The repo is
-on the personal `yermilov` GitHub account — a 403 on push means the EMU account is active:
-`gh auth switch --user yermilov`.
+Actions). Solo project: commit straight to `main`, messages `Add/Update/Fix/Remove …`.
+
+**GitHub account switching (mandatory).** The repo is on the personal `yermilov` GitHub account,
+while the default active `gh` account is the work EMU account `yaroslav-yermilov`. Before **any**
+git operation, switch to `yermilov`; immediately after it, switch back — in the same command, so
+the switch-back runs even if the git step fails:
+
+```bash
+gh auth switch --user yermilov; git push; rc=$?; gh auth switch --user yaroslav-yermilov; exit $rc
+```
+
+Never leave `yermilov` active between commands.
 
 When the talk is done, publish it on yaroslavyermilov.io (redirect slug + talk entry) — see the
 presentation-dev `presentation-stack` skill.

@@ -30,6 +30,20 @@
   --ww-white: #ffffff;
   --ww-linkedin: #0a66c2;       /* the LinkedIn QR on the about-me slide */
 
+  /* ── Preply palette ─────────────────────────────────────────────────────
+   * Preply's own brand colours (brand book «Preply Guidelines», and the
+   * Path design system's design-tokens.json). The four primaries are named
+   * after Preply's hubs. Used ONLY on the Preply slides, where `.ww-preply`
+   * remaps the WAWTech accents onto them (see slide-layouts.css). */
+  --pp-tokyo-pink: #ff7aac;     /* lead brand colour */
+  --pp-pink-light: #ffe5f0;
+  --pp-pink-dark: #d13d76;      /* accent dark pink — dark enough for a scannable QR */
+  --pp-kyiv-yellow: #ffe03d;
+  --pp-barcelona-teal: #3ddabe;
+  --pp-newyork-blue: #2885fd;
+  --pp-ink: #121117;            /* logo, text on the primaries */
+  --pp-grad-ai: linear-gradient(93deg, var(--pp-newyork-blue) 0%, var(--pp-tokyo-pink) 100%);
+
   /* ── Machine palette ────────────────────────────────────────────────────
    * Not part of the WAWTech template: these are the colours of the two
    * interfaces the 2024 history slide RECREATES — a Ghostty window running
