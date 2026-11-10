@@ -242,6 +242,91 @@
   line-height: 1;
 }
 
+/* The opening beat's left half: «hello» die-cut stickers after the Preply laptop pack.
+   Preply's own colours (the pack is Preply's), not WAWTech's.
+   They share the cards' grid cell and step aside once the first card comes in. */
+.ww-about__col,
+.ww-hellos { grid-column: 1; grid-row: 1; }
+.ww-hellos {
+  position: relative;
+  transition: opacity 0.35s var(--ease), visibility 0s linear 0s;
+}
+.ww-hellos--gone {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s var(--ease), visibility 0s linear 0.35s;
+}
+.ww-hello,
+.ww-hello-bubble {
+  background: var(--ww-white);
+  border: 10px solid var(--pp-ink);
+  border-radius: 22px;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--pp-ink) 14%, transparent);
+  font-family: var(--font-tight);
+  font-weight: 600;
+  color: var(--pp-ink);
+  line-height: 1;
+  white-space: nowrap;
+}
+.ww-hello {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 26px 16px 18px;
+  font-size: var(--font-size-body);
+}
+.ww-hello__flag {
+  width: 66px;
+  height: 44px;
+  border-radius: 7px;
+  outline: 2px solid color-mix(in srgb, var(--pp-ink) 25%, transparent);
+  outline-offset: -2px;
+  flex: none;
+}
+.ww-hello-part {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(-2deg);
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+}
+.ww-hello-part__row { display: flex; align-items: flex-end; gap: 14px; }
+.ww-hello-bubble {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 34px;
+  font-size: var(--font-size-heading);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.ww-hello-bubble--im { transform: translateY(-18px); }
+.ww-hello-bubble--preply { background: var(--pp-tokyo-pink); }
+.ww-hello-bubble--preply img { height: 76px; width: auto; filter: brightness(0); }
+/* the speech-bubble tails: a black wedge with a fill wedge inset in it, both starting at
+   the bubble's inner edge so the fill cuts through the border and the tail reads as one piece */
+.ww-hello-bubble--im::before,
+.ww-hello-bubble--im::after,
+.ww-hello-bubble--preply::before,
+.ww-hello-bubble--preply::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+.ww-hello-bubble--im::before,
+.ww-hello-bubble--preply::before { width: 56px; height: 46px; background: var(--pp-ink); }
+.ww-hello-bubble--im::after,
+.ww-hello-bubble--preply::after { width: 28px; height: 23px; background: inherit; }
+.ww-hello-bubble--im::before { left: 12px; }
+.ww-hello-bubble--im::after { left: 22px; }
+.ww-hello-bubble--preply::before { left: calc(50% - 28px); }
+.ww-hello-bubble--preply::after { left: calc(50% - 18px); }
+
 /* ─── 2024 · the prototype (Ghostty + oh-my-zsh, and macOS Music) ─────── */
 
 .ww-proto {

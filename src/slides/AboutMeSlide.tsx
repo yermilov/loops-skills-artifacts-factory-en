@@ -1,13 +1,15 @@
 import { QRCodeSVG } from 'qrcode.react';
 import { SlideDefinition } from '../types/slides';
 import { CornerRings, Reveal } from '../components/wawtech';
+import { HelloStickers } from '../components/HelloStickers';
 import portrait from '../assets/about/yaroslav.jpg';
 import preplyMark from '../assets/about/preply-mark.svg';
 import grammarlyMark from '../assets/about/grammarly-mark.svg';
 
 const LINKEDIN_URL = 'https://www.linkedin.com/in/yarik-yermilov/';
 
-/** Who I am: the photo and LinkedIn QR stand from the start, then where I am now and where I come from. */
+/** Who I am: the photo and LinkedIn QR stand from the start beside a pile of Preply «hello»
+ * stickers, then where I am now and where I come from. */
 export const AboutMeSlide: SlideDefinition = {
   id: 'about-me',
   maxRevealStages: 2,
@@ -15,6 +17,7 @@ export const AboutMeSlide: SlideDefinition = {
     <>
       <CornerRings corner="bottom-left" />
       <div className="ww-about">
+        <HelloStickers hidden={revealStage >= 1} />
         <div className="ww-about__col">
           <Reveal at={1} stage={revealStage}>
             <div className="ww-about__card ww-about__card--now">
@@ -57,6 +60,7 @@ export const AboutMeSlide: SlideDefinition = {
     </>
   ),
   notes:
-    'Three beats: Preply today (AI/agentic transformation of the SDLC), nine years at Grammarly '
+    'Opening beat: photo, LinkedIn QR and the Preply «hello» laptop stickers. Then two beats: '
+    + 'Preply today (AI/agentic transformation of the SDLC), nine years at Grammarly '
     + 'behind it; the photo and the QR to LinkedIn are up from the start.',
 };
