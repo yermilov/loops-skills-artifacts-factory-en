@@ -204,3 +204,13 @@
   align-items: center;
   justify-content: center;
 }
+
+/* Export mode: no animation may still be running when the exporter photographs
+   a slide — it waits for document.getAnimations() to settle, so an infinite one
+   hangs the PDF. See the note beside `isExportMode` in Presentation.tsx. */
+:root[data-export='1'] *,
+:root[data-export='1'] *::before,
+:root[data-export='1'] *::after {
+  animation: none !important;
+  transition: none !important;
+}

@@ -1046,3 +1046,1120 @@
   gap: var(--space-xl);
 }
 .ww-thanks__foot p { margin: 0; max-width: 960px; }
+
+/* ─── How an LLM works (three beats, live React) ──────────────────────────
+   One row that never moves: what the model is GIVEN on the left, the model in
+   the middle, what comes OUT on the right. Beat 3 swaps the text in both
+   panels for a dialogue script and a chat window — the machine between them
+   is deliberately untouched, because that is the point of the slide. Lives in
+   the padded body of a titled slide, so it anchors to the stage's edges. */
+
+.ww-llm {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-lg);
+  min-height: 0;
+}
+/* The panels hug their text and sit on the row's centre line, so a beat that
+   says less leaves paper rather than an empty grey slab. The min-height keeps
+   the three beats from changing size dramatically under the same label. */
+.ww-llm__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  min-width: 0;
+  min-height: 380px;
+  padding: var(--space-lg);
+  background: var(--ww-card);
+  border-radius: var(--radius-card);
+  justify-content: flex-start;
+}
+.ww-llm__label {
+  margin: 0;
+  font-weight: 600;
+  color: var(--ww-text-muted);
+}
+
+/* The text, drawn as the tokens it really is. */
+.ww-llm__tokens {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+}
+.ww-llm__token {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  background: var(--ww-lavender);
+  color: var(--ww-purple);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: 10px;
+  white-space: pre;
+}
+.ww-llm__token--new {
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+}
+/* The end-of-text token is not words — it is the signal that stops the loop,
+   so it is drawn as an outline rather than another magenta word-chip. */
+.ww-llm__token--end {
+  background: transparent;
+  color: var(--ww-magenta);
+  box-shadow: inset 0 0 0 2px var(--ww-magenta);
+}
+.ww-llm__token--out {
+  font-size: var(--font-size-body);
+  padding: var(--space-sm) var(--space-md);
+}
+/* End of beat 1: the produced token leaves the output panel and lands at the
+   end of the text on the left. Two animations rather than one flying element,
+   because the two panels' positions depend on the stage's aspect — the eye
+   reads the pair as one move, and nothing has to be measured. */
+.ww-llm__token--fly {
+  animation: wwLlmFly 420ms var(--ease) forwards;
+}
+.ww-llm__token--land {
+  animation: wwLlmLand 420ms var(--ease);
+}
+@keyframes wwLlmFly {
+  to { opacity: 0; transform: translateX(-160px) scale(0.85); }
+}
+@keyframes wwLlmLand {
+  from { opacity: 0; transform: translateX(90px) scale(1.25); }
+  to { opacity: 1; transform: none; }
+}
+.ww-llm__caret {
+  display: inline-block;
+  width: 3px;
+  height: var(--font-size-code);
+  margin-left: var(--space-xs);
+  vertical-align: text-bottom;
+  background: var(--ww-magenta);
+  animation: wwLlmBlink 1s steps(1, end) infinite;
+}
+@keyframes wwLlmBlink {
+  50% { opacity: 0; }
+}
+
+/* The middle: one arrow. The model itself is not drawn — it is the title. */
+.ww-llm__engine {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 160px;
+}
+.ww-llm__arrow {
+  color: var(--ww-violet);
+  line-height: 1;
+  transform: scale(1.6);
+}
+.ww-llm__titlesub {
+  color: var(--ww-text-muted);
+}
+
+/* Right panel, beats 1–2: the produced token and the runners-up. */
+.ww-llm__out {
+  display: flex;
+  align-items: center;
+  min-height: calc(var(--font-size-body) + var(--space-lg));
+}
+.ww-llm__cands {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.ww-llm__cand {
+  display: grid;
+  grid-template-columns: 180px 1fr auto;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-size-code);
+}
+.ww-llm__cand .ww-llm__token {
+  justify-self: start;
+}
+.ww-llm__bar {
+  height: 18px;
+  border-radius: var(--radius-pill);
+  background: var(--ww-violet);
+  min-width: 6px;
+}
+.ww-llm__share {
+  font-family: var(--font-mono);
+  color: var(--ww-text-muted);
+}
+
+/* Beat 3 — the script on the left, the chat window on the right. */
+.ww-llm__script {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  line-height: var(--line-height-normal);
+}
+.ww-llm__pre {
+  color: var(--ww-text-muted);
+}
+.ww-llm__line {
+  color: var(--ww-purple);
+}
+.ww-llm__who {
+  font-weight: 600;
+  color: var(--ww-violet);
+}
+.ww-llm__script .ww-llm__token--new {
+  padding: 2px var(--space-xs);
+  border-radius: 6px;
+}
+.ww-llm__chat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  font-size: var(--font-size-code);
+}
+.ww-llm__bubble {
+  max-width: 80%;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-card);
+}
+.ww-llm__bubble--user {
+  align-self: flex-end;
+  background: var(--ww-lavender);
+  color: var(--ww-purple);
+}
+.ww-llm__bubble--bot {
+  align-self: flex-start;
+  background: var(--ww-white);
+  color: var(--ww-purple);
+  border: 2px solid color-mix(in srgb, var(--ww-purple) 14%, transparent);
+}
+
+/* ─── Coding agent (four beats, live React) ───────────────────────────────
+   Deliberately the same room as `.ww-llm`: given on the left, seen on the
+   right, an arrow between. Only the additions live here. */
+
+/* The transcript is taller than the slide by design, so the row is bounded by
+   the body (not by its content) and the panels are clipped to it. Without
+   this the panel grows past the stage and rides over the title. */
+.ww-agent {
+  align-items: stretch;
+  min-height: 0;
+}
+.ww-agent .ww-llm__panel {
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+  justify-content: flex-start;
+}
+
+/* Beat 4: the text is longer than the panel, so it runs off the TOP, the way
+   a terminal scrolls. The tail is what matters — the alternation at the end. */
+.ww-agent__script--tail {
+  flex: 1;
+  min-height: 0;
+  justify-content: flex-end;
+  overflow: hidden;
+  /* The line the clip cuts in half fades out, so the top edge reads as «this
+     text goes on above» rather than as a layout accident. */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 90px);
+  mask-image: linear-gradient(180deg, transparent 0, #000 90px);
+}
+/* The terminal tails too: the newest lines are the ones that matter, and the
+   oldest fade off the top rather than being cut square. */
+.ww-agent__term {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 90px);
+  mask-image: linear-gradient(180deg, transparent 0, #000 90px);
+}
+.ww-agent__decl {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+.ww-agent__call {
+  color: var(--ww-purple);
+  font-weight: 600;
+}
+/* Three speakers, told apart by the colour their text lands in: the person
+   types plain text, the model's tokens are magenta (as on the slide before),
+   and the harness's are violet — the one new entity in the picture. */
+.ww-agent__who--user { color: var(--ww-purple); }
+.ww-agent__who--model { color: var(--ww-magenta); }
+.ww-agent__who--harness { color: var(--ww-violet); }
+.ww-llm__token--pasted {
+  background: var(--ww-violet);
+  color: var(--ww-white);
+}
+.ww-agent .ww-llm__line .ww-llm__token {
+  padding: 2px var(--space-xs);
+  border-radius: 6px;
+  /* A single token can be longer than the panel (a tool name with its
+     arguments), and `pre` would run it off the edge. */
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+/* Chips sit next to each other with no whitespace between them, so an inline
+   line has nowhere to break and runs off the panel. A wrapping flex row gives
+   it a break opportunity at every chip. */
+.ww-agent .ww-llm__line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 6px;
+}
+/* A typed sentence is ONE flex item, so it has to be allowed to sit beside
+   its «User:» label and wrap inside itself rather than below it. */
+.ww-agent__said {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+/* The right panel: what the terminal draws of all that. */
+.ww-agent__nothing {
+  color: var(--ww-text-muted);
+  font-style: italic;
+}
+.ww-agent__term {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  justify-content: flex-end;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  line-height: var(--line-height-normal);
+}
+.ww-agent__you {
+  color: var(--ww-text-muted);
+}
+.ww-agent__caretglyph {
+  color: var(--ww-magenta);
+  font-weight: 600;
+}
+.ww-agent__dot {
+  color: var(--terminal-green);
+}
+.ww-agent__head {
+  color: var(--ww-purple);
+  font-weight: 600;
+}
+.ww-agent__foot {
+  padding-left: var(--space-md);
+  color: var(--ww-text-muted);
+}
+.ww-agent__answer {
+  color: var(--ww-purple);
+}
+
+.ww-agent__dot--busy {
+  color: var(--ww-violet);
+  animation: wwAgentPulse 700ms ease-in-out infinite;
+}
+@keyframes wwAgentPulse {
+  50% { opacity: 0.45; }
+}
+
+/* The two writers of that text, stacked in the middle: the model, which only
+   predicts tokens, and above it the harness — the one with a shell and a file
+   system. Whichever is at work is lit; the other waits. The harness being lit
+   IS the pause in the transcript, which is the point of the beat. */
+.ww-agent__engine {
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-md);
+  width: 360px;
+  min-width: 360px;
+}
+.ww-agent__box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  width: 100%;
+  padding: var(--space-md) var(--space-sm);
+  border-radius: var(--radius-card);
+  text-align: center;
+  opacity: 0.45;
+  transition: opacity var(--transition-normal);
+}
+.ww-agent__box.is-busy {
+  opacity: 1;
+}
+.ww-agent__box--model {
+  background: var(--ww-purple);
+  color: var(--ww-white);
+}
+.ww-agent__box--harness {
+  background: var(--ww-violet);
+  color: var(--ww-white);
+}
+.ww-agent__box-name {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-caps);
+  line-height: var(--line-height-tight);
+}
+.ww-agent__box-state {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  color: color-mix(in srgb, var(--ww-white) 82%, var(--ww-violet));
+  /* A URL is longer than the box; let it wrap rather than run out of it. */
+  overflow-wrap: anywhere;
+}
+.ww-agent__box.is-busy .ww-agent__box-state {
+  animation: wwAgentPulse 900ms ease-in-out infinite;
+}
+.ww-agent__updown {
+  line-height: 1;
+}
+
+/* A special token is part of the protocol, not a word the model chose: same
+   outline treatment as `<|endoftext|>` on the slide before, in the colour of
+   whoever emitted it. */
+.ww-llm__token--special {
+  background: transparent;
+  color: var(--ww-magenta);
+  box-shadow: inset 0 0 0 2px var(--ww-magenta);
+}
+.ww-agent__who--harness ~ .ww-llm__token--special {
+  color: var(--ww-violet);
+  box-shadow: inset 0 0 0 2px var(--ww-violet);
+}
+
+/* ─── MCP (same room as the agent slide, plus the servers) ────────────────
+   The right panel stops being the terminal and becomes the things the
+   harness talks to: an address, how it is reached, and the one question it
+   asks them. */
+
+.ww-mcp__servers {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--space-md);
+  min-height: 0;
+  overflow: hidden;
+  /* Same tail as the transcript panels: the server just asked is the one in
+     full view, an older one fades off the top rather than being cut square. */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 90px);
+  mask-image: linear-gradient(180deg, transparent 0, #000 90px);
+}
+.ww-mcp__server {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-card);
+  background: var(--ww-white);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ww-purple) 12%, transparent);
+  font-size: var(--font-size-code);
+}
+.ww-mcp__server.is-busy {
+  box-shadow: inset 0 0 0 3px var(--ww-violet);
+}
+.ww-mcp__url {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--ww-purple);
+  word-break: break-all;
+}
+.ww-mcp__how {
+  color: var(--ww-text-muted);
+}
+.ww-mcp__rpc {
+  font-family: var(--font-mono);
+  color: var(--ww-text-muted);
+}
+.ww-mcp__rpc--in {
+  color: var(--ww-violet);
+}
+.ww-mcp__tool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  padding-left: var(--space-md);
+  font-family: var(--font-mono);
+}
+.ww-mcp__toolname {
+  color: var(--ww-violet);
+  font-weight: 600;
+}
+.ww-mcp__toolargs {
+  color: var(--ww-text-muted);
+}
+/* Tools that arrived from a server are written into the text by the harness,
+   so they carry its colour rather than the harness's own chips. */
+.ww-mcp__call {
+  color: var(--ww-violet);
+}
+
+/* ─── «My AI assistant» — the to-do list everybody writes ─────────────────
+   A sheet of paper on the stage, tilted a degree or two, with hand-drawn
+   boxes: the one slide in the deck that is deliberately not straight. */
+
+.ww-todo {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.ww-todo__sheet {
+  width: 1120px;
+  padding: var(--space-2xl) var(--space-3xl);
+  background: var(--ww-white);
+  border-radius: 8px;
+  box-shadow:
+    0 2px 0 color-mix(in srgb, var(--ww-purple) 10%, transparent),
+    0 40px 80px color-mix(in srgb, var(--ww-purple) 16%, transparent);
+  transform: rotate(-1.6deg);
+}
+.ww-todo__title {
+  margin: 0;
+  color: var(--ww-purple);
+  font-weight: 600;
+}
+.ww-todo__rule {
+  display: block;
+  margin: var(--space-xs) 0 var(--space-xl);
+  overflow: visible;
+}
+.ww-todo__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+/* The deck's own list marker (base.css) would sit next to a drawn checkbox,
+   which is one bullet too many. */
+.slide ul.ww-todo__list li::before {
+  content: none;
+}
+.ww-todo__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  color: var(--ww-purple);
+}
+.ww-todo__box {
+  flex: none;
+  overflow: visible;
+}
+
+/* ─── Claude Code SDK — the chat, and the code that makes it ─────────────
+   Code on the left, the window it produces on the right. No title band: the
+   slide is narrated, so the whole stage is the two columns. */
+
+.ww-sdk {
+  position: absolute;
+  inset: var(--stage-pad-y) var(--stage-pad-x);
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  align-items: center;
+  gap: var(--space-xl);
+}
+.ww-sdk__code {
+  min-width: 0;
+  max-height: 100%;
+}
+.ww-sdk__code pre {
+  padding-bottom: var(--space-lg);
+}
+
+/* The dashboard's chat widget — the same grey card as the rest of the deck,
+   with a window bar on top so it reads as a panel in an app. */
+.ww-sdkchat {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-radius: var(--radius-card);
+  background: var(--ww-card);
+  overflow: hidden;
+}
+.ww-sdkchat__bar {
+  padding: var(--space-sm) var(--space-lg);
+  background: color-mix(in srgb, var(--ww-purple) 12%, var(--ww-card));
+  color: var(--ww-purple);
+  font-size: var(--font-size-code);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-caps);
+}
+.ww-sdkchat__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  font-size: var(--font-size-code);
+}
+.ww-sdkchat__bubble {
+  max-width: 88%;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-card);
+}
+.ww-sdkchat__bubble p {
+  margin: 0;
+}
+.ww-sdkchat__bubble ul {
+  margin: var(--space-sm) 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+.slide .ww-sdkchat__bubble li::before {
+  content: none;
+}
+.ww-sdkchat__bubble li {
+  padding: 0;
+}
+.ww-sdkchat__bubble strong {
+  font-family: var(--font-mono);
+  color: var(--ww-magenta);
+}
+.ww-sdkchat__bubble--user {
+  align-self: flex-end;
+  background: var(--ww-lavender);
+  color: var(--ww-purple);
+}
+.ww-sdkchat__bubble--bot {
+  align-self: flex-start;
+  background: var(--ww-white);
+  color: var(--ww-purple);
+  border: 2px solid color-mix(in srgb, var(--ww-purple) 12%, transparent);
+}
+.ww-sdkchat__tool {
+  font-family: var(--font-mono);
+  color: var(--ww-text-muted);
+}
+.ww-sdkchat__dot {
+  color: var(--terminal-green);
+}
+
+/* ─── «Why it did not work» — two reasons, schematic ──────────────────────
+   Restrained on purpose: the picture is not settled, so the slide is two
+   numbered rows and the smallest evidence that makes each one land. */
+
+.ww-why {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-xl);
+}
+.ww-why__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-lg);
+}
+.ww-why__num {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+  font-weight: 600;
+}
+.ww-why__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+.ww-why__head {
+  margin: 0;
+  text-transform: none;
+  font-weight: 600;
+  color: var(--ww-purple);
+}
+.ww-why__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+.ww-why__chip {
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-pill);
+  background: var(--ww-lavender);
+  color: var(--ww-purple);
+  font-size: var(--font-size-code);
+}
+.ww-why__stat {
+  margin: 0;
+  font-size: var(--font-size-code);
+  color: var(--ww-text-muted);
+}
+.ww-why__stat strong {
+  color: var(--ww-magenta);
+}
+
+/* Reason 2: two tracks, and the gaps between the pulses are the point. */
+.ww-why__strip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  font-size: var(--font-size-code);
+}
+.ww-why__label {
+  width: 64px;
+  color: var(--ww-text-muted);
+  text-align: right;
+}
+.ww-why__track {
+  position: relative;
+  flex: 1;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--ww-purple) 8%, transparent);
+}
+.ww-why__pulse {
+  position: absolute;
+  top: 4px;
+  width: 26px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--ww-magenta);
+}
+.ww-why__pulse--it {
+  background: var(--ww-violet);
+}
+
+/* ─── «Unless you are Peter Steinberger» ──────────────────────────────────
+   Receipts, then the rename chain as the joke, then the sting. */
+
+.ww-chad {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+.ww-chad__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-sm);
+}
+/* The receipts are a band, not four posters: the stage has three more rows
+   to fit under them. */
+.ww-chad__stats .ww-card {
+  min-height: 0;
+  padding: var(--space-md) var(--space-lg);
+  gap: var(--space-xs);
+  justify-content: flex-start;
+}
+.ww-chad__stats .ww-stat__label {
+  font-size: var(--font-size-code);
+}
+
+/* The names, in order, with every dead one struck through. */
+.ww-chad__names {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-lg);
+}
+.ww-chad__name-wrap {
+  display: flex;
+  flex-direction: column;
+}
+.ww-chad__name {
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+}
+.ww-chad__name--dead {
+  color: var(--ww-text-muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--ww-magenta);
+  text-decoration-thickness: 3px;
+}
+.ww-chad__name--live {
+  color: var(--ww-magenta);
+}
+.ww-chad__when {
+  font-size: var(--font-size-code);
+  color: var(--ww-text-muted);
+}
+.ww-chad__sting {
+  margin: 0;
+  max-width: 1500px;
+  color: var(--ww-purple);
+  line-height: var(--line-height-normal);
+}
+.ww-chad__sting em {
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* The heartbeat beat: a pill with the cadence, then the sentence. */
+.ww-chad__beat {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-md);
+}
+.ww-chad__pill {
+  flex: none;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-pill);
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+  font-size: var(--font-size-code);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ─── «It started a category» — four products, then the tail ──────────────
+   Four grey cards of equal weight: the point is the shelf, not a ranking. */
+
+.ww-cat {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-lg);
+}
+.ww-cat__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+}
+.ww-cat__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+}
+.ww-cat__name {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  color: var(--ww-purple);
+  line-height: var(--line-height-tight);
+}
+.ww-cat__who {
+  font-size: var(--font-size-code);
+  color: var(--ww-text-muted);
+}
+.ww-cat__line {
+  margin: 0;
+  flex: 1;
+  font-size: var(--font-size-code);
+  line-height: var(--line-height-normal);
+  color: var(--ww-purple);
+}
+.ww-cat__tag {
+  align-self: flex-start;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-pill);
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+  font-size: var(--font-size-code);
+}
+.ww-cat__tail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  font-size: var(--font-size-code);
+  color: var(--ww-text-muted);
+}
+.ww-cat__tailname::after {
+  content: ' ·';
+  color: color-mix(in srgb, var(--ww-purple) 30%, transparent);
+}
+.ww-cat__tail .ww-cat__tailname:last-child::after {
+  content: '';
+}
+
+/* ─── The pivot: «I assembled mine out of the parts lying around» ─────────
+   The template's statement block, with one quiet line under it. */
+
+.ww-myway {
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+.ww-myway__sub {
+  margin: 0;
+  max-width: 1100px;
+  text-align: center;
+  color: var(--ww-text-muted);
+}
+
+/* ─── The bootstrap: one sentence, and a queue that writes itself ─────────
+   Terminal left in the CLI's own dark palette, the queue right on paper. */
+
+/* One window, the whole stage: the queue it builds is the next slide's job,
+   not this one's. */
+.ww-boot {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+.ww-boot__term {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--cc-bg);
+  box-shadow: 0 30px 60px color-mix(in srgb, var(--ww-purple) 18%, transparent);
+}
+.ww-boot__chrome {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--term-chrome);
+}
+.ww-boot__title {
+  margin-left: var(--space-sm);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  color: var(--term-dim);
+}
+.ww-boot__body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg) var(--space-lg);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  line-height: var(--line-height-normal);
+  color: var(--cc-text);
+  overflow: hidden;
+  /* A real terminal scrolls: the newest lines stay, the banner rolls off the
+     top once the session is longer than the window. */
+  justify-content: flex-end;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 70px);
+  mask-image: linear-gradient(180deg, transparent 0, #000 70px);
+}
+/* The welcome box: a rounded frame in the «claude» colour, the help line in
+   dim italic under it, then the working directory. */
+.ww-boot__welcome {
+  align-self: flex-start;
+  margin-bottom: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border: 2px solid var(--cc-claude);
+  border-radius: 10px;
+}
+.ww-boot__star {
+  color: var(--cc-claude);
+}
+.ww-boot__welcome-help {
+  margin-top: var(--space-sm);
+  color: var(--cc-dim);
+  font-style: italic;
+}
+.ww-boot__welcome-cwd {
+  margin-top: 4px;
+  color: var(--cc-dim);
+}
+.ww-boot__you {
+  color: var(--cc-text);
+}
+.ww-boot__caret {
+  color: var(--cc-dim);
+}
+.ww-boot__say {
+  color: var(--cc-text);
+}
+/* A tool call: the «claude» dot, the call in white, and its result indented
+   under a ⎿ — the same shape the deck's clips draw. */
+.ww-boot__bullet {
+  color: var(--cc-claude);
+}
+.ww-boot__tool {
+  color: var(--cc-text);
+}
+.ww-boot__result {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: 4px;
+  padding-left: 34px;
+  color: var(--cc-dim);
+}
+.ww-boot__bullet--done {
+  color: var(--cc-success);
+}
+
+/* The prompt box at the bottom of every Claude Code session. */
+.ww-boot__prompt {
+  padding: 0 var(--space-lg) var(--space-md);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+}
+.ww-boot__input {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-md);
+  border: 2px solid color-mix(in srgb, var(--cc-text) 24%, transparent);
+  border-radius: 10px;
+  color: var(--cc-dim);
+}
+.ww-boot__cursor {
+  display: inline-block;
+  width: 12px;
+  height: var(--font-size-code);
+  background: color-mix(in srgb, var(--cc-text) 45%, transparent);
+}
+/* The cursor that sits at the end of a line still being written. */
+.ww-boot__cursor--inline {
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: var(--cc-text);
+  animation: wwLlmBlink 1s steps(1, end) infinite;
+}
+/* A tool call that has not come back yet. */
+.ww-boot__bullet--busy {
+  color: var(--cc-claude);
+  animation: wwAgentPulse 800ms ease-in-out infinite;
+}
+.ww-boot__hint {
+  padding-left: var(--space-md);
+  padding-top: 4px;
+  color: var(--cc-dim);
+}
+
+
+
+/* ─── CLAUDE.md — the file the harness pastes in ──────────────────────────
+   Same room as the MCP slide; the right panel is the repository instead of
+   a list of servers. */
+
+.ww-cmd .ww-llm__panel {
+  justify-content: flex-start;
+  gap: var(--space-sm);
+  overflow: hidden;
+  padding: var(--space-md) var(--space-lg);
+}
+.ww-cmd .ww-llm__script {
+  min-height: 0;
+}
+.ww-cmd__card {
+  flex: none;
+}
+.ww-cmd__file {
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  line-height: var(--line-height-normal);
+  color: var(--ww-purple);
+  white-space: pre-wrap;
+  padding: var(--space-sm) var(--space-md);
+  border-left: 4px solid var(--ww-magenta);
+  background: var(--ww-white);
+  border-radius: 0 12px 12px 0;
+}
+.ww-cmd__card {
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-card);
+  background: var(--ww-white);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ww-purple) 12%, transparent);
+}
+.ww-cmd__name {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--ww-purple);
+}
+.ww-cmd__sections {
+  margin-top: var(--space-xs);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--font-size-code);
+  color: var(--ww-text-muted);
+}
+.ww-cmd__section::before {
+  content: '## ';
+  color: var(--ww-magenta);
+  font-family: var(--font-mono);
+}
+.ww-cmd__practice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  font-size: var(--font-size-code);
+  color: var(--ww-purple);
+}
+.ww-cmd__line {
+  transition: opacity var(--transition-normal);
+}
+.ww-cmd__line--hidden {
+  opacity: 0;
+}
+
+/* ─── A loop is a cron ────────────────────────────────────────────────────
+   Same room again: the text on the left, the two boxes, and on the right the
+   schedule — which is the whole of the feature. */
+
+.ww-cron .ww-llm__panel {
+  justify-content: flex-start;
+  gap: var(--space-sm);
+  overflow: hidden;
+  padding: var(--space-md) var(--space-lg);
+}
+.ww-cron__turn {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ww-cron__tag {
+  padding-left: var(--space-lg);
+  font-size: var(--font-size-code);
+  color: var(--ww-violet);
+  font-style: italic;
+}
+.ww-cron__answer {
+  padding-left: var(--space-lg);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  color: var(--ww-text-muted);
+}
+.ww-cron__job {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-card);
+  background: var(--ww-white);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ww-purple) 12%, transparent);
+  font-size: var(--font-size-code);
+}
+.ww-cron__cmd {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--ww-magenta);
+  margin-bottom: var(--space-xs);
+}
+.ww-cron__row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+  color: var(--ww-text-muted);
+}
+.ww-cron__row strong {
+  color: var(--ww-purple);
+  font-weight: 600;
+  text-align: right;
+}
+.ww-cron__note {
+  font-size: var(--font-size-code);
+  color: var(--ww-magenta);
+  transition: opacity var(--transition-normal);
+}

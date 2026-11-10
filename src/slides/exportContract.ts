@@ -16,7 +16,7 @@ export const KNOWN_RUNTIME_ASYNC_SLIDES = new Set<string>([]);
  * OR fire-and-forget runtime fetches we don't need to wait for in export mode.
  */
 export const ASYNC_LITERAL_FALSE_POSITIVES = new Set<string>([
-  
-
-
+  // The `await`/`async` in this one is inside the displayed SDK snippet; the
+  // slide itself renders a string and does no runtime work.
+  'SdkChatSlide',
 ]);

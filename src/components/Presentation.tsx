@@ -26,6 +26,20 @@ declare global {
 const isExportMode =
   typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('export') === '1';
 
+/**
+ * The PDF exporter waits for `document.getAnimations()` to finish before it
+ * photographs a page, so ONE infinite animation left running on a slide's max
+ * reveal hangs the whole export — forever, with no error. A blinking caret or
+ * a pulsing «busy» chip is exactly that. Marking the document in export mode
+ * lets one CSS rule stop every animation and transition at the source, which
+ * costs the PDF nothing (it is a still) and makes the trap unreachable for
+ * any future slide. Found by review on 09.11.2026, after the loop/cron slide
+ * left a pulse running on its last beat.
+ */
+if (isExportMode && typeof document !== 'undefined') {
+  document.documentElement.dataset.export = '1';
+}
+
 const TIMER_STARTED_AT_KEY = 'timerStartedAt';
 const TIMER_ACCUMULATED_KEY = 'timerAccumulated';
 const STAGE_WIDTH = 1920;
@@ -43,7 +57,7 @@ function getInitialTimerState(): { seconds: number; running: boolean } {
 }
 
 export function Presentation({ slides, initialSlide = 0 }: PresentationProps) {
-  const { currentSlide, goToSlide, goToSlideWithReveal, handleCommand: handleNavCommand, revealStage, revealNext, revealPrev } = useSlideNavigation(
+  const { currentSlide, goToSlide, goToSlideWithReveal, handleCommand: handleNavCommand, revealStage, revealNext, revealPrev, currentStep, steps } = useSlideNavigation(
     slides,
     initialSlide
   );
@@ -195,16 +209,12 @@ export function Presentation({ slides, initialSlide = 0 }: PresentationProps) {
       ? activeSlide.title({ revealStage, inputText })
       : activeSlide.title;
 
-  // Progress bar weights every reveal across the deck equally: each slide
-  // contributes (maxRevealStages + 1) units, so a slide with eight reveals
-  // fills more of the bar than a single-shot slide. Consumed = all prior
-  // slides in full + the current reveal stage within this slide.
-  const revealUnits = slides.map((s) => (s.maxRevealStages ?? 0) + 1);
-  const totalUnits = revealUnits.reduce((sum, u) => sum + u, 0);
-  const consumedUnits =
-    revealUnits.slice(0, currentSlide).reduce((sum, u) => sum + u, 0) +
-    Math.min(revealStage, activeSlide.maxRevealStages ?? 0) +
-    1;
+  // Progress bar weights every reveal across the deck equally: one unit per
+  // frame, so a slide with eight reveals fills more of the bar than a
+  // single-shot one. Same flat list the hash numbers (`#slide-N` is frame N),
+  // so the bar and the URL can never disagree.
+  const totalUnits = steps.length;
+  const consumedUnits = Math.max(0, currentStep) + 1;
 
   return (
     <NavigationContext.Provider value={{ goToSlideById }}>

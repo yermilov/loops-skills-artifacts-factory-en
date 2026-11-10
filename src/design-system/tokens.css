@@ -58,6 +58,16 @@
   --term-blue: #7aa2f7;
   --term-red: #f7768e;
   --term-yellow: #e0af68;
+  /* Claude Code's own palette. The same values the Remotion clips use
+     (video/src/claudeTerminal.tsx), which were read off the published
+     packages — so a slide that draws the CLI and a clip that draws it look
+     like one program. They belong to the quoted interface, like the
+     terminal colours above. */
+  --cc-bg: #101014;
+  --cc-text: #ffffff;
+  --cc-dim: #999999;
+  --cc-claude: #d97757;
+  --cc-success: #4eba65;
   --music-bg: #1c1c1e;
   --music-chrome: #2a2a2c;
   --music-fg: #f2f2f7;

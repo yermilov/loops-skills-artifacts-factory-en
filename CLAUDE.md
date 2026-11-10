@@ -110,13 +110,26 @@ export const MySlide: SlideDefinition = {
 
 ## Navigation
 
+**The deck is addressed in FRAMES, not slides.** A frame is a slide at one reveal stage, and
+`#slide-N` is the N-th frame — so every reveal has its own URL and a link points at the beat you
+were actually looking at. `buildSteps()` in `useSlideNavigation.ts` flattens `slides` into that
+list: each slide contributes one frame per stage from `initialRevealStage` to `maxRevealStages`
+(the stages below `initialRevealStage` are not frames — on those slides they draw the same picture
+as the first beat, so they would get a second number for one frame). The count moves with every
+reveal you add, so read it off the deck rather than quoting a number from here.
+Adding a reveal anywhere renumbers every frame after it, so don't treat an old `#slide-N` as
+stable. `bun run pdf` is unaffected: it drives the export API, one page per slide at max reveal.
+
 The input is hidden: **Esc** calls the terminal over the slide (Esc again, or running a command,
 hides it; on a phone, tap the clock). Arrow keys, Space and PageUp/PageDown work without it.
 Commands:
-- `next` / `n` → next reveal stage, then next slide
-- `prev` / `back` / `p` / `b` → back
-- a number → that slide; `first` / `home`, `last` / `end`
-- `reveal` / `r` → next reveal stage
+- `next` / `n` → next slide (skipping the rest of this one's reveals)
+- `prev` / `back` / `p` / `b` → previous slide
+- a number → that **frame**, the same number the hash shows; a negative number counts frames back
+  from the end; `first` / `home`, `last` / `end`
+- `reveal` / `r` → next frame
+- Arrows / Space / PageUp/PageDown step one frame at a time in both directions, so going back
+  lands on the previous slide's LAST reveal — the frame you just saw, not its bare first beat
 - The bottom strip is the talk track: the magenta fill is how far the deck has got, the purple
   tick is where it should be by the clock. The clock starts when you leave the title slide and
   counts down 45:00; it turns amber, then red, when the tick runs ahead of the fill.
@@ -159,6 +172,17 @@ are spoken, and they live in each slide's `notes`, which is also where a reconst
 one. What is verbatim (the gpt-shell run, the tweet) is marked as such in the composition's own
 comment. Keep that when editing.
 
+**A slide that DRAWS Claude Code reuses the clips' own emulation.** `video/src/claudeTerminal.tsx`
+is the reference — it was built by reading the published packages, and it owns the shapes: the
+welcome box (a rounded frame in the `claude` colour, `✻ Welcome to Claude Code!`, a dim italic
+`/help for help, /status for your current setup`, then `cwd:`), `⏺` for a step and `⎿` for its
+result, indented. Its palette lives in `tokens.css` as `--cc-bg` / `--cc-text` / `--cc-dim` /
+`--cc-claude` / `--cc-success`, so a React slide and a rendered clip look like one program; never
+re-pick those colours by eye. Two details measured off the installed CLI (2.1.321) and worth
+keeping: the bullet is `\u23FA` on macOS (`\u25CF` elsewhere), and a real session shows a prompt box
+with `? for shortcuts` under it. A session already under way has no banner at all — in a real
+terminal it has scrolled off — which is also the honest way to avoid dating the frame.
+
 **Read the interface off the shipped artefact, never off memory.** For anything that was released,
 the strings, glyphs and colours are still downloadable, and they are always slightly different from
 what you remember. The Claude Code clips were built this way:
@@ -200,3 +224,8 @@ presentation-dev `presentation-stack` skill.
   `rm -rf bun.lock node_modules && bun install`.
 - **`bun run pdf` says the Playwright browser is missing** — `bunx playwright install chromium`.
 - **Build fails on `check:async-slides`** — classify the slide in `src/slides/exportContract.ts`.
+- **`bun run pdf` hangs forever on one slide** — an INFINITE animation is still running in that
+  slide's max-reveal state. The exporter awaits `document.getAnimations()`, and an infinite one
+  never settles, so it waits with no error and no timeout. Export mode now kills every animation
+  (`:root[data-export='1']` in `base.css`), so this should stay fixed — but if a slide ever starts
+  its own animation imperatively, that is where to look first.

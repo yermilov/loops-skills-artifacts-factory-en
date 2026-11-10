@@ -1,5 +1,15 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { SlideDefinition } from '../types/slides';
+
+/**
+ * One addressable frame of the deck: a slide at one of its reveal stages.
+ * The deck is navigated and addressed in STEPS, not slides — `#slide-12` is
+ * the twelfth frame you see, not the twelfth entry in `slides`.
+ */
+export interface DeckStep {
+  slideIndex: number;
+  stage: number;
+}
 
 interface UseSlideNavigationReturn {
   currentSlide: number;
@@ -13,6 +23,29 @@ interface UseSlideNavigationReturn {
   isFirstSlide: boolean;
   isLastSlide: boolean;
   revealStage: number;
+  /** 0-based index of the current frame in `steps`; -1 only if `slides` is empty. */
+  currentStep: number;
+  /** Every frame of the deck, in presentation order. */
+  steps: DeckStep[];
+}
+
+/**
+ * Flatten the deck into its frames. A slide contributes one step per reveal
+ * stage it actually shows going forward — `initialRevealStage` … `maxRevealStages`
+ * — so the numbering matches the clicks: on a slide that starts at stage 1
+ * (the clip slides in history.tsx), stage 0 draws the same picture as stage 1
+ * and would otherwise get a second number for one frame.
+ */
+export function buildSteps(slides: SlideDefinition[]): DeckStep[] {
+  const steps: DeckStep[] = [];
+  slides.forEach((slide, slideIndex) => {
+    const max = slide.maxRevealStages ?? 0;
+    const first = Math.max(0, Math.min(slide.initialRevealStage ?? 0, max));
+    for (let stage = first; stage <= max; stage += 1) {
+      steps.push({ slideIndex, stage });
+    }
+  });
+  return steps;
 }
 
 export function useSlideNavigation(
@@ -20,28 +53,49 @@ export function useSlideNavigation(
   initialSlide: number = 0
 ): UseSlideNavigationReturn {
   const totalSlides = slides.length;
+  const steps = useMemo(() => buildSteps(slides), [slides]);
 
-  // Parse initial slide from URL hash if present
-  const getInitialSlide = (): number => {
-    if (typeof window === 'undefined') return initialSlide;
-    const hash = window.location.hash;
-    const match = hash.match(/^#slide-(\d+)$/);
-    if (match) {
-      const slideNum = parseInt(match[1], 10) - 1; // Convert from 1-indexed
-      if (slideNum >= 0 && slideNum < totalSlides) {
-        return slideNum;
-      }
-    }
-    return initialSlide;
-  };
-
-  const [currentSlide, setCurrentSlide] = useState(getInitialSlide);
-  const [revealStage, setRevealStage] = useState(
-    () => slides[getInitialSlide()]?.initialRevealStage ?? 0
+  // Where a slide lands when something jumps to it by index (the first frame
+  // it shows) and where its frames start in the flat numbering.
+  const firstStepOfSlide = useCallback(
+    (slideIndex: number) => steps.findIndex(s => s.slideIndex === slideIndex),
+    [steps]
   );
 
+  // The step for a (slide, stage) pair. A stage below the slide's first frame
+  // or above its last clamps into range, so the hash always names a real frame.
+  const stepIndexOf = useCallback(
+    (slideIndex: number, stage: number): number => {
+      const exact = steps.findIndex(s => s.slideIndex === slideIndex && s.stage === stage);
+      if (exact >= 0) return exact;
+      const first = firstStepOfSlide(slideIndex);
+      if (first < 0) return -1;
+      let last = first;
+      while (last + 1 < steps.length && steps[last + 1].slideIndex === slideIndex) last += 1;
+      return stage < steps[first].stage ? first : last;
+    },
+    [steps, firstStepOfSlide]
+  );
+
+  // Parse the initial frame from the URL hash: #slide-N is the N-th step.
+  const getInitialStep = (): DeckStep => {
+    const fallback =
+      steps[Math.max(0, firstStepOfSlide(initialSlide))] ?? steps[0] ?? { slideIndex: 0, stage: 0 };
+    if (typeof window === 'undefined') return fallback;
+    const match = window.location.hash.match(/^#slide-(\d+)$/);
+    if (match) {
+      const stepNum = parseInt(match[1], 10) - 1; // the hash is 1-indexed
+      if (stepNum >= 0 && stepNum < steps.length) return steps[stepNum];
+    }
+    return fallback;
+  };
+
+  const initial = getInitialStep();
+  const [currentSlide, setCurrentSlide] = useState(initial.slideIndex);
+  const [revealStage, setRevealStage] = useState(initial.stage);
+
   // Refs to avoid stale closures in the keyboard listener
-  const revealStageRef = useRef(0);
+  const revealStageRef = useRef(revealStage);
   revealStageRef.current = revealStage;
   const currentSlideRef = useRef(currentSlide);
   currentSlideRef.current = currentSlide;
@@ -62,16 +116,33 @@ export function useSlideNavigation(
     [totalSlides]
   );
 
-  // Update URL hash when slide changes
-  const updateHash = useCallback((index: number) => {
-    if (typeof window === 'undefined') return;
-    const newHash = `#slide-${index + 1}`; // Convert to 1-indexed for URL
+  const currentStep = stepIndexOf(currentSlide, revealStage);
+
+  // The hash follows the frame, not the slide: every reveal has its own
+  // address, so a link (or a screenshot taken from the URL bar) points at the
+  // beat you were looking at. Driven by an effect rather than by each mover,
+  // so stage-only changes update it too. replaceState doesn't fire
+  // `hashchange`, so this never feeds the listener below.
+  useEffect(() => {
+    if (typeof window === 'undefined' || currentStep < 0) return;
+    const newHash = `#slide-${currentStep + 1}`;
     if (window.location.hash !== newHash) {
       window.history.replaceState(null, '', newHash);
     }
-  }, []);
+  }, [currentStep]);
 
-  // Go to specific slide
+  // Land on one frame of the deck.
+  const goToStep = useCallback(
+    (stepIndex: number) => {
+      const step = steps[Math.max(0, Math.min(stepIndex, steps.length - 1))];
+      if (!step) return;
+      setCurrentSlide(step.slideIndex);
+      setRevealStage(step.stage);
+    },
+    [steps]
+  );
+
+  // Go to a slide, at the first frame it shows
   const goToSlide = useCallback(
     (index: number) => {
       const clampedIndex = clampIndex(index);
@@ -79,11 +150,9 @@ export function useSlideNavigation(
       detourReturnRef.current = null;
       skipIndicesRef.current.clear();
       detourFiredRef.current.clear();
-      setCurrentSlide(clampedIndex);
-      setRevealStage(slides[clampedIndex]?.initialRevealStage ?? 0);
-      updateHash(clampedIndex);
+      goToStep(firstStepOfSlide(clampedIndex));
     },
-    [clampIndex, updateHash, slides]
+    [clampIndex, firstStepOfSlide, goToStep]
   );
 
   // Drive both slide and reveal stage from outside (used by PDF exporter).
@@ -96,9 +165,8 @@ export function useSlideNavigation(
       const clampedReveal = Math.max(0, Math.min(targetReveal, max));
       setCurrentSlide(clampedIndex);
       setRevealStage(clampedReveal);
-      updateHash(clampedIndex);
     },
-    [clampIndex, slides, updateHash]
+    [clampIndex, slides]
   );
 
   // Navigate to next slide
@@ -159,14 +227,13 @@ export function useSlideNavigation(
     }
   }, [slides, goToSlide, goToSlideWithReveal, clampIndex, totalSlides]);
 
-  // Roll back reveal stage if any revealed, otherwise go to previous slide
+  // One frame back — the previous reveal of this slide, or the previous
+  // slide's LAST reveal, which is what you were in fact looking at. Stops at
+  // the first frame of the deck.
   const revealPrev = useCallback(() => {
-    if (revealStageRef.current > 0) {
-      setRevealStage(prev => prev - 1);
-    } else {
-      prevSlide();
-    }
-  }, [prevSlide]);
+    const step = stepIndexOf(currentSlideRef.current, revealStageRef.current);
+    if (step > 0) goToStep(step - 1);
+  }, [stepIndexOf, goToStep]);
 
   // Parse and handle command input
   const handleCommand = useCallback(
@@ -176,16 +243,23 @@ export function useSlideNavigation(
       // Empty command - do nothing
       if (!trimmed) return;
 
-      // Check for number (go to specific slide)
-      const slideNumber = parseInt(trimmed, 10);
-      if (!isNaN(slideNumber) && slideNumber > 0) {
-        goToSlide(slideNumber - 1); // Convert from 1-indexed user input
+      // A number is a FRAME number — the same one the hash shows — so every
+      // reveal can be jumped to, not just the first beat of a slide.
+      const stepNumber = parseInt(trimmed, 10);
+      if (!isNaN(stepNumber) && stepNumber > 0) {
+        detourReturnRef.current = null;
+        skipIndicesRef.current.clear();
+        detourFiredRef.current.clear();
+        goToStep(stepNumber - 1); // convert from 1-indexed user input
         return;
       }
 
-      // Negative number — N-th slide before the last (e.g. -1 = second to last)
-      if (!isNaN(slideNumber) && slideNumber < 0) {
-        goToSlide(totalSlides - 1 + slideNumber);
+      // Negative number — N-th frame before the last (e.g. -1 = second to last)
+      if (!isNaN(stepNumber) && stepNumber < 0) {
+        detourReturnRef.current = null;
+        skipIndicesRef.current.clear();
+        detourFiredRef.current.clear();
+        goToStep(steps.length - 1 + stepNumber);
         return;
       }
 
@@ -205,7 +279,7 @@ export function useSlideNavigation(
           return;
         case 'last':
         case 'end':
-          goToSlide(totalSlides - 1);
+          goToStep(steps.length - 1);
           return;
         case 'reveal':
         case 'r':
@@ -220,7 +294,7 @@ export function useSlideNavigation(
         // No default - unrecognized commands do nothing
       }
     },
-    [goToSlide, nextSlide, prevSlide, revealNext, totalSlides]
+    [goToSlide, goToStep, nextSlide, prevSlide, revealNext, steps.length]
   );
 
   // Keyboard navigation (when not focused on input)
@@ -258,36 +332,29 @@ export function useSlideNavigation(
           break;
         case 'End':
           e.preventDefault();
-          goToSlide(totalSlides - 1);
+          goToStep(steps.length - 1);
           break;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [revealNext, revealPrev, goToSlide, totalSlides]);
+  }, [revealNext, revealPrev, goToSlide, goToStep, steps.length]);
 
-  // Listen for hash changes (browser back/forward)
+  // Listen for hash changes (browser back/forward, or a hand-edited URL)
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash;
-      const match = hash.match(/^#slide-(\d+)$/);
-      if (match) {
-        const slideNum = parseInt(match[1], 10) - 1;
-        if (slideNum >= 0 && slideNum < totalSlides && slideNum !== currentSlide) {
-          setCurrentSlide(slideNum);
-        }
+      const match = window.location.hash.match(/^#slide-(\d+)$/);
+      if (!match) return;
+      const stepNum = parseInt(match[1], 10) - 1;
+      if (stepNum >= 0 && stepNum < steps.length && stepNum !== currentStep) {
+        goToStep(stepNum);
       }
     };
 
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [totalSlides, currentSlide]);
-
-  // Set initial hash on mount
-  useEffect(() => {
-    updateHash(currentSlide);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [steps.length, currentStep, goToStep]);
 
   return {
     currentSlide,
@@ -301,5 +368,7 @@ export function useSlideNavigation(
     isFirstSlide: currentSlide === 0,
     isLastSlide: currentSlide === totalSlides - 1,
     revealStage,
+    currentStep,
+    steps,
   };
 }

@@ -3,11 +3,25 @@ import { AboutMeSlide } from './AboutMeSlide';
 import { PreplyProductSlide, PreplyHiringSlide } from './preply';
 import {
   ChatGptLaunchSlide,
+  ChatUiSlide,
   GptShellSlide,
   CursorTabSlide,
   ClaudeCodeSlide,
+  GithubMcpSlide,
   DayPlanSlide,
 } from './history';
+import { HowLlmWorksSlide } from './HowLlmWorksSlide';
+import { CodingAgentSlide } from './CodingAgentSlide';
+import { McpSlide } from './McpSlide';
+import { TodoMemeSlide } from './TodoMemeSlide';
+import { SdkChatSlide } from './SdkChatSlide';
+import { WhyNotSlide } from './WhyNotSlide';
+import { GigachadSlide } from './GigachadSlide';
+import { CategorySlide } from './CategorySlide';
+import { MyWaySlide } from './MyWaySlide';
+import { BootstrapSlide, BootstrapRestSlide } from './BootstrapSlide';
+import { ClaudeMdSlide } from './ClaudeMdSlide';
+import { LoopIsCronSlide } from './LoopIsCronSlide';
 import { MusicPrototypeSlide } from './MusicPrototypeSlide';
 import { LayoutTwoColumns } from './LayoutTwoColumns';
 import { LayoutBullets } from './LayoutBullets';
@@ -53,10 +67,25 @@ export const slides = [
   PreplyProductSlide,
   PreplyHiringSlide,
   ChatGptLaunchSlide,
+  HowLlmWorksSlide,
+  ChatUiSlide,
   GptShellSlide,
   MusicPrototypeSlide,
   CursorTabSlide,
   ClaudeCodeSlide,
+  CodingAgentSlide,
+  GithubMcpSlide,
+  McpSlide,
   DayPlanSlide,
+  TodoMemeSlide,
+  SdkChatSlide,
+  WhyNotSlide,
+  GigachadSlide,
+  CategorySlide,
+  MyWaySlide,
+  BootstrapSlide,
+  ClaudeMdSlide,
+  BootstrapRestSlide,
+  LoopIsCronSlide,
   FinalSlide,
 ];

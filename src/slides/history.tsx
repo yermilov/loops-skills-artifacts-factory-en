@@ -54,20 +54,21 @@ function Clip({ src, slideId }: { src: string; slideId: string }) {
   return <video ref={ref} src={src} autoPlay={!EXPORT_MODE} muted playsInline preload="auto" />;
 }
 
-/** 2022 — the tweet, the last quiet afternoon, and what people did with it. */
+/** 2022 — the tweet, and the last quiet afternoon.
+ *
+ *  What people then DID with it is the slide after next (`ChatUiSlide`): the
+ *  mechanism is explained in between, so «a whole Linux box inside the chat
+ *  box» lands on an audience that already knows it is a text completion. */
 export const ChatGptLaunchSlide: SlideDefinition = {
   id: 'history-2022',
-  asyncSettle: true,
-  maxRevealStages: 3,
+  // No `asyncSettle` here, unlike its neighbours: the export parks a slide on
+  // its MAX reveal, and this slide's last beat is the photo, a plain <img>.
+  // Slide.tsx's auto-settle plus the exporter's own image wait is the right
+  // path for it; opting out would leave nobody to settle it, since only
+  // <Clip> does that for itself.
+  maxRevealStages: 2,
   initialRevealStage: 1,
   content: ({ revealStage }) => {
-    if (revealStage >= 3) {
-      return (
-        <div className="ww-history">
-          <Clip key="ui" src={chatUi2022} slideId="history-2022" />
-        </div>
-      );
-    }
     if (revealStage >= 2) {
       return (
         <>
@@ -87,8 +88,24 @@ export const ChatGptLaunchSlide: SlideDefinition = {
   notes:
     '2022. Beat 1: @sama, 30 November 2022, «today we launched ChatGPT». '
     + 'Beat 2: all of us moments before that tweet (the photo is generated, not real). '
-    + 'Beat 3: what people actually did with it — Jonas Degrave running a whole Linux box '
-    + 'inside the chat box, engraved.blog, 3 December 2022. Transcript verbatim.',
+    + 'Then the explainer slide, and only after it what people did with it.',
+};
+
+/** What people did with it, once they had it: a whole Linux box inside the
+ *  chat box — i.e. the completion trick from the slide before, pushed. */
+export const ChatUiSlide: SlideDefinition = {
+  id: 'history-2022-chatui',
+  asyncSettle: true,
+  content: () => (
+    <div className="ww-history">
+      <Clip key="ui" src={chatUi2022} slideId="history-2022-chatui" />
+    </div>
+  ),
+  notes:
+    'What people actually did with it — Jonas Degrave running a whole Linux box inside the chat '
+    + 'box, engraved.blog, 3 December 2022. Transcript verbatim. Point at the mechanism from the '
+    + 'previous slide: the «terminal» is the model completing a script in which one of the '
+    + 'characters is a shell.',
 };
 
 /** 2023 — the claim, then the loop making good on it. */
@@ -132,36 +149,47 @@ export const CursorTabSlide: SlideDefinition = {
 };
 
 /**
- * Claude Code, in two beats of one session: the first release that asked for
- * everything, and then MCP, which changed WHAT it asks for. Beat 2 opens on
- * beat 1's last frame — the clips share their transcript (video/src/
- * claudeTerminal.tsx), so the reveal reads as the session carrying on.
+ * The first released Claude Code: you chat in the terminal and it asks before
+ * every move. The explainer slide comes next, and `GithubMcpSlide` after it
+ * returns to this very session — its clip opens on this one's LAST frame
+ * (both are drawn by the shared transcript in video/src/claudeTerminal.tsx).
  */
 export const ClaudeCodeSlide: SlideDefinition = {
   id: 'history-claude-code',
   asyncSettle: true,
-  maxRevealStages: 2,
-  initialRevealStage: 1,
-  content: ({ revealStage }) => (
+  content: () => (
     <div className="ww-history">
-      {revealStage >= 2 ? (
-        <Clip key="github-mcp" src={githubMcp} slideId="history-claude-code" />
-      ) : (
-        <Clip key="claude-code" src={claudeCodeFirst} slideId="history-claude-code" />
-      )}
+      <Clip key="claude-code" src={claudeCodeFirst} slideId="history-claude-code" />
     </div>
   ),
   notes:
-    'Beat 1 — the first released Claude Code: 0.2.9 on npm, 24 February 2025, a research '
+    'The first released Claude Code: 0.2.9 on npm, 24 February 2025, a research '
     + 'preview on Claude 3.7 Sonnet. You chatted to it in the terminal and it asked before '
-    + 'everything: run a command, edit a file, run the SAME command again. '
-    + 'Beat 2 — MCP, announced 25 November 2024 with six servers on day one (Google Drive, '
-    + 'Slack, GitHub, Git, Postgres, Puppeteer). Same session, carried on: now the terminal '
-    + 'holds somebody else\'s API, and the permission is no longer «run npm test» but «use '
-    + 'github:list_issues» — one rule per TOOL, which is why he picks «don\'t ask again» twice. '
-    + 'That second option, in every box on both beats, is the whole story of the two years '
-    + 'after. Every string, glyph and colour is read off the published packages (0.2.9 and '
-    + '1.0.0); the session, the repo and the issue numbers are invented — a reconstruction.',
+    + 'everything: run a command, edit a file, run the SAME command again. Note the second '
+    + 'option in every box — «don\'t ask again» — it is the whole story of the two years after. '
+    + 'Every string, glyph and colour is read off the published package 0.2.9; the session and '
+    + 'the repo are invented — a reconstruction. Next slide: what is actually going on under '
+    + 'that prompt.',
+};
+
+/** Back in the same session, now with somebody else's API in it. The clip
+ *  opens on the frame `ClaudeCodeSlide` ended on, so it reads as a return. */
+export const GithubMcpSlide: SlideDefinition = {
+  id: 'history-github-mcp',
+  asyncSettle: true,
+  content: () => (
+    <div className="ww-history">
+      <Clip key="github-mcp" src={githubMcp} slideId="history-github-mcp" />
+    </div>
+  ),
+  notes:
+    'MCP, announced 25 November 2024 with six servers on day one (Google Drive, '
+    + 'Slack, GitHub, Git, Postgres, Puppeteer). The same session you saw two slides ago, '
+    + 'carried on — the clip opens on the exact frame that one ended on: now the terminal '
+    + 'holds somebody else\'s API, and the tools are no longer the three baked into the '
+    + 'harness. The permission is no longer «run npm test» but «use github:list_issues» — one '
+    + 'rule per TOOL, which is why he picks «don\'t ask again» twice. Strings and glyphs are '
+    + 'read off claude-code 1.0.0; the repo and issue numbers are invented.',
 };
 
 /** The terminal leaves the repo: two MCP servers that have nothing to do with
