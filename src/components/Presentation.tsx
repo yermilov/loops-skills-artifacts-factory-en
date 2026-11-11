@@ -9,6 +9,7 @@ import { TalkTrack } from './TalkTrack';
 import { RotateHint } from './RotateHint';
 import { preloadSlideAssets } from '../utils/preloadAssets';
 import { exportRegistry } from './exportRegistry';
+import { useFrameSettled } from './frameSettled';
 
 declare global {
   interface Window {
@@ -69,6 +70,8 @@ export function Presentation({ slides, initialSlide = 0 }: PresentationProps) {
   // stage's edges, so they spread with it. In export mode the viewport is
   // exactly 1920×1080 and the stage is the template's own canvas, 1:1.
   const stageHostRef = useRef<HTMLDivElement>(null);
+  // The ready mark: lit once the current frame has finished playing.
+  const frameSettled = useFrameSettled(currentStep, stageHostRef);
   const [stage, setStage] = useState({ scale: 1, width: STAGE_WIDTH, height: STAGE_HEIGHT });
   useLayoutEffect(() => {
     const el = stageHostRef.current;
@@ -260,6 +263,7 @@ export function Presentation({ slides, initialSlide = 0 }: PresentationProps) {
           <TalkTrack
             elapsedSeconds={timerSeconds}
             progress={totalUnits > 0 ? consumedUnits / totalUnits : 0}
+            ready={frameSettled}
             onOpenCommand={() => setCommandOpen((open) => !open)}
           />
         </div>

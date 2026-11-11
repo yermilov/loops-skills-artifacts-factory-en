@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { SlideDefinition } from '../types/slides';
 import songsData from '../assets/music/songs.json';
+import { useAnimating } from '../components/frameSettled';
 
 /** The covers are imported eagerly so a slide never waits on the network. */
 const COVERS = import.meta.glob('../assets/music/*.jpg', { eager: true, import: 'default' }) as Record<
@@ -219,6 +220,8 @@ function PrototypeSession() {
     ms += A2.length * STREAM_MS + 400;
     return { cmd, q1, tool1, script1, result1, answer1, q2, tool2, script2, result2, answer2, end: ms };
   }, [A1, A2, Q2, R1, R2]);
+  // Busy until the scripted session has played out (the player keeps ticking after; that is ambient).
+  useAnimating(t < at.end);
 
   const lines1 = Math.max(0, Math.min(SCRIPT1.length, Math.floor((t - at.script1) / LINE_MS)));
   const lines2 = Math.max(0, Math.min(SCRIPT2.length, Math.floor((t - at.script2) / LINE_MS)));

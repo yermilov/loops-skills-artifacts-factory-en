@@ -1,13 +1,34 @@
-import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useRef, type CSSProperties, type ReactNode } from 'react';
 import { SlideDefinition } from '../types/slides';
 import { CornerRings } from '../components/wawtech';
+import { useAnimating } from '../components/frameSettled';
+import {
+  Chip,
+  HarnessWindow,
+  isSpecial,
+  Laptop,
+  lerp,
+  Names,
+  Orb,
+  ORB,
+  ORB_D,
+  out,
+  seg,
+  SHEET,
+  Stamp,
+  useOneShotClock,
+  useUnitSlots,
+  WIN,
+  type Pt,
+  type Who,
+} from '../components/ctxScene';
 
 /**
  * What /loop actually is, with no words but the ones on the page: a sheet of
  * paper — the context — filling up from three writers, played in one go.
  *
  * The writers are objects, not avatars: the USER is a laptop (its keys light
- * as it types; it closes its lid when it leaves), the HARNESS is a terminal
+ * as it types), the HARNESS is a terminal
  * window across the top (its screen is the desk where the loop lives: a timer
  * dial and whatever it is holding), the MODEL is a glowing orb that breathes
  * while it streams.
@@ -16,7 +37,7 @@ import { CornerRings } from '../components/wawtech';
  *  · the user types «/loop 10m do the next task»;
  *  · the harness reads the line (a violet band) and lifts copies of «10m» and
  *    «do the next task» onto its screen: a dial and a held chip;
- *  · the laptop closes; the dial runs one lap in mint; the held chip drops onto
+ *  · the user steps away; the dial runs one lap in mint; the held chip drops onto
  *    the sheet as «User: do the next task» — the harness's stamp and ink;
  *  · the model reads the whole sheet (a magenta band, that line included) and
  *    answers with a tool call; the harness lifts the call onto its screen, runs
@@ -27,10 +48,6 @@ import { CornerRings } from '../components/wawtech';
  * Design worked out with a Fable 5.2 consult, 11.11.2026.
  */
 
-const EXPORT_MODE =
-  typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('export') === '1';
-
-type Who = 'harness' | 'user' | 'model';
 type Turn = { who: Who; label: string; text: string; act: number };
 
 const PROMPT = 'do the next task';
@@ -44,7 +61,6 @@ const TURNS: Turn[] = [
 ];
 const CALL_UNIT = 4; // «Bash(curl» — where the harness picks the call up
 const CALL_TEXT = 'Bash(curl …/tasks)';
-const isSpecial = (u: string) => u.trim().startsWith('<|');
 /** a turn's units: characters when typed, word tokens otherwise */
 const units = (t: Turn) => (t.who === 'user' ? [...t.text] : t.text.split(' ').map((w, i, a) => (i < a.length - 1 ? `${w} ` : w)));
 const LOOP_CHARS = '/loop 10m'.length;
@@ -90,128 +106,15 @@ const ACT_MS = [A1, A2, A3, A4, A5, A6];
 const ACT_AT = ACT_MS.map((_, i) => ACT_MS.slice(0, i).reduce((a, b) => a + b, 0));
 const TOTAL = ACT_MS.reduce((a, b) => a + b, 0);
 
-// ── helpers ─────────────────────────────────────────────────────────────────
-const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
-const seg = (t: number, a: number, d: number) => clamp01((t - a) / d);
-const out = (p: number) => (p >= 1 ? 1 : 1 - Math.pow(2, -10 * p));
-const lerp = (a: number, b: number, p: number) => a + (b - a) * p;
-type Pt = [number, number];
-
-/** ms since the slide appeared; it plays once and holds. The PDF gets the end. */
-function useClock(): number {
-  const [t, setT] = useState(EXPORT_MODE ? TOTAL : 0);
-  useLayoutEffect(() => {
-    if (EXPORT_MODE) return;
-    const start = performance.now();
-    let id = requestAnimationFrame(function tick(now) {
-      setT(now - start);
-      if (now - start <= TOTAL) id = requestAnimationFrame(tick);
-    });
-    return () => cancelAnimationFrame(id);
-  }, []);
-  return t;
-}
 
 // ── geometry (a fixed 1700 × 870 canvas) ────────────────────────────────────
-const SHEET = { x: 360, y: 214, w: 980, h: 646 };
-const WIN = { x: 510, y: 0, w: 690, h: 178 }; // the harness's terminal window
 const DIAL: Pt = [WIN.x + 250, 108];
 const DIAL_R = 54;
 const HELD: Pt = [WIN.x + 348, 62];
 const TOOL_SLOT: Pt = [WIN.x + 348, 118];
-const LAPTOP = { x: 20, y: 380, w: 300 };
-const ORB: Pt = [1530, 500];
-const ORB_D = 220;
-
-// ── the writers ─────────────────────────────────────────────────────────────
-/** The user: a laptop. Its keys light as it types; it closes when it leaves. */
-function Laptop({ lit, typed, closed }: { lit: boolean; typed: number; closed: number }) {
-  // A laptop seen slightly from above: the lid stands on the hinge (y=150) and, as it
-  // closes, its top edge swings down over the deck to the front edge (y=214).
-  const lid = 1 - closed; // 1 open, 0 shut
-  const top = lerp(214, 8, lid);
-  const half = lerp(142, 112, lid);
-  const upright = top < 150; // which face of the lid we see
-  const keys: ReactNode[] = [];
-  for (let r = 0; r < 3; r++) {
-    for (let c = 0; c < 11; c++) {
-      const on = lit && (typed * 7 + r * 3 + c * 5) % 11 === 0;
-      const y = 158 + r * 11;
-      const inset = (r * 4);
-      keys.push(<rect key={`${r}-${c}`} className={`ww-ctx__key${on ? ' is-on' : ''}`} x={48 - inset + c * (19 + (r * 8) / 11)} y={y} width={15 + r * 0.6} height="7" rx="2" />);
-    }
-  }
-  const content = Math.max(0, (lid - 0.7) / 0.3);
-  return (
-    <svg className={`ww-ctx__laptop${lit ? ' is-lit' : ''}`} viewBox="0 0 300 228" style={{ left: LAPTOP.x, top: LAPTOP.y, width: LAPTOP.w }} aria-hidden="true">
-      {/* the deck: keyboard and trackpad, seen from above */}
-      <path className="ww-ctx__base" d="M38 150h224l30 64H8z" />
-      {keys}
-      <rect className="ww-ctx__trackpad" x="118" y="194" width="64" height="14" rx="3" />
-      <path className="ww-ctx__lip" d="M8 214h284v4a6 6 0 0 1-6 6H14a6 6 0 0 1-6-6z" />
-      {/* the lid */}
-      {upright ? (
-        <>
-          <path className="ww-ctx__lid" d={`M38 150H262L${150 + half} ${top}H${150 - half}z`} />
-          <path className="ww-ctx__screen" d={`M50 140H250L${150 + half - 11} ${top + 11}H${150 - half + 11}z`} style={{ opacity: Math.min(1, lid * 1.4) }} />
-          {Array.from({ length: 3 }, (_, i) => (
-            <rect key={i} className="ww-ctx__screenline" x="66" y={36 + i * 28} width={Math.max(0, Math.min(168, (typed - i * 12) * 7))} height="12" rx="6" style={{ opacity: content }} />
-          ))}
-          {lit && content > 0.5 && (
-            <rect className="ww-ctx__screencaret" x={66 + Math.min(Math.max(typed - Math.floor(typed / 12) * 12, 0), 24) * 7} y={33 + Math.min(Math.floor(typed / 12), 2) * 28} width="9" height="18" />
-          )}
-        </>
-      ) : (
-        <>
-          <path className="ww-ctx__lidback" d={`M38 150h224L${150 + half} ${top}H${150 - half}z`} />
-          <circle className="ww-ctx__logo" cx="150" cy={(150 + top) / 2} r={Math.max(0, (top - 150) / 5)} />
-        </>
-      )}
-    </svg>
-  );
-}
-
-/** The model: an orb that breathes while it streams. */
-function Orb({ lit, breath }: { lit: boolean; breath: number }) {
-  const s = ORB_D * (1 + breath * 0.05);
-  return (
-    <div className={`ww-ctx__orb${lit ? ' is-lit' : ''}`} style={{ width: s, height: s, transform: `translate(${ORB[0] - s / 2}px, ${ORB[1] - s / 2}px)` }}>
-      <svg viewBox="0 0 64 64" aria-hidden="true">
-        <path d="M32 8c2 13 11 22 24 24-13 2-22 11-24 24-2-13-11-22-24-24 13-2 22-11 24-24z" />
-      </svg>
-    </div>
-  );
-}
-
-/** a writer's stamp in the margin of the sheet */
-function Stamp({ who }: { who: Who }) {
-  if (who === 'user') {
-    return (
-      <svg viewBox="0 0 64 64" aria-hidden="true">
-        <rect x="16" y="16" width="32" height="22" rx="3" className="ww-ctx__stampline" />
-        <path d="M10 44h44l-4 6H14z" />
-      </svg>
-    );
-  }
-  if (who === 'model') {
-    return (
-      <svg viewBox="0 0 64 64" aria-hidden="true">
-        <path d="M32 8c2 13 11 22 24 24-13 2-22 11-24 24-2-13-11-22-24-24 13-2 22-11 24-24z" />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-      <path className="ww-ctx__stampline" d="M14 20l14 12-14 12" />
-      <path className="ww-ctx__stampline" d="M32 46h18" />
-    </svg>
-  );
-}
-
-type Rect = { x: number; y: number; w: number; h: number };
 
 function Sheet() {
-  const g = useClock();
+  const g = useOneShotClock(TOTAL);
   // which act we are in, and how far into it
   let act = ACT_MS.length;
   for (let i = 0; i < ACT_MS.length; i++) {
@@ -222,6 +125,7 @@ function Sheet() {
   }
   const t = Math.min(g - ACT_AT[act - 1], ACT_MS[act - 1]);
   const done = g >= TOTAL;
+  useAnimating(!done);
 
   // ── what is written: per turn, how many units, and how each one looks
   const turnUnits = TURNS.map(units);
@@ -265,25 +169,11 @@ function Sheet() {
 
   // ── measured slots of every unit (laid out from the start, hidden till written)
   const root = useRef<HTMLDivElement>(null);
-  const [slots, setSlots] = useState<Record<string, Rect>>({});
-  useLayoutEffect(() => {
-    const r = root.current;
-    if (!r) return;
-    const o = r.getBoundingClientRect();
-    const k = o.width / r.offsetWidth || 1;
-    const next: Record<string, Rect> = {};
-    r.querySelectorAll<HTMLElement>('[data-u]').forEach((el) => {
-      const b = el.getBoundingClientRect();
-      next[el.dataset.u!] = { x: (b.left - o.left) / k, y: (b.top - o.top) / k, w: b.width / k, h: b.height / k };
-    });
-    setSlots(next);
-  }, []);
-  const unitRect = (ti: number, ui: number) => slots[`${ti}-${ui}`];
+  const slots = useUnitSlots(root);  const unitRect = (ti: number, ui: number) => slots[`${ti}-${ui}`];
 
   // ── the writers' states
   const typed = act === 2 ? shownOf(1) : act > 2 ? units(TURNS[1]).length : 0;
   const userLit = act === 2 && t < A2 - TAIL;
-  const closed = act > 4 ? 1 : act === 4 ? out(seg(t, LEAD, AWAY_MS)) : 0;
   const harnessLit =
     !done &&
     ((act === 1 && t < A1 - TAIL) ||
@@ -406,15 +296,7 @@ function Sheet() {
       </div>
 
       {/* the harness: a terminal window; its screen is the desk */}
-      <div className={`ww-ctx__win${harnessLit ? ' is-lit' : ''}`} style={{ left: WIN.x, top: WIN.y, width: WIN.w, height: WIN.h }}>
-        <div className="ww-ctx__winbar">
-          <span className="ww-ctx__dot ww-ctx__dot--red" />
-          <span className="ww-ctx__dot ww-ctx__dot--amber" />
-          <span className="ww-ctx__dot ww-ctx__dot--green" />
-          <span className="ww-ctx__wintitle">harness</span>
-        </div>
-        <span className="ww-ctx__winprompt">&gt;_</span>
-      </div>
+      <HarnessWindow lit={harnessLit} />
       <svg
         className="ww-ctx__dial"
         viewBox="-68 -68 136 136"
@@ -433,28 +315,12 @@ function Sheet() {
         </>
       )}
 
-      <Laptop lit={userLit} typed={typed} closed={closed} />
-      <div className="ww-ctx__name ww-ctx__name--user" style={{ transform: `translate(${LAPTOP.x + LAPTOP.w / 2}px, ${LAPTOP.y + 252}px) translateX(-50%)` }}>
-        User
-      </div>
+      <Laptop lit={userLit} typed={typed} />
       <Orb lit={modelLit} breath={breath} />
-      <div className="ww-ctx__name ww-ctx__name--model" style={{ transform: `translate(${ORB[0]}px, ${ORB[1] + ORB_D / 2 + 28}px) translateX(-50%)` }}>
-        Model
-      </div>
+      <Names />
 
       {flights}
     </div>
-  );
-}
-
-function Chip({ text, who, at, special = false, small = false, scale = 1 }: { text: string; who: Who; at: Pt; special?: boolean; small?: boolean; scale?: number }) {
-  return (
-    <span
-      className={`ww-ctx__chip ww-ctx__chip--${who}${special ? ' is-special' : ''}${small ? ' is-small' : ''}`}
-      style={{ transform: `translate(${at[0]}px, ${at[1]}px) scale(${scale})` }}
-    >
-      {text}
-    </span>
   );
 }
 
@@ -473,8 +339,8 @@ export const LoopIsCronSlide: SlideDefinition = {
     + 'narrate over it. The sheet in the middle is the context. Three writers: your laptop on the left, '
     + 'the model — the orb — on the right, and the harness, the terminal window on top. '
     + 'The harness drops the system prompt. You type /loop 10m do the next task. The harness reads it '
-    + 'and lifts it onto its own screen: a ten-minute dial and the prompt it will hold. You close the '
-    + 'laptop and leave. The dial runs its lap, and the harness drops the prompt onto the sheet — '
+    + 'and lifts it onto its own screen: a ten-minute dial and the prompt it will hold. You walk '
+    + 'away. The dial runs its lap, and the harness drops the prompt onto the sheet — '
     + 'labelled User, but look at the stamp in the margin and the ink: it is the harness\'s. '
     + 'The model reads the whole sheet, that line included, and cannot tell it was not you. Its '
     + 'answer turns into a tool call; the harness — not the model — lifts it onto its screen and runs '

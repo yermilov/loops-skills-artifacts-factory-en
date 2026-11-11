@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { SlideDefinition } from '../types/slides';
 import { CornerRings } from '../components/wawtech';
+import { useAnimating } from '../components/frameSettled';
 
 /**
  * Where it starts: one session, and a queue that did not exist an hour ago.
@@ -27,8 +28,10 @@ const RUN_MS = 800;
 const GAP_MS = 280;
 
 type Line =
-  /** `fired`: the harness put it there (a /loop tick) — it lands whole, nobody types it */
-  | { kind: 'you'; text: string; fired?: boolean }
+  /** `fired`: a /loop tick — the harness submits the prompt itself, nobody types it. The
+   *  CLI (2.1.322) draws no «>» line for it (the prompt is a meta message); it draws one
+   *  dim system line, «✻ Claude resuming /loop wakeup (<when>)». `fired` is that <when>. */
+  | { kind: 'you'; text: string; fired?: string }
   | { kind: 'say'; text: string }
   | {
       kind: 'tool';
@@ -192,8 +195,9 @@ const STEPS: Line[][] = [
   ],
   [
     // The tick: /loop re-enters its own prompt into the same session — the
-    // harness writes the «user» turn (the previous slide), so it lands whole.
-    { kind: 'you', text: LOOP_PROMPT, fired: true },
+    // harness writes the «user» turn (the previous slide). The CLI shows only
+    // its own dim wakeup line; the time is in its format, illustrative.
+    { kind: 'you', text: LOOP_PROMPT, fired: 'Jun 6 9:52pm' },
     {
       kind: 'tool',
       text: `Bash(curl -s '${API}/api/tasks?status=todo')`,
@@ -325,6 +329,14 @@ function Row({
   done: boolean;
   typing?: boolean;
 }) {
+  if (line.kind === 'you' && line.fired) {
+    // The loop, not you: the CLI's own system line for a /loop wakeup (✻ = its «claude» glyph).
+    return (
+      <div className="ww-boot__fire">
+        <span aria-hidden="true">✻</span> Claude resuming /loop wakeup ({line.fired})
+      </div>
+    );
+  }
   if (line.kind === 'you') {
     return (
       <div className="ww-boot__you">
@@ -375,6 +387,8 @@ function Session({ stage, from }: { stage: number; from: number }) {
   const t = useClock(stage);
   const earlier = STEPS.slice(0, from + stage - 1).flat();
   const live = played(STEPS[from + stage - 1] ?? [], t);
+  // Busy until the newest beat has fully typed/streamed (frameSettled.ts).
+  useAnimating(live.some((row) => !row.done));
 
   return (
     <div className="ww-boot__term">
@@ -492,8 +506,10 @@ export const BootstrapTaskSlide: SlideDefinition = {
     'Back in the session, where we left it: the loop is ticking, the queue is empty. '
     + 'Beat 1 — I ask for the first real task, and the agent creates it through the API it built an '
     + 'hour ago. Nobody does it yet: the loop is waiting. '
-    + 'Beat 2 — ten minutes later the tick fires. Point at the prompt line: nobody typed it, it lands '
-    + 'whole — that is the harness writing a «User:» turn, exactly the sheet on the previous slide. '
+    + 'Beat 2 — ten minutes later the tick fires. Point at the dim line: «Claude resuming /loop '
+    + 'wakeup». Nobody typed anything — the harness submitted the loop\'s prompt itself, the very '
+    + '«User:» turn from the sheet on the previous slide; Claude Code does not even draw it as a '
+    + 'prompt, only that line (read off the CLI, 2.1.322). '
     + 'Then it is an ordinary run: fetch the queue, claim the task, change the schema, migrate, the '
     + 'service, the route, the tests, commit, deploy, close the task. The first feature of the '
     + 'queue was built by the queue. '

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { SlideDefinition } from '../types/slides';
 import { CornerRings } from '../components/wawtech';
+import { useAnimating } from '../components/frameSettled';
 
 /**
  * How the thing in that chat window actually works, in three beats.
@@ -164,6 +165,8 @@ function LlmScene({ stage }: { stage: number }) {
   const flying = stage === 1 && t >= FLY_MS;
 
   const looping = stage === 2 ? completionCount < COMPLETION.length : stage >= 3 && replyCount < REPLY.length;
+  // Busy until beat 1's token has flown, then while the loop is producing tokens.
+  useAnimating((stage === 1 && t < FLY_MS) || looping);
 
   return (
     <div className={`ww-llm${stage >= 3 ? ' ww-llm--chat' : ''}`}>

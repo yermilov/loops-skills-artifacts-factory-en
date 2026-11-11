@@ -1,7 +1,6 @@
-import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { SlideDefinition } from '../types/slides';
 import { CornerRings } from '../components/wawtech';
-import { PREFACE, TOOLS, TURNS, WHO_LABEL } from './CodingAgentSlide';
+import { buildPlay, CARD_LEFT, CtxPlay, type PlayCard, type PlayTurn } from '../components/ctxPlay';
 
 /**
  * What that CLAUDE.md the session just wrote actually IS, in two beats, with
@@ -12,12 +11,13 @@ import { PREFACE, TOOLS, TURNS, WHO_LABEL } from './CodingAgentSlide';
  *          / architecture you ask the agent for, principles are the handful of
  *          things it keeps getting wrong, each «instead do X and remember it in
  *          CLAUDE.md».
- * Beat 6 — where it goes: into the very system prompt the coding-agent slide
- *          showed (its preface and tool declarations are imported from that
- *          slide, so the two can never drift), under one line the harness
- *          adds. The model never sees a file — only that text. The paste is
- *          animated: the file's card flies and shrinks into its slot under the
- *          prompt (a measured FLIP, so it lands exactly where it is laid out).
+ * Beat 6 — where it goes, played in the context-sheet language of the
+ *          coding-agent and MCP slides (components/ctxPlay.tsx): the file sits
+ *          on disk as a card in the top-left corner, in your ink — you wrote
+ *          it. The harness drops the system prompt and its own line, reads the
+ *          file and pastes it onto the sheet; you type a task; the model reads
+ *          the whole sheet — your project rules included — and starts working.
+ *          The model never sees a file — only that text.
  *
  * The practice comes from the earlier talk (pragmatic-vibe-clauding,
  * «what goes into AGENTS.md?»), condensed to what fits a stage.
@@ -35,40 +35,45 @@ const SECTIONS = [
   },
 ];
 
-/** Beats 1–5 bring in one section each; beat 6 is the system prompt. */
+/** Beats 1–5 bring in one section each; beat 6 is the paste, played. */
 const PROMPT_STAGE = SECTIONS.length + 1;
-
-/** PDF capture must photograph the landed state, not the flight. */
-const EXPORT_MODE =
-  typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('export') === '1';
-
-/** The paste, choreographed: the big file's text fades, then its card flies
- *  and shrinks into its slot under the prompt while the prompt fades in; it
- *  lands as the harness's line plus the file. */
-const FADE_MS = 250;
-const FLY_MS = 850;
 
 /** The line the harness puts above the file. */
 const PASTE_LINE = 'Here is an important context about the project you are working on:';
 
-/** The file, once as the structure (beat 1) and once as pasted (beat 2). */
-function ClaudeMd({ compact, shown = SECTIONS.length }: { compact: boolean; shown?: number }) {
+const CARDS: PlayCard[] = [{ name: 'CLAUDE.md', via: '~/src/my-shop', icon: 'file', ink: 'user', box: CARD_LEFT }];
+
+const PASTE: PlayTurn[] = [
+  { who: 'harness', label: 'System:', text: 'You are Claude Code. Tools: Read, Edit, Bash.' },
+  { who: 'harness', label: '', text: PASTE_LINE },
+  {
+    who: 'harness',
+    label: '',
+    text: SECTIONS.map((x) => `## ${x.name}`).join(' '),
+    from: 0,
+    ask: 'read CLAUDE.md',
+    carry: 'CLAUDE.md',
+  },
+  { who: 'user', label: 'User:', text: 'fix the VAT bug in cart.ts' },
+  { who: 'model', label: 'Assistant:', text: '<|tool_call|> Read(cart.ts) <|end_call|>', call: 'Read(cart.ts)' },
+];
+
+const PLAY = buildPlay(PASTE);
+
+/** The file, one section a click (beats 1–5). */
+function ClaudeMd({ shown = SECTIONS.length }: { shown?: number }) {
   return (
-    <div className={`ww-cmd__card${compact ? ' ww-cmd__card--pasted' : ''}`}>
-      {/* pasted, the harness's own line already says what follows */}
-      {!compact && <div className="ww-cmd__name"># CLAUDE.md</div>}
+    <div className="ww-cmd__card">
+      <div className="ww-cmd__name"># CLAUDE.md</div>
       <div className="ww-cmd__sections">
         {SECTIONS.map((s, i) => (
-          <div
-            key={s.name}
-            className={`ww-cmd__section${i < shown ? '' : ' ww-cmd__section--hidden'}`}
-          >
+          <div key={s.name} className={`ww-cmd__section${i < shown ? '' : ' ww-cmd__section--hidden'}`}>
             <div className="ww-cmd__head">
               <span className="ww-cmd__hash">##</span>
               <span className="ww-cmd__sname">{s.name}</span>
-              {!compact && <span className="ww-cmd__who">{s.who}</span>}
+              <span className="ww-cmd__who">{s.who}</span>
             </div>
-            {!compact && <div className="ww-cmd__hint">{s.hint}</div>}
+            <div className="ww-cmd__hint">{s.hint}</div>
           </div>
         ))}
       </div>
@@ -76,143 +81,20 @@ function ClaudeMd({ compact, shown = SECTIONS.length }: { compact: boolean; show
   );
 }
 
-type Box = { left: number; top: number; width: number; height: number };
-
-/** A rect in the stage's own (unscaled) pixels, relative to `root`. */
-function boxOf(el: HTMLElement, root: HTMLElement): Box {
-  const r = el.getBoundingClientRect();
-  const o = root.getBoundingClientRect();
-  const scale = o.width / root.offsetWidth || 1;
-  return {
-    left: (r.left - o.left) / scale,
-    top: (r.top - o.top) / scale,
-    width: r.width / scale,
-    height: r.height / scale,
-  };
-}
-
-/** Beats 1–5 show the file alone; on beat 6 the file is pasted into the prompt.
- *  The paste is a FLIP: both cards are laid out where they belong, measured,
- *  and a blank card box travels from the one to the other. */
+/** Beats 1–5: the file alone, one section a click. Beat 6: the paste, played. */
 function Scene({ stage }: { stage: number }) {
-  const pasting = stage >= PROMPT_STAGE;
-  const root = useRef<HTMLDivElement>(null);
-  const big = useRef<HTMLDivElement>(null);
-  const slot = useRef<HTMLDivElement>(null);
-  // idle → fade (the big file's text goes) → launch (its card is swapped for an
-  // identical blank box, at the same place) → fly (the box travels) → done
-  const [phase, setPhase] = useState<'idle' | 'fade' | 'launch' | 'fly' | 'done'>(
-    EXPORT_MODE ? 'done' : 'idle'
-  );
-  const [ghost, setGhost] = useState<Box | null>(null);
-  const [to, setTo] = useState<Box | null>(null);
-
-  useLayoutEffect(() => {
-    if (!pasting) {
-      setPhase(EXPORT_MODE ? 'done' : 'idle');
-      setGhost(null);
-      return;
-    }
-    if (EXPORT_MODE || !root.current || !big.current || !slot.current) {
-      setPhase('done');
-      return;
-    }
-    setGhost(boxOf(big.current, root.current));
-    setTo(boxOf(slot.current, root.current));
-    setPhase('fade');
-    let frame = 0;
-    const launch = setTimeout(() => {
-      setPhase('launch');
-      // two frames, so the box is painted at its start before it moves
-      frame = requestAnimationFrame(() => {
-        frame = requestAnimationFrame(() => setPhase('fly'));
-      });
-    }, FADE_MS);
-    const land = setTimeout(() => setPhase('done'), FADE_MS + FLY_MS + 50);
-    return () => {
-      clearTimeout(launch);
-      clearTimeout(land);
-      cancelAnimationFrame(frame);
-    };
-  }, [pasting]);
-
-  const ghostAt = phase === 'fly' && to ? to : ghost;
-  const ghostStyle: CSSProperties | undefined = ghostAt
-    ? {
-        left: ghostAt.left,
-        top: ghostAt.top,
-        width: ghostAt.width,
-        height: ghostAt.height,
-        transition: phase === 'fly' ? `all ${FLY_MS}ms var(--ease)` : 'none',
-      }
-    : undefined;
-  // the inserted block's room: none until the card flies, then it opens to
-  // exactly the block's height, then lets go
-  const wrapStyle: CSSProperties =
-    phase === 'done'
-      ? {}
-      : {
-          height: phase === 'fly' && to ? to.height : 0,
-          overflow: 'hidden',
-          transition: phase === 'fly' ? `height ${FLY_MS}ms var(--ease)` : 'none',
-        };
-  const bigGone = pasting && (phase === 'launch' || phase === 'fly' || phase === 'done');
-
-  return (
-    <div className="ww-cmd" ref={root}>
-      {/* the file alone — still laid out on beat 6, so it can be measured, but
-          its text fades as soon as the paste starts */}
-      <div
-        className={`ww-cmd__layer${pasting && phase === 'fade' ? ' ww-cmd__layer--fading' : ''}${
-          bigGone ? ' ww-cmd__layer--gone' : ''
-        }`}
-      >
-        <div ref={big}>
-          <ClaudeMd compact={false} shown={pasting ? SECTIONS.length : stage} />
-        </div>
+  if (stage >= PROMPT_STAGE) {
+    return (
+      <div className="ww-ctxstage">
+        <CtxPlay scene={PASTE} cards={CARDS} play={PLAY} />
       </div>
-
-      {pasting && (
-        <div className={`ww-cmd__layer ww-cmd__layer--prompt${phase === 'idle' ? ' ww-cmd__layer--waiting' : ''}`}>
-          <div className="ww-llm__panel ww-cmd__prompt">
-            <div className="ww-llm__script">
-              <div className="ww-llm__pre">{PREFACE}</div>
-              {/* the same declarations, one line each so the pasted file fits under them */}
-              {TOOLS.map((tool) => (
-                <div key={tool.call} className="ww-cmd__decl">
-                  <span className="ww-llm__pre">{tool.intro}</span>{' '}
-                  <span className="ww-agent__call">{tool.call}</span>
-                </div>
-              ))}
-              {/* what the harness inserts: its own line, and the file under it —
-                  one block, so the card flies to (and lands as) both. It opens
-                  up between the tools and the conversation, pushing the user's
-                  message down, as the card arrives. */}
-              <div className="ww-cmd__slotwrap" style={wrapStyle}>
-                <div ref={slot} className={`ww-cmd__slot${phase === 'done' ? '' : ' ww-cmd__slot--empty'}`}>
-                  <div className="ww-llm__pre ww-cmd__pasteline">{PASTE_LINE}</div>
-                  <ClaudeMd compact />
-                </div>
-              </div>
-              {/* the conversation, as on the coding-agent slide: the user's first
-                  turn is there from the start, the assistant's after the paste */}
-              <div className="ww-llm__line">
-                <span className="ww-llm__who ww-agent__who--user">{WHO_LABEL.user}</span>{' '}
-                <span className="ww-agent__said">{TURNS[0].text}</span>
-              </div>
-              <div className={`ww-llm__line${phase === 'done' ? '' : ' ww-cmd__slot--empty'}`}>
-                <span className="ww-llm__who ww-agent__who--model">{WHO_LABEL.model}</span>{' '}
-                <span className="ww-llm__pre">…</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* the travelling card: a blank box from the big file to its slot */}
-      {pasting && (phase === 'launch' || phase === 'fly') && ghostStyle && (
-        <div className={`ww-cmd__ghost${phase === 'fly' ? ' ww-cmd__ghost--flying' : ''}`} style={ghostStyle} />
-      )}
+    );
+  }
+  return (
+    <div className="ww-cmd">
+      <div className="ww-cmd__layer">
+        <ClaudeMd shown={stage} />
+      </div>
     </div>
   );
 }
@@ -236,9 +118,10 @@ export const ClaudeMdSlide: SlideDefinition = {
     + 'written as «instead do X» — when it keeps making the same mistake, do not fix the output, '
     + 'say «instead do X and remember it in CLAUDE.md». The next run already '
     + 'knows. '
-    + 'Beat 6 — and it is not magic. This is the system prompt from the coding-agent slide: '
-    + '«You are Claude Code», the three tool declarations — and under them the harness reads '
-    + 'CLAUDE.md off disk and pastes it in, under a line of its own. The model never sees a file; '
+    + 'Beat 6 — and it is not magic. It plays by itself, about fifteen seconds. The same sheet as '
+    + 'before: the harness drops the system prompt and a line of its own — «here is an important '
+    + 'context» — then reads CLAUDE.md off disk, top left, and pastes it in. You type the task. The '
+    + 'model reads the whole sheet, your rules included, and starts working. It never sees a file; '
     + 'by the time it reads anything, your project rules are already in its text. '
     + 'Then the practice, said rather than shown: it is to the agent what README.md is to a '
     + 'person; it is re-read on every run, which is why it needs no memory; one per subfolder in '

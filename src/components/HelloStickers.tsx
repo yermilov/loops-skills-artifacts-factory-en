@@ -229,3 +229,57 @@ export function HelloStickers({ hidden }: { hidden: boolean }) {
     </div>
   );
 }
+
+/** «Thank you», in the same pack and the same nations, as the closing slide's frame around
+ *  its two QR codes: `top` and `bottom` rows (the longer words); `left`, `mid` and `right`
+ *  stacked down the gaps beside and between the QR stands (the short ones). */
+type Sticker = { text: string; flag: keyof typeof FLAGS; r: number; dy: number };
+export const THANKS: Record<'top' | 'bottom' | 'left' | 'mid' | 'right', Sticker[]> = {
+  top: [
+    { text: 'Дякую', flag: 'ua', r: -5, dy: -4 },
+    { text: 'Thank you', flag: 'gb', r: 3, dy: 8 },
+    { text: 'Dziękuję', flag: 'pl', r: -3, dy: -6 },
+    { text: 'Obrigado', flag: 'pt', r: 4, dy: 6 },
+    { text: 'Gracias', flag: 'es', r: -4, dy: -2 },
+    { text: 'ありがとう', flag: 'jp', r: 3, dy: 8 },
+  ],
+  bottom: [
+    { text: 'Dank je', flag: 'nl', r: 4, dy: 4 },
+    { text: 'Aitäh', flag: 'ee', r: -5, dy: -6 },
+    { text: 'Paldies', flag: 'lv', r: 3, dy: 6 },
+    { text: 'Mulțumesc', flag: 'ro', r: -3, dy: -4 },
+    { text: 'Ευχαριστώ', flag: 'gr', r: 5, dy: 8 },
+    { text: 'Tak', flag: 'dk', r: -4, dy: -2 },
+  ],
+  left: [
+    { text: 'Danke', flag: 'de', r: -6, dy: 0 },
+    { text: 'Ačiū', flag: 'lt', r: 5, dy: 0 },
+    { text: 'Děkuji', flag: 'cz', r: -3, dy: 0 },
+  ],
+  mid: [
+    { text: 'Merci', flag: 'fr', r: 5, dy: 0 },
+    { text: 'Grazie', flag: 'it', r: -4, dy: 0 },
+    { text: 'Tack', flag: 'se', r: 6, dy: 0 },
+  ],
+  right: [
+    { text: 'Kiitos', flag: 'fi', r: -5, dy: 0 },
+    { text: 'Takk', flag: 'is', r: 4, dy: 0 },
+    { text: 'Hvala', flag: 'hr', r: -3, dy: 0 },
+  ],
+};
+
+/** One group of «thank you» stickers, laid out by its container (`.ww-thanks--*`). */
+export function ThankStickers({ group }: { group: keyof typeof THANKS }) {
+  return (
+    <div className={`ww-thanks ww-thanks--${group}`} aria-hidden="true">
+      {THANKS[group].map((h) => (
+        <div key={h.flag} className="ww-hello ww-hello--small" style={{ transform: `translateY(${h.dy}px) rotate(${h.r}deg)` }}>
+          <svg className="ww-hello__flag" viewBox="0 0 30 20">
+            {FLAGS[h.flag]}
+          </svg>
+          <span>{h.text}</span>
+        </div>
+      ))}
+    </div>
+  );
+}

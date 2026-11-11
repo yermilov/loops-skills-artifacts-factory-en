@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { SlideDefinition } from '../types/slides';
 import { CornerRings } from '../components/wawtech';
+import { useAnimating } from '../components/frameSettled';
 
 /**
  * Why the thing on the previous slide was not the assistant — one frame, no
@@ -87,7 +88,10 @@ function Ticket({ i }: { i: number }) {
 }
 
 function Board() {
-  const cols = boardAt(useClock());
+  const t = useClock();
+  const cols = boardAt(t);
+  // Busy until the whole backlog has landed; the slow «done» trickle after that is the joke, ambient.
+  useAnimating(t < FIRST_ADD_MS + (BACKLOG.length - 1) * ADD_MS);
   const columns: { name: string; ids: number[]; tone: string }[] = [
     { name: 'To do', ids: cols.todo, tone: 'todo' },
     { name: 'In progress', ids: cols.doing, tone: 'doing' },

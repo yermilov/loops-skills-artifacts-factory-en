@@ -61,6 +61,20 @@
   color: var(--terminal-green);
 }
 
+/* Ready mark: dim while the frame is still playing, magenta once it is over. */
+.talk-track__ready {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  line-height: 1;
+  color: color-mix(in srgb, var(--ww-purple) 18%, transparent);
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+.talk-track__ready--on {
+  color: var(--ww-magenta);
+  transform: scale(1.25);
+}
+
 .talk-track--warn .talk-track__clock { color: var(--terminal-yellow); }
 .talk-track--late .talk-track__clock { color: var(--terminal-red); }
 .talk-track--late .talk-track__tick { background: var(--terminal-red); }

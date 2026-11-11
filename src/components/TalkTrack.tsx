@@ -7,6 +7,9 @@
  *    - the purple TICK is the clock — where the deck should be by now.
  *
  *  Tick past the end of the fill → running late, and the clock turns red.
+ *  Right of the clock sits the READY mark (▸): it lights up once everything
+ *  the current frame plays — reveals, clips, typed sessions — is over, so the
+ *  next click won't cut an animation short (see frameSettled.ts).
  *  The terminal is not here any more: Esc calls it over the slide (see
  *  Presentation.tsx), and the clock is the tap target for a phone with no Esc.
  */
@@ -23,6 +26,8 @@ interface TalkTrackProps {
   elapsedSeconds: number;
   /** Reveal-weighted deck progress (0..1) — where the MATERIAL has got to. */
   progress: number;
+  /** The current frame has finished playing — the next click is safe. */
+  ready: boolean;
   onOpenCommand: () => void;
 }
 
@@ -32,7 +37,7 @@ function formatClock(seconds: number): string {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-export function TalkTrack({ elapsedSeconds, progress, onOpenCommand }: TalkTrackProps) {
+export function TalkTrack({ elapsedSeconds, progress, ready, onOpenCommand }: TalkTrackProps) {
   const flown = Math.min(1, elapsedSeconds / TOTAL_TIME);
   const covered = Math.min(1, Math.max(0, progress));
   const remaining = Math.max(0, TOTAL_TIME - elapsedSeconds);
@@ -63,6 +68,15 @@ export function TalkTrack({ elapsedSeconds, progress, onOpenCommand }: TalkTrack
       >
         {formatClock(remaining)}
       </button>
+      {/* The ready mark: lights up once every animation of this frame is over. */}
+      <span
+        className={`talk-track__ready${ready ? ' talk-track__ready--on' : ''}`}
+        role="status"
+        aria-label={ready ? 'Ready for the next click' : 'Still playing'}
+        title={ready ? 'ready' : 'playing…'}
+      >
+        ▸
+      </span>
     </div>
   );
 }
