@@ -20,7 +20,7 @@
 .ww-corner-rings--top-left     { left: 0;  top: 0;    transform: scaleY(-1); }
 
 /* Flow content on titled slides must paint above the (positioned) rings. */
-.slide--titled > :not(.ww-corner-rings):not(.ww-bottom-fade):not(.ww-full-bg):not(.slide-title):not(.ww-preply-product__logo) {
+.slide--titled > :not(.ww-corner-rings):not(.ww-bottom-fade):not(.ww-full-bg):not(.slide-title):not(.ww-preply-product__logo):not(.ww-overlay) {
   position: relative;
   z-index: 1;
 }
@@ -2174,7 +2174,7 @@
 .ww-ctx__server--user .ww-ctx__servericon { stroke: var(--ww-purple); }
 .ww-ctx__server--user .ww-ctx__servername { color: var(--ww-purple); }
 .ww-ctx__server--user .ww-ctx__servervia { color: var(--ww-text-muted); }
-.ww-ctx__servervia { font-family: var(--font-mono); font-size: var(--font-size-code); color: color-mix(in srgb, var(--terminal-green) 75%, var(--ww-paper)); white-space: nowrap; }
+.ww-ctx__servervia { font-family: var(--font-mono); font-size: var(--font-size-code); color: color-mix(in srgb, var(--terminal-green) 75%, var(--ww-paper)); }  /* wraps (e.g. after a hyphen) rather than running past the card */
 .ww-ctx__turn--harness { color: var(--ww-violet); }
 .ww-ctx__turn--user { color: var(--ww-purple); }
 .ww-ctx__turn--model { color: var(--ww-magenta); font-weight: 600; }
@@ -2409,4 +2409,91 @@
   line-height: var(--line-height-tight);
   color: var(--ww-white);
   text-wrap: balance;
+}
+
+/* ─── Skill — a unit of knowledge: the specimen left, the notes right ──────
+   The left panel is a tree that grows with the bullets (or, on the file beat,
+   SKILL.md itself); the right keeps the newest three notes. */
+.ww-skillunit {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-xl);
+  align-items: center;
+}
+.ww-skillunit__specimen { min-width: 0; }
+.ww-skillunit__pointer { margin-top: var(--space-md); }
+.ww-skillunit__notes { margin: 0; }
+.ww-skillunit__notes li + li { margin-top: var(--space-lg); }
+.ww-skillunit__notes ul { margin: 0; }
+.ww-skillunit__tipshead {
+  margin: var(--space-xl) 0 var(--space-sm);
+  font-size: var(--font-size-code);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--ww-magenta);
+}
+.ww-skillunit__tips li + li { margin-top: var(--space-sm); }
+
+/* ─── How do I write great skills? — the labyrinth, one bullet a click ───── */
+.ww-labyrinth { margin: auto 0; max-width: 1560px; }
+.ww-labyrinth li + li { margin-top: var(--space-lg); }
+.ww-labyrinth a { word-break: break-all; }
+/* the first «NOOOO»: Bobby Finn's teacher peeks up from below the stage's
+   bottom edge, slowly and only partway, then sinks back — once (the ready mark
+   waits for it). The PDF gets him standing there instead. */
+.ww-labyrinth__finn {
+  position: absolute;
+  right: calc(var(--stage-pad-x) + 120px);
+  bottom: 0;
+  margin: 0;
+  width: 400px;
+  transform: translateY(110%);
+  animation: wwFinnPeek 3.2s ease-in-out 0.2s both;
+}
+/* a peek: he pops up fast (~0.5 s) only about two thirds of the way (face and
+   the «NO»), lingers, and sinks back slowly before he is ever fully out */
+@keyframes wwFinnPeek {
+  0% { transform: translateY(110%); }
+  16% { transform: translateY(32%); }
+  62% { transform: translateY(30%); }
+  100% { transform: translateY(110%); }
+}
+:root[data-export='1'] .ww-labyrinth__finn { transform: none; bottom: var(--stage-pad-y); }
+.ww-labyrinth__finn img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-card);
+  box-shadow: 0 16px 40px color-mix(in srgb, var(--ww-purple) 22%, transparent);
+  transform: rotate(2deg);
+}
+/* the three skills and their dependencies, bottom right on the exit beat */
+.ww-labyrinth__graph {
+  position: absolute;
+  right: var(--stage-pad-x);
+  bottom: var(--space-lg);
+  overflow: visible;
+}
+.ww-labyrinth__node { fill: var(--ww-white); stroke: var(--ww-purple); stroke-width: 3; }
+.ww-labyrinth__label { font-family: var(--font-mono); font-size: var(--font-size-code); font-weight: 600; fill: var(--ww-purple); }
+.ww-labyrinth__edge { fill: none; stroke: var(--ww-magenta); stroke-width: 4; stroke-linecap: round; }
+.ww-labyrinth__arrowhead { fill: var(--ww-magenta); }
+.ww-labyrinth__edge--new { stroke: var(--ww-violet); }
+.ww-labyrinth__arrowhead--new { fill: var(--ww-violet); }
+.ww-labyrinth__node--new { stroke: var(--ww-violet); stroke-width: 4; }
+/* the credit sits ON the photo, in the empty wall top right: the peek never
+   lifts the figure's bottom edge into view, so a caption below it would never show */
+.ww-labyrinth__finn figcaption {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  padding: 2px 14px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--ww-white) 88%, transparent);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  color: var(--ww-purple);
+  transform: rotate(2deg);
 }

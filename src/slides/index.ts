@@ -38,6 +38,10 @@ import { LayoutBigTitle } from './LayoutBigTitle';
 import { LayoutContacts } from './LayoutContacts';
 import { FinalSlide } from './FinalSlide';
 import { MementoSlide } from './MementoSlide';
+import { SkillUnitSlide, SkillUnitRefsSlide, SkillUnitScriptsSlide } from './SkillUnitSlide';
+import { SkillReadRefSlide, SkillRunScriptSlide } from './SkillFilesSlide';
+import { SkillLabyrinthSlide } from './SkillLabyrinthSlide';
+import { SkillToolSlide } from './SkillToolSlide';
 
 /**
  * LAYOUT GALLERY — one example of every WAWTech layout, kept as reference code
@@ -89,5 +93,12 @@ export const slides = [
   BootstrapTaskSlide,
   BootstrapProcessSlide,
   MementoSlide,
+  SkillUnitSlide,
+  SkillToolSlide,
+  SkillUnitRefsSlide,
+  SkillReadRefSlide,
+  SkillUnitScriptsSlide,
+  SkillRunScriptSlide,
+  SkillLabyrinthSlide,
   FinalSlide,
 ];

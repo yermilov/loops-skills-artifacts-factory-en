@@ -326,6 +326,8 @@ export function CtxPlay({ scene, cards, play }: { scene: PlayTurn[]; cards: Play
           if (tt && !style.background) {
             style.background = `color-mix(in srgb, var(--ww-${tt.ink === 'harness' ? 'violet' : 'magenta'}) ${Math.round(tt.a * 100)}%, transparent)`;
           }
+          // «¶» is a line break in a turn's text (a list the harness pastes, one item a line)
+          if (text.trim() === '¶') return <br key={ui} data-u={`${ti}-${ui}`} />;
           const unit = (
             <span key={ui} data-u={`${ti}-${ui}`} className={cls} style={style}>
               {text}
