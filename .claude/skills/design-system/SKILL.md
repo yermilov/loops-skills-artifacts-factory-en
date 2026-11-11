@@ -122,6 +122,16 @@ Rules the template implies:
   the only one with two.
 - **Accents are areas, not hairlines**: magenta and mint appear as boxes, cards, pills and bars.
 - **Reveal with `<Reveal at stage>`** (visibility, not unmounting) so nothing jumps.
+- **An absolutely-positioned child of a TITLED slide needs the `ww-overlay` class.** The titled
+  body makes every direct child `position: relative` (so flow content paints above the rings); a
+  badge, a watermark or a floating label without `ww-overlay` is silently stretched into the flow
+  instead of pinned to its corner.
+- **A line of inline CHIPS wraps only where you let it.** Adjacent `white-space: pre` spans with no
+  whitespace between them are one unbreakable run: the whole run drops to the next line as a block.
+  Put a `<wbr />` after each chip (see `HowLlmWorksSlide`) and give the line a looser `line-height`.
+- **Text that changes on a click stays IN the sentence.** A name, a number or a status that a reveal
+  replaces keeps its place in the line and wraps with it; do not move it into a block of its own to
+  make room for an animation (Yarik, 12.11.2026, the rename chain on the Steinberger slide).
 - **Split a dense slide rather than shrinking text.** 40px on the stage is the floor for anything
   the audience must read.
 

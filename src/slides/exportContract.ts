@@ -19,4 +19,7 @@ export const ASYNC_LITERAL_FALSE_POSITIVES = new Set<string>([
   // The `await`/`async` in this one is inside the displayed SDK snippet; the
   // slide itself renders a string and does no runtime work.
   'SdkChatSlide',
+  // The runner slide SHOWS the daemon's loop (`await fetch('/api/tasks/next')`,
+  // `await sleep(...)`) as lines of text; nothing in the file awaits anything.
+  'improve',
 ]);

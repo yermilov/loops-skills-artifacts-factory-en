@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/styles/slide-layouts.css"
+        ],
+        "createdAt": "2026-11-11T22:55:40.501Z",
+        "reason": "agent decided: the mint left edge is this deck's documented code-panel pattern (design-system skill: 'code on the grey panel with a mint edge'; same rule at components.css:188 and slide-layouts.css:961)"
+      }
+    ]
+  }
+}

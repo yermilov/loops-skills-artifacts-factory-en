@@ -45,6 +45,10 @@ src/
 │   ├── preply.tsx                # Preply: product (three steps, reveal one by one), «We are hiring» — booth, cities, careers QR
 │   ├── history.tsx               # «Origins of AI agents» 2022 + 2023 — Remotion clips
 │   ├── MusicPrototypeSlide.tsx   # 2024 — live Ghostty/oh-my-zsh terminal + macOS Music, random song
+│   ├── BootstrapSlide.tsx        # the Claude Code session replay — also EXPORTS its engine (Line, played, Row, useClock)
+│   ├── AssistantSessionSlide.tsx # «Our barebones AI assistant is ready»: one session, seven beats, a prop beside it
+│   ├── improve.tsx               # «How do we improve it?» — six slides sharing one problem LEDGER at the foot
+│   ├── factory.tsx               # SCHEMATIC placeholders (DRAFT pill) for the last arc — outlines, not slides
 │   ├── AgendaSlide.tsx           # template p.3 — exports AGENDA (the four words)
 │   ├── sectionSlide.tsx          # factory for section openers (template p.11/18)
 │   ├── sections.tsx              # one opener per AGENDA word
@@ -166,6 +170,12 @@ ffmpeg -y -i video/out/<Id>.mp4 -vf "scale=in_range=full:out_range=tv,format=yuv
   -c:v libx264 -profile:v high -crf 21 -color_range tv -colorspace bt709 \
   -movflags +faststart -an src/assets/history/<id>.mp4
 ```
+
+**A slide that replays a Claude Code SESSION reuses `BootstrapSlide`'s engine** — `Line` (incl.
+`note`, a line the CLI prints by itself), `played`, `Row`, `useClock` are exported from it;
+`AssistantSessionSlide.tsx` is the worked example with a status line and a side prop. A slide that
+only DISPLAYS code containing `await`/`fetch` must be listed in `ASYNC_LITERAL_FALSE_POSITIVES`
+(`exportContract.ts`) or `check:async-slides` fails the build.
 
 **A recreated interface is a factual claim.** The slides carry no captions — the dates and sources
 are spoken, and they live in each slide's `notes`, which is also where a reconstruction says it is

@@ -44,6 +44,16 @@ import { SkillLabyrinthSlide } from './SkillLabyrinthSlide';
 import { SelfLearningSlide } from './SelfLearningSlide';
 import { GoldbergSlide } from './GoldbergSlide';
 import { SkillToolSlide } from './SkillToolSlide';
+import { AssistantSessionSlide } from './AssistantSessionSlide';
+import {
+  TaskBoardSlide,
+  AttentionQueueSlide,
+  ArtifactsSlide,
+  ArtifactPagesSlide,
+  RunnerSlide,
+  AnyAgentSlide,
+} from './improve';
+import { ArchitectureSlide, HuntersSlide, CoolStuffSlide, FactoryRevealSlide, FactoryPhilosophySlide } from './factory';
 
 /**
  * LAYOUT GALLERY — one example of every WAWTech layout, kept as reference code
@@ -104,5 +114,17 @@ export const slides = [
   SkillLabyrinthSlide,
   SelfLearningSlide,
   GoldbergSlide,
+  AssistantSessionSlide,
+  TaskBoardSlide,
+  AttentionQueueSlide,
+  ArtifactsSlide,
+  ArtifactPagesSlide,
+  RunnerSlide,
+  AnyAgentSlide,
+  ArchitectureSlide,
+  HuntersSlide,
+  CoolStuffSlide,
+  FactoryRevealSlide,
+  FactoryPhilosophySlide,
   FinalSlide,
 ];

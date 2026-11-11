@@ -6,7 +6,7 @@ import { useAnimating } from '../components/frameSettled';
 /**
  * Why the thing on the previous slide was not the assistant — one frame, no
  * title: he says «why it did not work» out loud. A kanban board: tickets land
- * in To do every 0.7 s and one gets done every 5 s, so the backlog only grows —
+ * in To do every 0.7 s and one gets done every 3.4 s, so the backlog only grows —
  * and the last ticket in, «proactive agent», is the one this talk is about.
  *
  * The ticket list is not invented: every one of them is a real round of work in
@@ -43,9 +43,9 @@ const TICK_MS = 100;
 const ADD_MS = 700;
 /** …and one is finished only this often — the whole joke is the ratio. There
  *  is always exactly one in progress: the next is picked when the last is done. */
-const WORK_MS = 5000;
+const WORK_MS = 3400;
 const FIRST_ADD_MS = 400;
-const FIRST_PICK_MS = 3000;
+const FIRST_PICK_MS = 1800;
 
 /** The board's clock, from the moment the slide opens. In export mode it jumps
  *  to «a while later». */

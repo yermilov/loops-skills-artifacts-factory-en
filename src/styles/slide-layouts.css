@@ -1306,6 +1306,14 @@
   padding: 2px var(--space-xs);
   border-radius: 6px;
 }
+/* the line being generated wraps between its chips: give the rows room apart */
+.ww-llm__line--live {
+  line-height: 1.75;
+}
+.ww-llm__script .ww-llm__token--end {
+  padding: 2px var(--space-xs);
+  border-radius: 6px;
+}
 .ww-llm__chat {
   display: flex;
   flex-direction: column;
@@ -1741,9 +1749,6 @@
   font-weight: 600;
   color: var(--ww-magenta);
 }
-.ww-chad__name + .ww-chad__name {
-  margin-left: 0.35em;
-}
 .ww-chad__cat {
   display: flex;
   flex-direction: column;
@@ -1765,12 +1770,57 @@
   color: var(--ww-purple);
   font-size: var(--font-size-code);
 }
+/* ── The rename chain, as a correction made on paper ──────────────────────
+   Each click strikes the current name out with a hand-drawn red line that
+   DRAWS itself, and writes the next name a little higher — the way you fix a
+   name you have already written. The finished state is the default, so the
+   PDF export (which kills every animation) gets struck lines, not blank ones. */
+/* The names stay inside the sentence and wrap with it. */
+.ww-chad__name {
+  position: relative;
+  display: inline-block;
+}
+.ww-chad__name + .ww-chad__name {
+  margin-left: 0.3em;
+}
+/* the one just written: it arrives, barely tilted, as if by hand */
+.ww-chad__name:last-child {
+  animation: ww-chad-write 420ms var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)) 260ms backwards;
+}
+@keyframes ww-chad-write {
+  from {
+    opacity: 0;
+    transform: translate(-0.12em, 0.42em) rotate(-2.2deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
 .ww-chad__name--dead {
   color: var(--ww-text-muted);
   font-weight: 400;
-  text-decoration: line-through;
-  text-decoration-color: var(--ww-magenta);
-  text-decoration-thickness: 3px;
+}
+.ww-chad__strike {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+.ww-chad__strike path {
+  fill: none;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  stroke-linecap: round;
+  animation: ww-chad-strike 380ms cubic-bezier(0.65, 0, 0.35, 1) backwards;
+}
+@keyframes ww-chad-strike {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 /* ─── The pivot: «You know, I'm something of an engineer myself» ──────────
@@ -1916,6 +1966,10 @@
 /* A /loop wakeup: the CLI's own dim system line, not a prompt anybody typed. */
 .ww-boot__fire {
   color: var(--cc-dim);
+}
+/* the CLI's own red, for «Context low» */
+.ww-boot__fire--error {
+  color: var(--term-red);
 }
 /* A paste, shown expanded under the prompt that sent it (the CLI collapses it). */
 .ww-boot__paste {
@@ -2555,3 +2609,1287 @@
 .ww-gb__mark--more text { fill: var(--ww-white); }
 .ww-gb__badge { fill: var(--ww-magenta); }
 .ww-gb__badgetext { font-family: var(--font-sans); font-size: var(--font-size-code); font-weight: 700; fill: var(--ww-white); }
+
+/* ─── «Our barebones AI assistant is ready» — the session, played ─────────
+   Title band, then one line that says what this beat proves (a verdict pill
+   and a claim), then the scene: a Claude Code session on the left (the
+   `ww-boot…` terminal, with a status line under its prompt) and, on the
+   right, the ONE thing to look at this beat — the photo, the phone, a meter,
+   a map. Mint is «great», magenta is «not so great». */
+
+.ww-asst {
+  flex: 1;
+  min-height: 0;
+  /* the titled body starts well under a one-line title; take that air back */
+  margin-top: -76px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+.ww-asst__claim {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  color: var(--ww-purple);
+  line-height: var(--line-height-tight);
+  animation: ww-asst-in 360ms var(--ease) backwards;
+}
+.ww-asst__verdict {
+  flex: none;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-code);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-caps);
+}
+.ww-asst__claim--great .ww-asst__verdict {
+  background: var(--ww-mint);
+  color: var(--ww-purple);
+}
+.ww-asst__claim--not .ww-asst__verdict {
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+}
+@keyframes ww-asst-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.ww-asst__scene {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: var(--space-lg);
+}
+.ww-asst__term {
+  flex: 1;
+}
+/* under the prompt: the hint on the left, your own status line on the right */
+.ww-asst__status {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: 4px var(--space-md) 0;
+  color: var(--cc-dim);
+}
+.ww-asst__statusline {
+  white-space: nowrap;
+}
+/* the figure this beat is about */
+.ww-asst__hot {
+  padding: 2px var(--space-xs);
+  border-radius: 6px;
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+}
+
+.ww-asst__side {
+  flex: none;
+  width: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: ww-asst-in 420ms var(--ease) 120ms backwards;
+}
+
+/* beat 1 — what «barebones» is made of */
+.ww-asst__recipe {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  font-family: var(--font-mono);
+  color: var(--ww-purple);
+}
+.ww-asst__part {
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-card);
+  background: var(--ww-lavender);
+}
+.ww-asst__plus {
+  color: var(--ww-magenta);
+  font-weight: 600;
+}
+
+/* beat 2 — the photo behind «[Image #1]» */
+.ww-asst__bill {
+  width: 340px;
+  padding: var(--space-lg) var(--space-md);
+  background: var(--ww-white);
+  box-shadow: 0 24px 48px color-mix(in srgb, var(--ww-purple) 22%, transparent);
+  transform: rotate(-4deg);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  color: var(--ww-ink);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.ww-asst__billhead {
+  font-weight: 600;
+  text-transform: uppercase;
+  padding-bottom: var(--space-sm);
+  border-bottom: 3px dashed color-mix(in srgb, var(--ww-ink) 30%, transparent);
+}
+.ww-asst__billrow,
+.ww-asst__billtotal {
+  display: flex;
+  justify-content: space-between;
+}
+.ww-asst__billrow {
+  color: color-mix(in srgb, var(--ww-ink) 60%, transparent);
+}
+.ww-asst__billtotal {
+  padding-top: var(--space-sm);
+  border-top: 3px dashed color-mix(in srgb, var(--ww-ink) 30%, transparent);
+  font-weight: 600;
+}
+.ww-asst__billdue {
+  align-self: flex-end;
+  padding: 2px var(--space-sm);
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+  font-weight: 600;
+}
+
+/* …it sits in a Finder window, as a file, and is DRAGGED onto the prompt: the
+   thumbnail and the ghost are the same bill, scaled down as one object. */
+.ww-asst__scene {
+  position: relative;
+}
+.ww-asst__finder {
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--ww-white);
+  box-shadow: 0 24px 48px color-mix(in srgb, var(--ww-purple) 22%, transparent);
+  color: var(--ww-purple);
+}
+.ww-asst__finderbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--ww-card);
+}
+.ww-asst__findertitle {
+  margin-left: var(--space-sm);
+  font-size: var(--font-size-code);
+  font-weight: 600;
+}
+.ww-asst__files {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-sm);
+}
+.ww-asst__file {
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) 0;
+  border-radius: 14px;
+}
+.ww-asst__file--picked {
+  background: var(--ww-lavender);
+}
+.ww-asst__thumb {
+  width: 150px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ww-asst__thumb .ww-asst__bill,
+.ww-asst__ghost .ww-asst__bill {
+  flex: none;
+  transform: scale(0.4);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--ww-purple) 30%, transparent);
+}
+.ww-asst__thumb--blank {
+  width: 136px;
+  height: 164px;
+  margin: 8px 7px;
+  border-radius: 6px;
+  background: var(--ww-grad-card);
+}
+.ww-asst__filename {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  line-height: 1;
+  white-space: nowrap;
+  transform: scale(0.72);
+}
+/* the file in flight: lifted in Finder, carried across, dropped on the prompt.
+   Invisible by default, so export mode (no animations) shows no stray copy. */
+.ww-asst__ghost {
+  position: absolute;
+  z-index: 4;
+  left: 96px;
+  top: calc(100% - 210px);
+  width: 150px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  animation: ww-asst-drag 1900ms cubic-bezier(0.6, 0, 0.3, 1) backwards;
+}
+@keyframes ww-asst-drag {
+  0% {
+    left: calc(100% - 372px);
+    top: 150px;
+    opacity: 0;
+    transform: scale(1);
+  }
+  14% {
+    left: calc(100% - 372px);
+    top: 150px;
+    opacity: 1;
+    transform: scale(1.12) rotate(-5deg);
+  }
+  82% {
+    left: 96px;
+    top: calc(100% - 210px);
+    opacity: 1;
+    transform: scale(0.9) rotate(-5deg);
+  }
+  100% {
+    left: 96px;
+    top: calc(100% - 210px);
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+
+/* beats 3–4 — the phone: drawn large in the deck's own type, then scaled down
+   as one object, so no fifth font size appears */
+.ww-asst__phonewrap {
+  width: 350px;
+  height: 650px;
+  position: relative;
+}
+.ww-asst__phone {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 560px;
+  height: 1040px;
+  transform: scale(0.625);
+  transform-origin: top left;
+  display: flex;
+  flex-direction: column;
+  border: 14px solid var(--ww-ink);
+  border-radius: 72px;
+  overflow: hidden;
+  background: var(--app-bg);
+  box-shadow: 0 40px 80px color-mix(in srgb, var(--ww-purple) 28%, transparent);
+  font-size: var(--font-size-code);
+  line-height: var(--line-height-tight);
+  color: var(--app-text);
+}
+/* the session's title, with where it runs under it */
+.ww-asst__phonehead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xl) var(--space-md) var(--space-sm);
+  border-bottom: 2px solid var(--app-bubble);
+}
+.ww-asst__phoneback,
+.ww-asst__phonemore {
+  flex: none;
+  color: var(--app-dim);
+}
+.ww-asst__phonetitle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.ww-asst__phonename {
+  font-weight: 600;
+}
+.ww-asst__phonetag {
+  color: var(--app-dim);
+  transform: scale(0.8);
+}
+.ww-asst__phonebody {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  overflow: hidden;
+}
+.ww-asst__bubble {
+  animation: ww-asst-in 300ms var(--ease) backwards;
+}
+/* mine: a rounded bubble on the right */
+.ww-asst__bubble--you {
+  align-self: flex-end;
+  max-width: 86%;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-card);
+  background: var(--app-bubble);
+}
+/* Claude's: plain text, no bubble */
+.ww-asst__bubble--say {
+  align-self: stretch;
+}
+/* a tool call: one dim row, folded */
+.ww-asst__toolrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--app-dim);
+  font-family: var(--font-mono);
+  animation: ww-asst-in 300ms var(--ease) backwards;
+}
+.ww-asst__composer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin: 0 var(--space-sm) var(--space-lg);
+  padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-md);
+  border-radius: 36px;
+  background: var(--app-bubble);
+}
+.ww-asst__plus {
+  flex: none;
+  color: var(--app-dim);
+}
+.ww-asst__phoneinput {
+  flex: 1;
+  min-width: 0;
+}
+.ww-asst__placeholder {
+  color: var(--app-dim);
+}
+.ww-asst__send {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--app-dim) 35%, transparent);
+  color: var(--app-bg);
+  font-weight: 700;
+  transition: background var(--transition-normal);
+}
+.ww-asst__send--on {
+  background: var(--cc-claude);
+  color: var(--ww-white);
+}
+
+/* beats 5–7 — the status line's figure, big enough for the back row */
+.ww-asst__gauge {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  color: var(--ww-purple);
+}
+.ww-asst__gaugelabel {
+  font-size: var(--font-size-code);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-caps);
+}
+.ww-asst__gaugevalue {
+  font-size: var(--font-size-heading);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ww-magenta);
+  font-variant-numeric: tabular-nums;
+}
+.ww-asst__bar {
+  height: 20px;
+  border-radius: var(--radius-pill);
+  background: var(--ww-lavender);
+  overflow: hidden;
+}
+.ww-asst__barfill {
+  display: block;
+  height: 100%;
+  background: var(--ww-magenta);
+}
+.ww-asst__gaugenote {
+  font-size: var(--font-size-code);
+  line-height: var(--line-height-normal);
+}
+
+/* beat 8 — one search and a tap */
+.ww-asst__map {
+  width: 100%;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background: var(--ww-card);
+  box-shadow: 0 24px 48px color-mix(in srgb, var(--ww-purple) 22%, transparent);
+  position: relative;
+}
+.ww-asst__mapsearch {
+  position: absolute;
+  top: var(--space-sm);
+  left: var(--space-sm);
+  right: var(--space-sm);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-pill);
+  background: var(--ww-white);
+  color: var(--ww-purple);
+  font-size: var(--font-size-code);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--ww-purple) 18%, transparent);
+}
+.ww-asst__mapart {
+  display: block;
+  width: 100%;
+}
+.ww-asst__river {
+  fill: color-mix(in srgb, var(--ww-violet) 30%, var(--ww-card));
+}
+.ww-asst__road {
+  fill: none;
+  stroke: var(--ww-white);
+  stroke-width: 22;
+}
+.ww-asst__road--minor {
+  stroke-width: 12;
+}
+.ww-asst__pin path {
+  fill: var(--ww-magenta);
+}
+.ww-asst__pin circle {
+  fill: var(--ww-white);
+}
+.ww-asst__pin {
+  animation: ww-asst-pin 520ms var(--ease) 700ms backwards;
+}
+.ww-asst__pinno {
+  fill: var(--ww-white);
+  font-weight: 700;
+  font-size: var(--font-size-code);
+}
+@keyframes ww-asst-pin {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+}
+
+/* beat 8 — the paragraph is still in the prompt box: it wraps, and never gets sent */
+.ww-asst__input {
+  align-items: flex-start;
+}
+.ww-asst__draft {
+  color: var(--cc-text);
+}
+.ww-asst__draft .ww-boot__cursor {
+  margin-left: 2px;
+  vertical-align: text-bottom;
+}
+
+
+/* ─── «How do we improve it?» — six slides, one ledger ───────────────────
+   Titled slides. The body is a column: the scene, then the LEDGER at the foot
+   — the four problems as pills: grey while open, magenta while this slide is
+   working on one, mint once fixed. Interfaces are drawn at code tier, as the
+   small print of a screen; what the slide SAYS is the title and the claim. */
+
+.ww-imp {
+  flex: 1;
+  min-height: 0;
+  margin-top: -76px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+.ww-imp > :first-child {
+  flex: 1;
+  min-height: 0;
+}
+.ww-imp__ledger {
+  flex: none;
+  display: flex;
+  gap: var(--space-sm);
+}
+.ww-imp__problem {
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-code);
+  font-weight: 500;
+  transition: background var(--transition-normal), color var(--transition-normal);
+}
+.ww-imp__problem--open {
+  background: var(--ww-card);
+  color: color-mix(in srgb, var(--ww-purple) 55%, transparent);
+}
+.ww-imp__problem--now {
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+}
+.ww-imp__problem--fixed {
+  background: var(--ww-mint);
+  color: var(--ww-purple);
+}
+.ww-imp__foot {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+.ww-imp__call {
+  padding: var(--space-xs) var(--space-md);
+  border-radius: 10px;
+  background: var(--ww-lavender);
+  color: var(--ww-purple);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+}
+.ww-imp__claim {
+  flex: none !important;
+  color: var(--ww-purple);
+  line-height: var(--line-height-tight);
+  animation: ww-asst-in 360ms var(--ease) backwards;
+}
+.ww-imp__claim + * {
+  flex: 1;
+  min-height: 0;
+}
+
+/* a browser window */
+.ww-imp__browser {
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--ww-white);
+  box-shadow: 0 30px 60px color-mix(in srgb, var(--ww-purple) 18%, transparent);
+  font-size: var(--font-size-code);
+  color: var(--ww-purple);
+}
+.ww-imp__chrome {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--ww-card);
+}
+.ww-imp__url {
+  margin-left: var(--space-md);
+  flex: 1;
+  padding: 4px var(--space-md);
+  border-radius: var(--radius-pill);
+  background: var(--ww-white);
+  color: color-mix(in srgb, var(--ww-purple) 60%, transparent);
+}
+.ww-imp__page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+/* 1 · the board */
+.ww-imp__board {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.ww-imp__list {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-md);
+  gap: var(--space-xs);
+  border-right: 2px solid var(--ww-card);
+}
+.ww-imp__filters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+}
+.ww-imp__filter,
+.ww-imp__new {
+  padding: 4px var(--space-md);
+  border-radius: var(--radius-pill);
+  background: var(--ww-card);
+}
+.ww-imp__filter--on {
+  background: var(--ww-purple);
+  color: var(--ww-white);
+}
+.ww-imp__new {
+  margin-left: auto;
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+}
+.ww-imp__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 14px;
+  transition: background var(--transition-normal);
+}
+.ww-imp__row--selected {
+  background: var(--ww-lavender);
+}
+.ww-imp__rowtitle {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ww-imp__rowtitle--done {
+  color: color-mix(in srgb, var(--ww-purple) 45%, transparent);
+  text-decoration: line-through;
+}
+.ww-imp__dot {
+  flex: none;
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 4px solid var(--ww-violet);
+}
+.ww-imp__dot--doing {
+  background: var(--ww-violet);
+}
+.ww-imp__dot--you {
+  border-color: var(--ww-magenta);
+  background: var(--ww-magenta);
+}
+.ww-imp__dot--done {
+  border-color: var(--ww-mint);
+  background: var(--ww-mint);
+}
+.ww-imp__high {
+  padding: 0 var(--space-sm);
+  border-radius: var(--radius-pill);
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+}
+.ww-imp__who {
+  flex: none;
+  padding: 0 var(--space-sm);
+  border-radius: var(--radius-pill);
+  background: var(--ww-card);
+  font-family: var(--font-mono);
+}
+.ww-imp__who--you {
+  background: var(--ww-mint);
+}
+.ww-imp__detail,
+.ww-imp__task {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+}
+.ww-imp__task {
+  flex: 1;
+  min-width: 0;
+}
+.ww-imp__detailtitle {
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-tight);
+}
+.ww-imp__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: color-mix(in srgb, var(--ww-purple) 60%, transparent);
+}
+.ww-imp__comment {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 18px;
+  background: var(--ww-card);
+  line-height: var(--line-height-normal);
+}
+.ww-imp__comment--you {
+  background: var(--ww-lavender);
+}
+.ww-imp__author {
+  display: block;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--ww-magenta);
+}
+.ww-imp__chips {
+  display: flex;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
+}
+.ww-imp__chip {
+  padding: 0 var(--space-sm);
+  border-radius: var(--radius-pill);
+  background: var(--ww-white);
+  font-family: var(--font-mono);
+}
+
+/* 2 · two queues, and the one task that crosses between them */
+.ww-imp__queues {
+  position: relative;
+  display: grid;
+  --lane: 380px;
+  grid-template-columns: 1fr var(--lane) 1fr;
+  gap: var(--space-md);
+}
+.ww-imp__queue {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  border-radius: var(--radius-card);
+  background: var(--ww-card);
+  color: var(--ww-purple);
+}
+.ww-imp__queue--you {
+  background: color-mix(in srgb, var(--ww-mint) 22%, var(--ww-card));
+}
+.ww-imp__queuename {
+  position: absolute;
+  top: var(--space-md);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-caps);
+  font-size: var(--font-size-code);
+}
+.ww-imp__queuehint {
+  position: absolute;
+  top: calc(var(--space-md) + 44px);
+  font-size: var(--font-size-code);
+  color: color-mix(in srgb, var(--ww-purple) 60%, transparent);
+}
+.ww-imp__ghost {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 14px;
+  background: var(--ww-white);
+  font-size: var(--font-size-code);
+  color: color-mix(in srgb, var(--ww-purple) 50%, transparent);
+}
+.ww-imp__lane {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-lg);
+  font-size: var(--font-size-code);
+  text-align: center;
+  color: color-mix(in srgb, var(--ww-purple) 35%, transparent);
+}
+.ww-imp__hop {
+  transition: color var(--transition-normal);
+}
+.ww-imp__hop--on {
+  color: var(--ww-magenta);
+  font-weight: 600;
+}
+.ww-imp__ticket {
+  position: absolute;
+  top: 124px;
+  left: var(--space-md);
+  width: calc((100% - var(--lane) - 2 * var(--space-md)) / 2 - 2 * var(--space-md));
+  padding: var(--space-md);
+  border-radius: 18px;
+  background: var(--ww-white);
+  box-shadow: 0 18px 40px color-mix(in srgb, var(--ww-purple) 22%, transparent);
+  color: var(--ww-purple);
+  font-size: var(--font-size-code);
+  transition: transform 700ms var(--ease);
+}
+.ww-imp__ticket--you {
+  transform: translateX(calc(100% + var(--lane) + 4 * var(--space-md)));
+}
+.ww-imp__tickethead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-sm);
+  font-weight: 600;
+}
+.ww-imp__state {
+  flex: none;
+  padding: 0 var(--space-sm);
+  border-radius: var(--radius-pill);
+  font-weight: 500;
+}
+.ww-imp__state--agent {
+  background: var(--ww-lavender);
+}
+.ww-imp__state--you {
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+}
+.ww-imp__thread {
+  margin-top: var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+.ww-imp__line {
+  line-height: var(--line-height-tight);
+  color: color-mix(in srgb, var(--ww-purple) 55%, transparent);
+}
+.ww-imp__line .ww-imp__author {
+  display: inline;
+  margin-right: var(--space-xs);
+}
+.ww-imp__line--new {
+  color: var(--ww-purple);
+  animation: ww-asst-in 400ms var(--ease) 350ms backwards;
+}
+
+/* 3 · the artifact: a UI where the paragraph was */
+.ww-imp__wall {
+  animation: ww-asst-in 360ms var(--ease) backwards;
+}
+.ww-imp__artifact {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--ww-mint) 16%, var(--ww-white));
+  box-shadow: inset 0 0 0 3px var(--ww-mint);
+  animation: ww-asst-in 420ms var(--ease) backwards;
+}
+.ww-imp__artifacttag {
+  position: absolute;
+  top: -22px;
+  right: var(--space-md);
+  padding: 0 var(--space-md);
+  border-radius: var(--radius-pill);
+  background: var(--ww-mint);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.slide .ww-imp__artifacttag code {
+  padding: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  color: inherit;
+}
+.ww-imp__artifactmap {
+  overflow: hidden;
+  border-radius: var(--radius-card);
+}
+.ww-imp__artifactmap .ww-asst__map {
+  box-shadow: none;
+  height: 100%;
+}
+.ww-imp__artifactmap .ww-asst__mapart {
+  height: 100%;
+}
+.ww-imp__places {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+.ww-imp__place {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 14px;
+  background: var(--ww-white);
+}
+.ww-imp__placename {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-weight: 600;
+}
+.ww-imp__pinno {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+}
+.ww-imp__placewhere {
+  grid-column: 1;
+  color: color-mix(in srgb, var(--ww-purple) 60%, transparent);
+}
+.ww-imp__slots {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: flex;
+  gap: var(--space-xs);
+}
+.ww-imp__slot {
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-pill);
+  background: var(--ww-purple);
+  color: var(--ww-white);
+  font-family: var(--font-mono);
+}
+
+/* 4 · the pages */
+.ww-imp__tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: 1fr 1fr;
+  gap: var(--space-md);
+}
+.ww-imp__tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-md);
+  border-radius: var(--radius-card);
+  background: var(--ww-white);
+  box-shadow: 0 14px 32px color-mix(in srgb, var(--ww-purple) 14%, transparent);
+  color: var(--ww-purple);
+  animation: ww-asst-in 420ms var(--ease) backwards;
+}
+.ww-imp__tilename {
+  font-size: var(--font-size-code);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-caps);
+  color: var(--ww-magenta);
+}
+.ww-imp__tilefigure {
+  line-height: var(--line-height-tight);
+  font-weight: 500;
+}
+.ww-imp__tilenote {
+  font-size: var(--font-size-code);
+  line-height: var(--line-height-tight);
+  color: color-mix(in srgb, var(--ww-purple) 60%, transparent);
+}
+.ww-imp__viz {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  margin: var(--space-xs) 0;
+}
+.ww-imp__spark {
+  fill: none;
+  stroke: var(--ww-violet);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ww-imp__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-xs);
+}
+.ww-imp__bars span {
+  flex: 1;
+  border-radius: 6px 6px 0 0;
+  background: var(--ww-lavender);
+}
+.ww-imp__bars span:nth-child(3n + 1) {
+  background: var(--ww-violet);
+}
+.ww-imp__dots {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.ww-imp__dots span {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ww-lavender);
+}
+.ww-imp__dots .ww-imp__dots--on {
+  background: var(--ww-mint);
+}
+.ww-imp__meter {
+  flex: none;
+  height: 20px;
+  margin: auto 0;
+  border-radius: var(--radius-pill);
+  background: var(--ww-lavender);
+  overflow: hidden;
+}
+.ww-imp__meter span {
+  display: block;
+  height: 100%;
+  background: var(--ww-violet);
+}
+
+/* 5 · the runner: the loop as code, and the herdr window it drives */
+.ww-imp__runner {
+  display: grid;
+  grid-template-columns: 800px minmax(0, 1fr);
+  gap: var(--space-md);
+}
+.ww-imp__code {
+  margin: 0;
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-card);
+  /* the deck's code panel: grey, with the template's mint edge (components.css) */
+  border-left: 12px solid var(--ww-mint);
+  background: var(--ww-card);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  line-height: 1.45;
+  color: var(--ww-purple);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.ww-imp__code span {
+  transition: background var(--transition-normal), color var(--transition-normal);
+  margin: 0 calc(-1 * var(--space-sm));
+  padding: 0 var(--space-sm);
+  border-radius: 6px;
+  white-space: pre;
+}
+.ww-imp__codeline--hot {
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+}
+.ww-imp__herdr {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  min-width: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--cc-bg);
+  box-shadow: 0 30px 60px color-mix(in srgb, var(--ww-purple) 18%, transparent);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  color: var(--cc-text);
+}
+.ww-imp__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-sm);
+  overflow: hidden;
+  background: var(--term-chrome);
+}
+.ww-imp__sidehead {
+  color: var(--term-dim);
+}
+.ww-imp__agent {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  white-space: nowrap;
+  animation: ww-asst-in 360ms var(--ease) backwards;
+}
+.ww-imp__agentdot {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--cc-success);
+}
+.ww-imp__panes {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-md);
+}
+.ww-imp__pane {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: var(--space-md);
+  border: 2px solid color-mix(in srgb, var(--cc-text) 26%, transparent);
+  border-radius: 6px;
+  animation: ww-asst-in 420ms var(--ease) backwards;
+}
+.ww-imp__pane:nth-child(2) {
+  animation-delay: 220ms;
+}
+.ww-imp__pane:nth-child(3) {
+  animation-delay: 440ms;
+}
+.ww-imp__legend {
+  position: absolute;
+  top: -22px;
+  left: var(--space-md);
+  padding: 0 var(--space-xs);
+  background: var(--cc-bg);
+  color: var(--cc-claude);
+  transition: background var(--transition-normal), color var(--transition-normal);
+}
+.ww-imp__legend--hot {
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+}
+.ww-imp__panetask {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ww-imp__paneline {
+  color: var(--cc-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ww-imp__panebullet {
+  color: var(--cc-success);
+}
+
+/* 6 · the fleet, and the three verbs */
+.ww-imp__fleet {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 640px;
+  gap: var(--space-lg);
+}
+.ww-imp__fleetside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--space-md);
+  color: var(--ww-purple);
+}
+.ww-imp__kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+.ww-imp__kind {
+  padding: 4px var(--space-md);
+  border-radius: var(--radius-pill);
+  background: var(--ww-card);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+}
+.ww-imp__kind:nth-child(-n + 3) {
+  background: var(--ww-mint);
+}
+.ww-imp__talk {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+.ww-imp__talkrow {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--font-size-code);
+  line-height: var(--line-height-tight);
+}
+.ww-imp__talkrow code {
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: var(--font-size-body);
+  color: var(--ww-magenta);
+}
+
+/* A placeholder slide says so on its face, so an outline is never mistaken for
+   a finished slide in a run-through. Remove with the placeholders. (Used with
+   `ww-overlay`, which exempts it from the titled body's `position: relative`.) */
+.ww-draft {
+  position: absolute;
+  right: var(--stage-pad-x);
+  bottom: var(--stage-pad-y);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-pill);
+  border: 3px dashed var(--ww-magenta);
+  color: var(--ww-magenta);
+  font-size: var(--font-size-code);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-caps);
+}
+
+/* 5 · beat 4 — the pace meter under the loop: how much of the weekly limit is
+   used (fill) against how much of the week is gone (the tick) */
+.ww-imp__runnerleft {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.ww-imp__runnerleft .ww-imp__code {
+  flex: 1;
+  min-height: 0;
+}
+.ww-imp__pace {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 18px;
+  background: var(--ww-card);
+  color: var(--ww-purple);
+  font-size: var(--font-size-code);
+  line-height: var(--line-height-tight);
+}
+.ww-imp__pacehead,
+.ww-imp__pacelegend {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+.ww-imp__pacehead {
+  font-weight: 600;
+}
+.ww-imp__paceverdict {
+  color: var(--ww-magenta);
+}
+.ww-imp__pacelegend {
+  color: color-mix(in srgb, var(--ww-purple) 60%, transparent);
+}
+.ww-imp__pacebar {
+  position: relative;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  background: var(--ww-lavender);
+}
+.ww-imp__paceused {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--ww-magenta);
+}
+.ww-imp__pacenow {
+  position: absolute;
+  top: -8px;
+  bottom: -8px;
+  width: 5px;
+  margin-left: -2px;
+  border-radius: 3px;
+  background: var(--ww-purple);
+}
+/* 6 · the model need not come from a subscription */
+.ww-imp__free {
+  font-size: var(--font-size-code);
+  line-height: var(--line-height-tight);
+}
+.ww-imp__free strong {
+  color: var(--ww-magenta);
+}

@@ -29,6 +29,11 @@
   --ww-ink: #0a0418;            /* title box on the title slide */
   --ww-white: #ffffff;
   --ww-linkedin: #0a66c2;       /* the LinkedIn QR on the about-me slide */
+  /* Editor's red — NOT from the template. The one place a correction is being
+   * made on the slide rather than drawn by it: the rename chain on the
+   * Steinberger slide strikes each dead name out in it. Dark enough to read
+   * over magenta text on paper. */
+  --ww-strike-red: #e01b3c;
 
   /* ── Preply palette ─────────────────────────────────────────────────────
    * Preply's own brand colours (brand book «Preply Guidelines», and the
@@ -68,6 +73,14 @@
   --cc-dim: #999999;
   --cc-claude: #d97757;
   --cc-success: #4eba65;
+  /* The Claude app, dark theme — for the phone on the «assistant is ready» slide.
+   * Sampled on 12.11.2026 from a live Claude Code session at claude.ai/code (the
+   * web twin of the mobile app's session view): page, user bubble, text, dim text.
+   * Its accent is --cc-claude. */
+  --app-bg: #1f1e1d;
+  --app-bubble: #30302e;
+  --app-text: #e5e4de;
+  --app-dim: #9c9a92;
   --music-bg: #1c1c1e;
   --music-chrome: #2a2a2c;
   --music-fg: #f2f2f7;

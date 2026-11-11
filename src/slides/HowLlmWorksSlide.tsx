@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { SlideDefinition } from '../types/slides';
 import { CornerRings } from '../components/wawtech';
 import { useAnimating } from '../components/frameSettled';
@@ -184,15 +184,17 @@ function LlmScene({ stage }: { stage: number }) {
                 <span className="ww-llm__who">{who}:</span> {text}
               </div>
             ))}
-            <div className="ww-llm__line">
+            <div className="ww-llm__line ww-llm__line--live">
               <span className="ww-llm__who">Assistant:</span>{' '}
               {REPLY.slice(0, replyCount).map((token, i) => (
-                <span
-                  key={i}
-                  className={`ww-llm__token ww-llm__token--${token === END ? 'end' : 'new'}`}
-                >
-                  {token}
-                </span>
+                // a token chip never breaks inside; the <wbr> lets the LINE break between
+                // chips, so the reply wraps like text instead of dropping as one block
+                <Fragment key={i}>
+                  <span className={`ww-llm__token ww-llm__token--${token === END ? 'end' : 'new'}`}>
+                    {token}
+                  </span>
+                  <wbr />
+                </Fragment>
               ))}
               {looping && <span className="ww-llm__caret" />}
             </div>

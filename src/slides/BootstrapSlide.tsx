@@ -27,7 +27,11 @@ const WORD_MS = 70;
 const RUN_MS = 800;
 const GAP_MS = 280;
 
-type Line =
+export type Line =
+  /** `note`: a line the CLI prints by itself, dim — «/remote-control is active», «Conversation
+   *  compacted». `busy` is what it says while it is still happening (for `ms`), `tone: 'error'`
+   *  is the CLI's own red («Context low»). */
+  | { kind: 'note'; text: string; busy?: string; ms?: number; tone?: 'error' }
   /** `fired`: a /loop tick — the harness submits the prompt itself, nobody types it. The
    *  CLI (2.1.322) draws no «>» line for it (the prompt is a meta message); it draws one
    *  dim system line, «✻ Claude resuming /loop wakeup (<when>)». `fired` is that <when>.
@@ -452,7 +456,7 @@ const STEPS: Line[][] = [
 ];
 
 /** The scene's only clock, restarted whenever the beat changes. */
-function useClock(resetKey: number): number {
+export function useClock(resetKey: number): number {
   const [t, setT] = useState(0);
   useEffect(() => {
     if (EXPORT_MODE) {
@@ -468,15 +472,16 @@ function useClock(resetKey: number): number {
 
 /** How long a line takes to arrive. */
 function span(line: Line): number {
+  if (line.kind === 'note') return line.ms ?? 0;
   if (line.kind === 'you') return line.fired ? 0 : line.text.length * TYPE_MS;
   if (line.kind === 'say') return line.text.split(' ').length * WORD_MS;
   return line.ms ?? RUN_MS;
 }
 
-type Played = { line: Line; shown: string; started: boolean; done: boolean; typing: boolean };
+export type Played = { line: Line; shown: string; started: boolean; done: boolean; typing: boolean };
 
 /** The live beat, played out: how much of each of its lines is on screen. */
-function played(lines: Line[], t: number): Played[] {
+export function played(lines: Line[], t: number): Played[] {
   let at = 0;
   return lines.map((line) => {
     const start = at;
@@ -484,7 +489,7 @@ function played(lines: Line[], t: number): Played[] {
     at = end + GAP_MS;
     const started = t >= start;
     const done = t >= end;
-    if (line.kind === 'tool') {
+    if (line.kind === 'tool' || line.kind === 'note') {
       return { line, shown: line.text, started, done, typing: false };
     }
     if (line.kind === 'you' && line.fired) {
@@ -499,7 +504,7 @@ function played(lines: Line[], t: number): Played[] {
   });
 }
 
-function Row({
+export function Row({
   line,
   shown,
   done,
@@ -510,6 +515,13 @@ function Row({
   done: boolean;
   typing?: boolean;
 }) {
+  if (line.kind === 'note') {
+    return (
+      <div className={`ww-boot__fire${line.tone === 'error' && done ? ' ww-boot__fire--error' : ''}`}>
+        {done ? line.text : (line.busy ?? line.text)}
+      </div>
+    );
+  }
   if (line.kind === 'you' && line.fired) {
     // The loop, not you: the CLI's own system line for a /loop wakeup (✻ = its «claude» glyph).
     return (
