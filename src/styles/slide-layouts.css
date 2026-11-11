@@ -2380,3 +2380,33 @@
   font-size: var(--font-size-code);
   box-shadow: 0 6px 16px color-mix(in srgb, var(--ww-purple) 16%, transparent), inset 0 0 0 3px var(--ww-magenta);
 }
+
+/* ─── Memento — the whole still across the top, the question under it ────
+   The question keeps its own height at the bottom; the still fills the rest
+   (2.4:1, so at 16:9 it is all there, and on other aspects it crops around
+   the note rather than pushing the question off the stage). */
+.ww-memento {
+  position: absolute;
+  inset: 0;
+  background: var(--ww-ink);
+  display: flex;
+  flex-direction: column;
+}
+.ww-memento__img {
+  display: block;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  object-fit: cover;
+  object-position: 50% 50%; /* the note */
+}
+.ww-memento__q {
+  flex: none;
+  padding: var(--space-xl) var(--stage-pad-x);
+  margin: 0;
+  font-size: var(--font-size-heading);
+  font-weight: 700;
+  line-height: var(--line-height-tight);
+  color: var(--ww-white);
+  text-wrap: balance;
+}

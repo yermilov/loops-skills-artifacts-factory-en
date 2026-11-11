@@ -37,6 +37,7 @@ import { LayoutBreak } from './LayoutBreak';
 import { LayoutBigTitle } from './LayoutBigTitle';
 import { LayoutContacts } from './LayoutContacts';
 import { FinalSlide } from './FinalSlide';
+import { MementoSlide } from './MementoSlide';
 
 /**
  * LAYOUT GALLERY — one example of every WAWTech layout, kept as reference code
@@ -87,5 +88,6 @@ export const slides = [
   LoopIsCronSlide,
   BootstrapTaskSlide,
   BootstrapProcessSlide,
+  MementoSlide,
   FinalSlide,
 ];
