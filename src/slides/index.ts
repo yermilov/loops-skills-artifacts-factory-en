@@ -41,6 +41,7 @@ import { MementoSlide } from './MementoSlide';
 import { SkillUnitSlide, SkillUnitRefsSlide, SkillUnitScriptsSlide } from './SkillUnitSlide';
 import { SkillReadRefSlide, SkillRunScriptSlide } from './SkillFilesSlide';
 import { SkillLabyrinthSlide } from './SkillLabyrinthSlide';
+import { SelfLearningSlide } from './SelfLearningSlide';
 import { SkillToolSlide } from './SkillToolSlide';
 
 /**
@@ -100,5 +101,6 @@ export const slides = [
   SkillUnitScriptsSlide,
   SkillRunScriptSlide,
   SkillLabyrinthSlide,
+  SelfLearningSlide,
   FinalSlide,
 ];
