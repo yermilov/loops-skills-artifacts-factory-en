@@ -1917,6 +1917,13 @@
 .ww-boot__fire {
   color: var(--cc-dim);
 }
+/* A paste, shown expanded under the prompt that sent it (the CLI collapses it). */
+.ww-boot__paste {
+  margin-top: 4px;
+  padding-left: 2ch;
+  border-left: 3px solid var(--cc-dim);
+  margin-left: 0.6ch;
+}
 .ww-boot__caret {
   color: var(--cc-dim);
 }

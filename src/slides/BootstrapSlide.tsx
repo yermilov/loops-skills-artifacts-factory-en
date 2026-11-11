@@ -30,8 +30,11 @@ const GAP_MS = 280;
 type Line =
   /** `fired`: a /loop tick — the harness submits the prompt itself, nobody types it. The
    *  CLI (2.1.322) draws no «>» line for it (the prompt is a meta message); it draws one
-   *  dim system line, «✻ Claude resuming /loop wakeup (<when>)». `fired` is that <when>. */
-  | { kind: 'you'; text: string; fired?: string }
+   *  dim system line, «✻ Claude resuming /loop wakeup (<when>)». `fired` is that <when>.
+   *  `paste`: a paste shown EXPANDED under the prompt, once it is sent. The CLI itself
+   *  collapses a paste to «[Pasted text #N +M lines]»; this is a stage choice, so the
+   *  room can read what was pasted. */
+  | { kind: 'you'; text: string; fired?: string; paste?: string[] }
   | { kind: 'say'; text: string }
   | {
       kind: 'tool';
@@ -55,6 +58,23 @@ const VISION = [
   '- every agent session is attached back to its task',
   'Not an agent itself — the connecting tissue between them.',
   'Personal: not scalable, but low-latency and delightful.',
+];
+
+/** The development process Yarik hands over (as a paste) — his own
+ *  engineering:development-process skill, condensed for the stage, plus two moves from his
+ *  earlier talk (pragmatic-vibe-clauding, slides 138 and 142): «look back and simplify» and
+ *  «give me undeniable proof». Shown under the prompt that pastes it, then walked through
+ *  one by one in the redo. */
+const PROCESS = [
+  '1. Plan — approval first if the work is non-trivial',
+  '2. Implement',
+  '3. Look back at your implementation: what can be simplified, now that you know how it is done?',
+  '4. Give me undeniable proof it works',
+  '5. Run the checks',
+  '6. Adversarial review — until no finding is left',
+  '7. Commit and push',
+  '8. Verify the deploy landed',
+  '9. Test on prod',
 ];
 
 const API = 'https://myclaw-api.up.railway.app';
@@ -268,6 +288,167 @@ const STEPS: Line[][] = [
       text: `Done: tasks now have a priority — high, medium or low, medium by default — and the next task is the highest-priority one. Deployed, and ${TASK_ID} is closed.`,
     },
   ],
+  [
+    // Same session, straight after: he stops it and pastes his process (shown
+    // expanded, see `paste`) — deliberately NOT into CLAUDE.md: it lives only in
+    // this conversation, which is exactly the question the next slide asks
+    // («how do I make it always work like this?»).
+    {
+      kind: 'you',
+      text: "stop — I don't think you did that coding task right. Here is what a good development process looks like:",
+      paste: PROCESS,
+    },
+    {
+      kind: 'say',
+      text: `Oh, thank you! You're right. Reverting my change and redoing ${TASK_ID} your way.`,
+    },
+    // Back to before the first attempt, so the redo starts from tasks with no
+    // priority at all — which is what the plan then forgets about.
+    {
+      kind: 'tool',
+      text: 'Bash(git revert --no-edit 4c1e8a2 && railway up --ci)',
+      result: `[main 51d0e3f] Revert "Add task priorities" · Deploy complete`,
+      ms: 1300,
+    },
+    // …and straight into the same task, by the process: one line per step, the
+    // steps' own tools. Rebuilt for the stage, like the rest of this replay — ids,
+    // counts and the two review findings are illustrative.
+  ],
+  [
+    // The plan is where the human catches what the code would have missed:
+    // here, the plan forgets the default, so every existing task would be left
+    // with no priority at all.
+    {
+      kind: 'say',
+      text: '1 · Plan: priority is an enum — high, medium, low; the next task is the highest priority, then the oldest. OK?',
+    },
+    { kind: 'you', text: "you forgot the default — existing tasks have no priority. Make it medium, and backfill them" },
+    {
+      kind: 'say',
+      text: 'Good catch — medium by default, existing rows backfilled. Updated plan, going.',
+    },
+  ],
+  [
+    // From the reverted tree: the change again, this time with the default and
+    // the backfill in the migration, and the next task ordered in the service.
+    { kind: 'say', text: '2 · Implement — the priority again, now with a default and a backfill.' },
+    {
+      kind: 'tool',
+      text: 'Update(packages/db-schema/src/tasks.ts)',
+      result: EDIT_RESULT(4, 0),
+      ms: 1000,
+    },
+    {
+      kind: 'tool',
+      text: 'Bash(pnpm --filter @myclaw/api db:generate)',
+      result: '[✓] Your SQL migration file ➜ drizzle/0002_task_priority.sql 🚀',
+      ms: 1200,
+    },
+    {
+      kind: 'tool',
+      text: 'Update(apps/api/src/services/tasks.ts)',
+      result: EDIT_RESULT(14, 3),
+      ms: 1200,
+    },
+  ],
+  [
+    // «take a look at the last commit and think how it can be simplified» —
+    // pragmatic-vibe-clauding, slide 138.
+    {
+      kind: 'say',
+      text: '3 · Looking back: I sort the queue in TypeScript after loading every todo task. Postgres can do it — ORDER BY priority, created_at.',
+    },
+    {
+      kind: 'tool',
+      text: 'Update(apps/api/src/services/tasks.ts)',
+      result: EDIT_RESULT(2, 9),
+      ms: 1300,
+    },
+  ],
+  [
+    // «give me undeniable proofs that the last commit's changes are correct» —
+    // pragmatic-vibe-clauding, slide 142: not «tests pass», the running server.
+    { kind: 'say', text: '4 · Undeniable proof: asking the running local server for the next task.' },
+    {
+      kind: 'tool',
+      text: "Bash(curl -s 'localhost:3000/api/tasks/next')",
+      result: '{"id":"b81c04de","title":"Fix login redirect","priority":"high"}',
+      ms: 900,
+    },
+  ],
+  [
+    { kind: 'say', text: '5 · Run the checks.' },
+    {
+      kind: 'tool',
+      text: 'Bash(pnpm lint && pnpm typecheck && pnpm test)',
+      result: 'Tests  17 passed (17)',
+      ms: 2000,
+    },
+  ],
+  [
+    { kind: 'say', text: '6 · Adversarial review.' },
+    {
+      kind: 'tool',
+      text: 'Bash(codex review --uncommitted)',
+      result: '2 findings · PATCH accepts any string as a priority · no index on (status, priority)',
+      ms: 2200,
+    },
+    {
+      kind: 'tool',
+      text: 'Update(apps/api/src/routes/tasks.ts)',
+      result: EDIT_RESULT(2, 1),
+      ms: 1100,
+    },
+    {
+      kind: 'tool',
+      text: 'Update(packages/db-schema/src/tasks.ts)',
+      result: EDIT_RESULT(1, 0),
+      ms: 1000,
+    },
+    {
+      kind: 'tool',
+      text: 'Bash(codex review --uncommitted)',
+      result: 'No findings.',
+      ms: 1900,
+    },
+  ],
+  [
+    { kind: 'say', text: '7 · Commit and push.' },
+    {
+      kind: 'tool',
+      text: 'Bash(git add -A && git commit -m "Order the next task by priority, then age" && git push)',
+      result: '[main 9e2b7d1] Order the next task by priority, then age',
+      ms: 1100,
+    },
+  ],
+  [
+    { kind: 'say', text: '8 · Verify the deploy landed.' },
+    {
+      kind: 'tool',
+      text: 'Bash(railway up --ci)',
+      result: `Deploy complete · Live at ${API}`,
+      ms: 2000,
+    },
+  ],
+  [
+    { kind: 'say', text: '9 · Test on prod.' },
+    {
+      kind: 'tool',
+      text: `Bash(curl -s '${API}/api/tasks/next')`,
+      result: '{"id":"b81c04de","title":"Fix login redirect","priority":"high"}',
+      ms: 900,
+    },
+    {
+      kind: 'tool',
+      text: `Bash(curl -s -X PATCH ${API}/api/tasks/${TASK_ID} -d '{"status":"done"}')`,
+      result: `{"id":"${TASK_ID}","status":"done","priority":"medium"}`,
+      ms: 700,
+    },
+    {
+      kind: 'say',
+      text: `Done, by the process this time: planned, simplified, proven on a running server, checks green, two review findings fixed, deploy verified on prod. ${TASK_ID} is closed.`,
+    },
+  ],
 ];
 
 /** The scene's only clock, restarted whenever the beat changes. */
@@ -342,6 +523,13 @@ function Row({
       <div className="ww-boot__you">
         <span className="ww-boot__caret">&gt;</span> {shown}
         {typing && <span className="ww-boot__cursor ww-boot__cursor--inline" />}
+        {done && line.paste && (
+          <div className="ww-boot__paste">
+            {line.paste.map((text) => (
+              <div key={text}>{text}</div>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
@@ -501,7 +689,7 @@ export const BootstrapRestSlide: SlideDefinition = {
 /** After the loop explainer: back in the same session, the first real task —
  *  created by hand, then picked up and done by the loop on its next tick. */
 export const BootstrapTaskSlide: SlideDefinition = {
-  ...sessionSlide('bootstrap-task', 3, STEPS.length - 3),
+  ...sessionSlide('bootstrap-task', 3, 2),
   notes:
     'Back in the session, where we left it: the loop is ticking, the queue is empty. '
     + 'Beat 1 — I ask for the first real task, and the agent creates it through the API it built an '
@@ -515,4 +703,27 @@ export const BootstrapTaskSlide: SlideDefinition = {
     + 'queue was built by the queue. '
     + 'Honest about the replay: rebuilt for the stage — task id, line counts and commit hash are '
     + 'illustrative; in real life priorities came later and through the web board, not as the first task.',
+};
+
+/** After the loop picked up the first task: he stops it — that is not how the work is
+ *  done here — hands over his development process, and the same task is redone by it. */
+export const BootstrapProcessSlide: SlideDefinition = {
+  ...sessionSlide('bootstrap-process', 5, 10),
+  notes:
+    'Same session, a minute later. Beat 1 — I stop it: it shipped, but that is not how work is done '
+    + 'here. I paste my development process — the nine steps of my own development-process skill, there '
+    + 'on the screen. It says thank you, reverts its own commit, and goes straight back to work. '
+    + 'Beats 2–10 — one click per step, so I can stop on each: '
+    + 'the same task, by the process: a plan — and it forgot the default, so every existing task '
+    + 'would have had no priority; I correct it in one sentence. That is the whole point of a plan: '
+    + 'it is the cheapest place to be wrong — then the change; then it looks back at what it wrote '
+    + 'and simplifies it, now that it knows how it is done (from my earlier talk); then undeniable '
+    + 'proof — not «tests pass», but the running server answering; '
+    + 'the checks, '
+    + 'an adversarial review by another model that finds two real things, fixed and re-reviewed clean, '
+    + 'commit, deploy, and a check on prod. '
+    + 'And then the question that opens the next part: great — but that process lives only in this one '
+    + 'conversation. How do I make it ALWAYS work like this? That is what skills are for. '
+    + 'Honest about the replay: rebuilt for the stage — ids, counts and the review findings are '
+    + 'illustrative.',
 };
