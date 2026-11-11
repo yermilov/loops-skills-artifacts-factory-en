@@ -17,9 +17,8 @@ import { TodoMemeSlide } from './TodoMemeSlide';
 import { SdkChatSlide } from './SdkChatSlide';
 import { WhyNotSlide } from './WhyNotSlide';
 import { GigachadSlide } from './GigachadSlide';
-import { CategorySlide } from './CategorySlide';
 import { MyWaySlide } from './MyWaySlide';
-import { BootstrapSlide, BootstrapRestSlide } from './BootstrapSlide';
+import { BootstrapSlide, BootstrapRestSlide, BootstrapTaskSlide } from './BootstrapSlide';
 import { ClaudeMdSlide } from './ClaudeMdSlide';
 import { LoopIsCronSlide } from './LoopIsCronSlide';
 import { MusicPrototypeSlide } from './MusicPrototypeSlide';
@@ -81,11 +80,11 @@ export const slides = [
   SdkChatSlide,
   WhyNotSlide,
   GigachadSlide,
-  CategorySlide,
   MyWaySlide,
   BootstrapSlide,
   ClaudeMdSlide,
   BootstrapRestSlide,
   LoopIsCronSlide,
+  BootstrapTaskSlide,
   FinalSlide,
 ];

@@ -45,7 +45,7 @@ const TICK_MS = 50;
 const TYPE_MS = 34;
 const TOKEN_MS = 105;
 
-const PREFACE = 'You are Claude Code, a coding assistant.';
+export const PREFACE = 'You are Claude Code, a coding assistant.';
 
 /**
  * The structural tokens of the protocol. They are SPECIAL tokens — single
@@ -62,7 +62,7 @@ const SPECIAL = new Set([CALL, END_CALL, RESULT, END_RESULT]);
 /** What the preface declares. Beat 2 shows the first one, beat 3 the rest.
  *  One shape for all three: a name and named arguments, which is what makes
  *  it something a program can parse rather than prose. */
-const TOOLS = [
+export const TOOLS = [
   {
     intro: 'To read a file, write:',
     call: `${CALL} name="Read" path="…" ${END_CALL}`,
@@ -86,7 +86,7 @@ type Seen =
  * `tokens` (anything that lands in the text as tokens), and `seen` is what
  * the terminal draws for it — nothing at all, for every harness line.
  */
-const TURNS: {
+export const TURNS: {
   who: Who;
   text?: string;
   tokens?: string[];
@@ -149,7 +149,7 @@ const TURNS: {
   },
 ];
 
-const WHO_LABEL: Record<Who, string> = {
+export const WHO_LABEL: Record<Who, string> = {
   user: 'User:',
   model: 'Assistant:',
   harness: 'Harness:',

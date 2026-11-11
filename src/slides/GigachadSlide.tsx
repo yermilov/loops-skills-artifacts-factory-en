@@ -1,31 +1,78 @@
 import { SlideDefinition } from '../types/slides';
-import { CornerRings, Reveal, Stat } from '../components/wawtech';
+import { CornerRings, Reveal } from '../components/wawtech';
+import gigachad from '../assets/history/gigachad-steipete.jpg';
 
 /**
  * The other way out of the previous slide: you CAN build the whole harness
- * yourself — if you are Peter Steinberger. Three beats: the evidence, the
- * joke, and the sting.
+ * yourself — if you are Peter Steinberger. One picture, one sentence, and the
+ * rename chain as the only reveal: each click strikes the current name out and
+ * writes the next one after it. The click after OpenClaw swaps the meme for a
+ * diagram of the ecosystem he built under it; the next adds the category it
+ * started — the shelf of assistants you can now just install.
  *
- * Every figure is sourced, and the notes say which ones are somebody else's
- * number rather than his own claim:
- *   228 repos — github.com/steipete, read off the profile
- *   6,600 commits in January — Lex Fridman's figure, said to him on the
- *     podcast; he neither confirms nor denies it
- *   4–10 agents in parallel, «mostly a diff viewer» — his own words, same
- *     transcript (lexfridman.com/peter-steinberger-transcript)
- *   one hour — his own: «I built this in one hour», WhatsApp wired to the
- *     Claude Code CLI with -p
- *   the rename chain and its dates — en.wikipedia.org/wiki/OpenClaw
- *   «Models and agent harnesses … are plugins» — the OpenClaw README
+ * The picture is generated (Codex image_gen, gpt-image-2, 10.11.2026) from his
+ * gym photo in @AiBreakfast's post of 16.02.2026 — «OpenClaw creator @steipete is
+ * the literal "Ok Claude, make a $1B company, make no mistakes" gigachad meme»
+ * (x.com/AiBreakfast/status/2023202725329351050). The rename chain and its
+ * dates: en.wikipedia.org/wiki/OpenClaw.
  */
 
-const NAMES = [
-  { name: 'Warelay', when: '24 Nov 2025' },
-  { name: 'CLAWDIS', when: '3 Dec 2025' },
-  { name: 'Clawdbot', when: '2 Jan 2026' },
-  { name: 'Moltbot', when: '27 Jan 2026' },
-  { name: 'OpenClaw', when: '30 Jan 2026' },
+/** The names the sentence ends on, one per beat. */
+const NAMES = ['Clawdbot', 'Moltbot', 'OpenClaw'];
+
+/** What OpenClaw left behind, shown with its last name: a shelf of assistants
+ *  you install instead of build. Sources (folded in from the old «It started a
+ *  category» slide): Hermes Agent — Nous Research, MIT, Feb 2026
+ *  (github.com/NousResearch/hermes-agent); Instinct — Spear Street Technology,
+ *  invite-only through 2026; Muse — Meta, 8 Sep 2026 (techcrunch.com, cnbc.com);
+ *  Claude Cowork — Anthropic. Only the best-known four; no figures on purpose,
+ *  the listicles disagree about all of them. */
+const CATEGORY = ['Hermes Agent', 'Instinct', 'Muse', 'Claude Cowork'];
+
+/** The ecosystem under the gateway, as bundled skills on 03.01.2026 — the day
+ *  after the Clawdbot rename (openclaw/openclaw @ 412e8b3, skills/). Every tool
+ *  here is his own repo (github.com/steipete, several since moved to the openclaw
+ *  org), most created Nov–Dec 2025. Tailscale is the one that is NOT his: the
+ *  gateway drives `tailscale serve` / `funnel` (docs/tailscale.md). */
+const ECOSYSTEM: { label: string; tools: string[] }[] = [
+  // left: how it reaches you, and the house
+  { label: 'talks & speaks', tools: ['wacli', 'imsg', 'bird', 'sag'] },
+  { label: 'runs the home', tools: ['eightctl', 'sonoscli', 'blucli', 'spogo', 'ordercli'] },
+  // right: what it can read, and what it can see
+  { label: 'reads & thinks', tools: ['gog', 'summarize', 'oracle', 'mcporter', 'goplaces'] },
+  { label: 'sees', tools: ['Peekaboo', 'camsnap', 'songsee', 'gifgrep'] },
 ];
+
+const DIAGRAM_STAGE = NAMES.length + 1;
+const CATEGORY_STAGE = NAMES.length + 2;
+
+/** Hub and four clusters: the gateway in the middle, his CLIs around it. */
+function Ecosystem() {
+  const group = (g: (typeof ECOSYSTEM)[number]) => (
+    <div key={g.label} className="ww-eco__group">
+      <span className="ww-eco__label">{g.label}</span>
+      <div className="ww-eco__tools">
+        {g.tools.map((t) => (
+          <span key={t} className="ww-eco__tool">
+            {t}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+  return (
+    <div className="ww-eco">
+      <div className="ww-eco__side ww-eco__side--left">{ECOSYSTEM.slice(0, 2).map(group)}</div>
+      <div className="ww-eco__hub">
+        <span className="ww-eco__hubname">Clawdbot</span>
+        <span className="ww-eco__hubsub">gateway</span>
+        <span className="ww-eco__tool ww-eco__tool--core">coding-agent</span>
+        <span className="ww-eco__via">via Tailscale</span>
+      </div>
+      <div className="ww-eco__side ww-eco__side--right">{ECOSYSTEM.slice(2).map(group)}</div>
+    </div>
+  );
+}
 
 export const GigachadSlide: SlideDefinition = {
   id: 'gigachad',
@@ -34,83 +81,86 @@ export const GigachadSlide: SlideDefinition = {
       Unless you are <span className="ww-llm__titlesub">Peter Steinberger</span>
     </>
   ),
-  maxRevealStages: 4,
+  maxRevealStages: CATEGORY_STAGE,
   initialRevealStage: 1,
-  content: ({ revealStage }) => (
-    <>
-      <CornerRings corner="bottom-left" />
-      <div className="ww-chad">
-        <div className="ww-chad__stats">
-          <Stat value="1 h" label="to wire WhatsApp to the Claude Code CLI" />
-          <Stat value="6,600" label="commits in one January" />
-          <Stat value="4–10" label="agents running at once" />
-          <Stat value="228" label="repos on his GitHub" />
-        </div>
-
-        <Reveal at={2} stage={revealStage}>
-          <div className="ww-chad__names">
-            {NAMES.map((entry, i) => (
-              <span key={entry.name} className="ww-chad__name-wrap">
+  content: ({ revealStage }) => {
+    const shown = Math.min(revealStage, NAMES.length);
+    return (
+      <>
+        <CornerRings corner="bottom-left" />
+        <div className="ww-chad">
+          {/* the meme and the diagram share one cell, so the swap does not move the text */}
+          <div className="ww-chad__left">
+            <img
+              className={`ww-chad__img${revealStage >= DIAGRAM_STAGE ? ' ww-chad__swap--out' : ''}`}
+              src={gigachad}
+              alt="Peter Steinberger as the Gigachad meme, at a laptop among terminal screens"
+            />
+            <div className={`ww-chad__diagram${revealStage >= DIAGRAM_STAGE ? '' : ' ww-chad__swap--out'}`}>
+              <Ecosystem />
+            </div>
+          </div>
+          <div className="ww-chad__text">
+            <p className="ww-chad__line">
+              Single-handedly (and multi-agently) built a personal-assistant harness —{' '}
+              {NAMES.slice(0, shown).map((name, i) => (
                 <span
-                  className={`ww-chad__name${i < NAMES.length - 1 ? ' ww-chad__name--dead' : ' ww-chad__name--live'}`}
+                  key={name}
+                  className={`ww-chad__name${i < shown - 1 ? ' ww-chad__name--dead' : ''}`}
                 >
-                  {entry.name}
+                  {name}
                 </span>
-                <span className="ww-chad__when">{entry.when}</span>
-              </span>
-            ))}
-          </div>
-        </Reveal>
-
-        {/* And he solved reason 2 as well — with a clock. */}
-        <Reveal at={3} stage={revealStage}>
-          <div className="ww-chad__beat">
-            <span className="ww-chad__pill">every 30 min</span>
-            <p className="ww-chad__sting">
-              It does run while you are away: a <em>proactive check</em> wakes up, asks whether
-              anything changed, and messages you if it has.
+              ))}
             </p>
+            <Reveal at={CATEGORY_STAGE} stage={revealStage}>
+              <div className="ww-chad__cat">
+                <span className="ww-chad__catlabel">…and started a category</span>
+                <div className="ww-chad__chips">
+                  {CATEGORY.map((name) => (
+                    <span key={name} className="ww-chad__chip">
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
           </div>
-        </Reveal>
-
-        <Reveal at={4} stage={revealStage}>
-          <p className="ww-chad__sting">
-            And even he did not rewrite the loop — <em>«models and agent harnesses are plugins
-            you can swap»</em>. He wrote everything around it: the part my chat window kept asking
-            for.
-          </p>
-        </Reveal>
-      </div>
-    </>
-  ),
+        </div>
+      </>
+    );
+  },
   notes:
     'So yes — you can build the whole harness yourself, if you are built like this. Peter '
     + 'Steinberger, PSPDFKit, now at OpenAI; he wanted the same thing I did, a personal '
-    + 'assistant, since April 2025. '
-    + 'Beat 1 — the receipts. One hour for the first version, which was literally WhatsApp wired '
-    + 'to the Claude Code CLI with -p: the same hack as my slide two back. Then: 4 to 10 agents '
-    + 'in parallel, an IDE opened «very, very rarely, mostly a diff viewer», 228 repos, and a '
-    + 'whole ecosystem of side tools around agents — CodexBar, agent-scripts, oracle, '
-    + 'claude-code-mcp. Say whose number is whose: the 6,600 commits in January is Lex Fridman\'s '
-    + 'figure, said to him on the podcast — Peter neither confirms nor denies it; the rest are '
-    + 'his own words. And most of it is built by Codex, not Claude Code — he objects to the term '
-    + '«vibe coding», he calls what he does agentic engineering. '
-    + 'Beat 2 — the joke tells itself: Warelay, CLAWDIS, Clawdbot, Moltbot, OpenClaw. Five names '
-    + 'in ten weeks; Moltbot happened because Anthropic\'s lawyers found «Clawdbot» a bit close '
-    + 'to Claude. It is now ~394k stars and a foundation, and he is at OpenAI. '
-    + 'Beat 3 — and he answered my second reason too, with a clock. The gateway is a daemon, and '
-    + 'a «proactive check» is provisioned as an ordinary automation job: it runs every 30 '
-    + 'minutes unless the provider says otherwise, in the agent\'s main conversation, waits for '
-    + 'it to be idle, and delivers to the owner\'s DM; it returns NO_REPLY when there is nothing '
-    + 'to say. There are cron jobs beside it (openclaw automations create, with openclaw cron as '
-    + 'an alias) whose output can go to a chat channel, a webhook, or nowhere. Say it before '
-    + 'somebody in the room says it for me — and then say the difference: a timer decides when '
-    + 'something happens there; here it will be a queue of tasks that agents pick up, do and '
-    + 'report on, one by one. (Read off docs.openclaw.ai today; whether the FIRST versions had '
-    + 'any of this, I did not confirm — do not claim it.) '
-    + 'Beat 4 — the honest part, and the bridge: even he did not rebuild the model\'s loop. '
-    + 'Claude, Codex and local models stayed plugins. What he built is everything AROUND them: a '
-    + 'gateway that runs as a daemon, channels, memory, skills. Which is exactly the list from '
-    + 'the previous slide — he just went and wrote it. The question for the rest of this talk is '
-    + 'what you do if you are not going to.',
+    + 'assistant. The picture is not mine to claim: it is the meme @AiBreakfast made of him in '
+    + 'February — «the literal "Ok Claude, make a $1B company, make no mistakes" gigachad» — '
+    + 'redrawn from his own gym photo. '
+    + 'The receipts, if the room wants them — say whose number is whose: one hour for the first '
+    + 'version, WhatsApp wired to the Claude Code CLI with -p (his words); 4 to 10 agents in '
+    + 'parallel, the IDE «mostly a diff viewer» (his words); 6,600 commits in one January is Lex '
+    + 'Fridman\'s figure, said to him on the podcast — he neither confirms nor denies it; 228 '
+    + 'repos on his GitHub, and around OpenClaw a dozen side projects — CodexBar, agent-scripts, '
+    + 'oracle, claude-code-mcp. '
+    + 'Then the clicks tell the joke: Clawdbot → Moltbot, because Anthropic\'s lawyers found '
+    + '«Clawdbot» a bit close to Claude (27 Jan 2026) → OpenClaw three days later. Before '
+    + 'Clawdbot it was Warelay and CLAWDIS — five names in ten weeks. '
+    + 'And the honest part, the bridge: even he did not rebuild the model\'s loop — «models and '
+    + 'agent harnesses are plugins you can swap». He wrote everything AROUND it, which is exactly '
+    + 'the backlog from the previous slide. '
+    + 'Next click — what «single-handedly» means: the ecosystem under the gateway, as it shipped '
+    + 'in early January. Every name around the hub is his own CLI, most written in the six weeks '
+    + 'before launch: wacli for WhatsApp, imsg for iMessage, bird for X; gog for Google, '
+    + 'summarize, oracle (GPT-5 Pro when the agent is stuck), mcporter for MCP; Peekaboo to see '
+    + 'the screen, camsnap for cameras, sag to speak; and the house — Eight Sleep, Sonos, BluOS, '
+    + 'Spotify, food delivery, Google Places. The only thing not his is Tailscale, which the '
+    + 'gateway configures so you can reach it from your phone. '
+    + 'Next click — the category it started: a year ago this was a weekend project, '
+    + 'now it is a shelf — you pick one, configure it, use it, no harness to write. Hermes Agent '
+    + 'from Nous Research (MIT, February 2026, self-hosted, writes its own skills); Instinct from '
+    + 'Spear Street — no app, you text it or ring it, invite-only through 2026; Muse, Meta, 8 '
+    + 'September 2026, inside WhatsApp; and Claude Cowork from Anthropic. Behind them a long tail '
+    + 'of clones — nanobot, PicoClaw, ZeroClaw, Kimi Claw, Manus — say it, do not show it. No numbers if asked: the listicles contradict each other '
+    + 'on stars, funding and dates. '
+    + 'The question this sets up: if the shelf exists, why did I keep building? Because none of '
+    + 'them is a queue I can throw work into and walk away from.',
 };

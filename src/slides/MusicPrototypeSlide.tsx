@@ -149,7 +149,7 @@ const CARET = <span className="ww-proto__caret" />;
  *
  * The slide plays itself: no reveal stages, one clock, and the player on the
  * right changes track at the exact moment `play next track` returns. The songs
- * are drawn at random from Yarik's own top 100 (the same ranking juggernaut's
+ * are drawn at random from Yarik's own top 100 (the same ranking myclaw's
  * `/api/public/music/favourite` serves), baked in so the talk never depends on
  * the network.
  */

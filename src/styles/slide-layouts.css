@@ -242,13 +242,18 @@
   line-height: 1;
 }
 
-/* The opening beat's left half: «hello» die-cut stickers after the Preply laptop pack.
+/* The opening beat's left half: «hello» die-cut stickers after the Preply laptop pack,
+   in wrapped rows that fill the cell.
    Preply's own colours (the pack is Preply's), not WAWTech's.
    They share the cards' grid cell and step aside once the first card comes in. */
 .ww-about__col,
 .ww-hellos { grid-column: 1; grid-row: 1; }
 .ww-hellos {
-  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-content: space-evenly;
+  column-gap: 20px;
   transition: opacity 0.35s var(--ease), visibility 0s linear 0s;
 }
 .ww-hellos--gone {
@@ -256,8 +261,7 @@
   visibility: hidden;
   transition: opacity 0.35s var(--ease), visibility 0s linear 0.35s;
 }
-.ww-hello,
-.ww-hello-bubble {
+.ww-hello {
   background: var(--ww-white);
   border: 10px solid var(--pp-ink);
   border-radius: 22px;
@@ -267,9 +271,6 @@
   color: var(--pp-ink);
   line-height: 1;
   white-space: nowrap;
-}
-.ww-hello {
-  position: absolute;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -284,48 +285,6 @@
   outline-offset: -2px;
   flex: none;
 }
-.ww-hello-part {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%) rotate(-2deg);
-  display: grid;
-  justify-items: center;
-  gap: 14px;
-}
-.ww-hello-part__row { display: flex; align-items: flex-end; gap: 14px; }
-.ww-hello-bubble {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 18px;
-  padding: 20px 34px;
-  font-size: var(--font-size-heading);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-.ww-hello-bubble--im { transform: translateY(-18px); }
-.ww-hello-bubble--preply { background: var(--pp-tokyo-pink); }
-.ww-hello-bubble--preply img { height: 76px; width: auto; filter: brightness(0); }
-/* the speech-bubble tails: a black wedge with a fill wedge inset in it, both starting at
-   the bubble's inner edge so the fill cuts through the border and the tail reads as one piece */
-.ww-hello-bubble--im::before,
-.ww-hello-bubble--im::after,
-.ww-hello-bubble--preply::before,
-.ww-hello-bubble--preply::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  clip-path: polygon(0 0, 100% 0, 0 100%);
-}
-.ww-hello-bubble--im::before,
-.ww-hello-bubble--preply::before { width: 56px; height: 46px; background: var(--pp-ink); }
-.ww-hello-bubble--im::after,
-.ww-hello-bubble--preply::after { width: 28px; height: 23px; background: inherit; }
-.ww-hello-bubble--im::before { left: 12px; }
-.ww-hello-bubble--im::after { left: 22px; }
-.ww-hello-bubble--preply::before { left: calc(50% - 28px); }
-.ww-hello-bubble--preply::after { left: calc(50% - 18px); }
 
 /* ─── 2024 · the prototype (Ghostty + oh-my-zsh, and macOS Music) ─────── */
 
@@ -1677,6 +1636,7 @@
   letter-spacing: var(--letter-spacing-caps);
 }
 .ww-sdkchat__body {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
@@ -1684,30 +1644,10 @@
   font-size: var(--font-size-code);
 }
 .ww-sdkchat__bubble {
-  max-width: 88%;
+  max-width: 85%;
+  line-height: 1.35;
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-card);
-}
-.ww-sdkchat__bubble p {
-  margin: 0;
-}
-.ww-sdkchat__bubble ul {
-  margin: var(--space-sm) 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-}
-.slide .ww-sdkchat__bubble li::before {
-  content: none;
-}
-.ww-sdkchat__bubble li {
-  padding: 0;
-}
-.ww-sdkchat__bubble strong {
-  font-family: var(--font-mono);
-  color: var(--ww-magenta);
 }
 .ww-sdkchat__bubble--user {
   align-self: flex-end;
@@ -1720,43 +1660,42 @@
   color: var(--ww-purple);
   border: 2px solid color-mix(in srgb, var(--ww-purple) 12%, transparent);
 }
-.ww-sdkchat__tool {
-  font-family: var(--font-mono);
+.ww-sdkchat__input {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 var(--space-lg) var(--space-lg);
+  padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-md);
+  border-radius: var(--radius-card);
+  background: var(--ww-white);
+  border: 2px solid color-mix(in srgb, var(--ww-purple) 12%, transparent);
   color: var(--ww-text-muted);
+  font-size: var(--font-size-code);
 }
-.ww-sdkchat__dot {
-  color: var(--terminal-green);
-}
-
-/* ─── «Why it did not work» — two reasons, schematic ──────────────────────
-   Restrained on purpose: the picture is not settled, so the slide is two
-   numbered rows and the smallest evidence that makes each one land. */
-
-.ww-why {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--space-xl);
-}
-.ww-why__row {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-lg);
-}
-.ww-why__num {
-  flex: none;
-  width: 64px;
-  height: 64px;
+.ww-sdkchat__send {
   display: grid;
   place-items: center;
-  border-radius: var(--radius-pill);
-  background: var(--ww-magenta);
+  width: 1.8em;
+  height: 1.8em;
+  border-radius: 50%;
+  background: var(--ww-purple);
   color: var(--ww-white);
-  font-weight: 600;
+  font-weight: 700;
+}
+
+/* ─── «Why it did not work» — no title, one frame ────────────────────────
+   A kanban board that runs on its own: To do grows, the other two columns
+   barely move. */
+
+.ww-why {
+  position: absolute;
+  inset: var(--stage-pad-y) var(--stage-pad-x);
+  display: flex;
+  flex-direction: column;
 }
 .ww-why__body {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
@@ -1764,220 +1703,346 @@
 }
 .ww-why__head {
   margin: 0;
-  text-transform: none;
   font-weight: 600;
-  color: var(--ww-purple);
+  color: var(--ww-magenta);
 }
-.ww-why__chips {
+.ww-why__board {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  gap: var(--space-md);
+  flex: 1;
+  min-height: 0;
+  font-size: var(--font-size-code);
+}
+.ww-why__col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-radius: var(--radius-card);
+  background: var(--ww-card);
+  padding: var(--space-sm);
+}
+.ww-why__colhead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  padding: 0 var(--space-xs) var(--space-sm);
+  color: var(--ww-purple);
+  font-weight: 600;
+}
+.ww-why__count {
+  color: var(--ww-text-muted);
+  font-weight: 400;
+}
+/* To do overflows on purpose: new tickets come in on top, the old ones sink
+   under a fade at the bottom edge */
+.ww-why__cards {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  overflow: hidden;
+}
+.ww-why__col--todo .ww-why__cards {
+  mask-image: linear-gradient(to bottom, black 70%, transparent);
+}
+.ww-why__ticket {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--space-sm);
+  background: var(--ww-white);
+  border: 2px solid color-mix(in srgb, var(--ww-purple) 10%, transparent);
+  color: var(--ww-purple);
+  line-height: 1.15;
+  animation: wwTicketIn 320ms var(--ease) backwards;
+}
+@keyframes wwTicketIn {
+  from { opacity: 0; transform: translateY(-14px); }
+}
+.ww-why__col--done .ww-why__title {
+  color: var(--ww-text-muted);
+  text-decoration: line-through;
+}
+.ww-why__kind {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  color: var(--ww-white);
+  font-size: 0.88em;
+  line-height: 1;
+}
+.ww-why__kind--story { background: var(--ww-mint); color: var(--ww-ink); }
+.ww-why__kind--bug { background: var(--ww-magenta); }
+.ww-why__kind--task { background: var(--ww-violet); }
+.ww-why__title {
+  min-width: 0;
+}
+
+/* ─── «Unless you are Peter Steinberger» ──────────────────────────────────
+   The meme on the left, one sentence on the right; the clicks only change
+   the name it ends on, every dead one struck through. One more click adds
+   the category it started: a line in the same voice, then four chips. */
+
+.ww-chad {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  align-items: center;
+  gap: var(--space-xl);
+}
+.ww-chad__left {
+  align-self: stretch;
+  display: grid;
+  align-items: center;
+  min-height: 0;
+}
+.ww-chad__img,
+.ww-chad__diagram {
+  grid-area: 1 / 1;
+  transition: opacity 0.4s var(--ease);
+}
+.ww-chad__img {
+  display: block;
+  width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--radius-card);
+}
+.ww-chad__diagram {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.ww-chad__swap--out {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* The initial ecosystem: the gateway in the middle, his CLIs in four clusters
+   either side. Each side is a tree: a spine half-way across the gap, a branch
+   into each cluster, and one stub from the hub. The two clusters on a side
+   are forced to equal heights (flex-basis 0), so their middles sit at 25%
+   and 75% and the spine can be drawn without measuring. */
+.ww-eco {
+  --eco-gap: var(--space-lg);
+  --eco-rule: 3px solid var(--ww-violet);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--eco-gap);
+  height: min(100%, 640px);
+  font-size: var(--font-size-code);
+}
+.ww-eco__side {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+.ww-eco__side::before {
+  content: '';
+  position: absolute;
+  top: 25%;
+  bottom: 25%;
+  border-left: var(--eco-rule);
+}
+.ww-eco__side--left::before { left: calc(100% + var(--eco-gap) / 2); }
+.ww-eco__side--right::before { right: calc(100% + var(--eco-gap) / 2); }
+.ww-eco__group {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm);
+  border-radius: var(--radius-card);
+  background: var(--ww-card);
+}
+.ww-eco__group::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: calc(var(--eco-gap) / 2);
+  border-top: var(--eco-rule);
+}
+.ww-eco__side--left .ww-eco__group::after { left: 100%; }
+.ww-eco__side--right .ww-eco__group::after { right: 100%; }
+.ww-eco__label {
+  color: var(--ww-text-muted);
+  font-size: 0.88em;
+}
+.ww-eco__tools {
   display: flex;
   flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+.ww-eco__tool {
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-pill);
+  background: var(--ww-white);
+  border: 2px solid color-mix(in srgb, var(--ww-purple) 12%, transparent);
+  color: var(--ww-purple);
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+}
+.ww-eco__hub {
+  position: relative;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  border-radius: var(--radius-card);
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+}
+.ww-eco__hub::before,
+.ww-eco__hub::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: calc(var(--eco-gap) / 2);
+  border-top: var(--eco-rule);
+}
+.ww-eco__hub::before { right: 100%; }
+.ww-eco__hub::after { left: 100%; }
+.ww-eco__hubname {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  line-height: 1;
+}
+.ww-eco__hubsub {
+  font-size: 0.88em;
+  opacity: 0.85;
+}
+.ww-eco__tool--core {
+  margin-top: var(--space-xs);
+}
+.ww-eco__via {
+  margin-top: var(--space-xs);
+  font-size: 0.88em;
+  font-style: italic;
+  opacity: 0.85;
+}
+.ww-chad__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+.ww-chad__line {
+  margin: 0;
+  color: var(--ww-purple);
+  line-height: var(--line-height-normal);
+}
+.ww-chad__name {
+  font-weight: 600;
+  color: var(--ww-magenta);
+}
+.ww-chad__name + .ww-chad__name {
+  margin-left: 0.35em;
+}
+.ww-chad__cat {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-sm);
 }
-.ww-why__chip {
+.ww-chad__catlabel {
+  color: var(--ww-purple);
+  line-height: var(--line-height-normal);
+}
+.ww-chad__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+.ww-chad__chip {
   padding: var(--space-xs) var(--space-md);
   border-radius: var(--radius-pill);
   background: var(--ww-lavender);
   color: var(--ww-purple);
   font-size: var(--font-size-code);
 }
-.ww-why__stat {
-  margin: 0;
-  font-size: var(--font-size-code);
-  color: var(--ww-text-muted);
-}
-.ww-why__stat strong {
-  color: var(--ww-magenta);
-}
-
-/* Reason 2: two tracks, and the gaps between the pulses are the point. */
-.ww-why__strip {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  font-size: var(--font-size-code);
-}
-.ww-why__label {
-  width: 64px;
-  color: var(--ww-text-muted);
-  text-align: right;
-}
-.ww-why__track {
-  position: relative;
-  flex: 1;
-  height: 28px;
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--ww-purple) 8%, transparent);
-}
-.ww-why__pulse {
-  position: absolute;
-  top: 4px;
-  width: 26px;
-  height: 20px;
-  border-radius: 6px;
-  background: var(--ww-magenta);
-}
-.ww-why__pulse--it {
-  background: var(--ww-violet);
-}
-
-/* ─── «Unless you are Peter Steinberger» ──────────────────────────────────
-   Receipts, then the rename chain as the joke, then the sting. */
-
-.ww-chad {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--space-sm);
-}
-.ww-chad__stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-sm);
-}
-/* The receipts are a band, not four posters: the stage has three more rows
-   to fit under them. */
-.ww-chad__stats .ww-card {
-  min-height: 0;
-  padding: var(--space-md) var(--space-lg);
-  gap: var(--space-xs);
-  justify-content: flex-start;
-}
-.ww-chad__stats .ww-stat__label {
-  font-size: var(--font-size-code);
-}
-
-/* The names, in order, with every dead one struck through. */
-.ww-chad__names {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-lg);
-}
-.ww-chad__name-wrap {
-  display: flex;
-  flex-direction: column;
-}
-.ww-chad__name {
-  font-weight: 600;
-  line-height: var(--line-height-tight);
-}
 .ww-chad__name--dead {
   color: var(--ww-text-muted);
+  font-weight: 400;
   text-decoration: line-through;
   text-decoration-color: var(--ww-magenta);
   text-decoration-thickness: 3px;
 }
-.ww-chad__name--live {
-  color: var(--ww-magenta);
-}
-.ww-chad__when {
-  font-size: var(--font-size-code);
-  color: var(--ww-text-muted);
-}
-.ww-chad__sting {
-  margin: 0;
-  max-width: 1500px;
-  color: var(--ww-purple);
-  line-height: var(--line-height-normal);
-}
-.ww-chad__sting em {
-  font-style: normal;
-  font-weight: 600;
-}
 
-/* The heartbeat beat: a pill with the cadence, then the sentence. */
-.ww-chad__beat {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-md);
-}
-.ww-chad__pill {
-  flex: none;
-  padding: var(--space-xs) var(--space-md);
-  border-radius: var(--radius-pill);
-  background: var(--ww-magenta);
-  color: var(--ww-white);
-  font-size: var(--font-size-code);
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-/* ─── «It started a category» — four products, then the tail ──────────────
-   Four grey cards of equal weight: the point is the shelf, not a ranking. */
-
-.ww-cat {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--space-lg);
-}
-.ww-cat__grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-md);
-}
-.ww-cat__card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  padding: var(--space-lg);
-}
-.ww-cat__name {
-  font-size: var(--font-size-body);
-  font-weight: 600;
-  color: var(--ww-purple);
-  line-height: var(--line-height-tight);
-}
-.ww-cat__who {
-  font-size: var(--font-size-code);
-  color: var(--ww-text-muted);
-}
-.ww-cat__line {
-  margin: 0;
-  flex: 1;
-  font-size: var(--font-size-code);
-  line-height: var(--line-height-normal);
-  color: var(--ww-purple);
-}
-.ww-cat__tag {
-  align-self: flex-start;
-  padding: var(--space-xs) var(--space-md);
-  border-radius: var(--radius-pill);
-  background: var(--ww-magenta);
-  color: var(--ww-white);
-  font-size: var(--font-size-code);
-}
-.ww-cat__tail {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-md);
-  font-size: var(--font-size-code);
-  color: var(--ww-text-muted);
-}
-.ww-cat__tailname::after {
-  content: ' ·';
-  color: color-mix(in srgb, var(--ww-purple) 30%, transparent);
-}
-.ww-cat__tail .ww-cat__tailname:last-child::after {
-  content: '';
-}
-
-/* ─── The pivot: «I assembled mine out of the parts lying around» ─────────
-   The template's statement block, with one quiet line under it. */
+/* ─── The pivot: «You know, I'm something of an engineer myself» ──────────
+   The meme full-bleed, the caption over its foot in the deck's own type,
+   white with a dark edge and a dark halo hugging the letters, so it reads on
+   any part of the frame. */
 
 .ww-myway {
-  flex-direction: column;
-  gap: var(--space-xl);
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--ww-ink);
 }
-.ww-myway__sub {
+.ww-myway__defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+.ww-myway__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 70% 30%;
+}
+.slide .ww-myway__caption {
+  position: absolute;
+  left: 50%;
+  bottom: var(--stage-pad-y);
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 2 * var(--stage-pad-x));
   margin: 0;
-  max-width: 1100px;
   text-align: center;
-  color: var(--ww-text-muted);
+  font-family: var(--font-tight);
+  font-size: var(--font-size-heading);
+  font-weight: 700;
+  line-height: var(--line-height-tight);
+  color: var(--ww-white);
+  -webkit-text-stroke: 3px var(--ww-ink);
+  paint-order: stroke fill;
+  /* a soft dark halo that follows the glyphs, not a box: it reads over the
+     suit and the lawn without hiding the frame */
+  text-shadow:
+    0 0 6px var(--ww-ink),
+    0 0 14px var(--ww-ink),
+    0 0 28px var(--ww-ink),
+    0 0 28px var(--ww-ink),
+    0 0 56px color-mix(in srgb, var(--ww-ink) 80%, transparent);
+}
+/* the job title: warped by the SVG filter, leaned, and split into magenta and
+   mint like a bad signal */
+.ww-myway__warp {
+  display: inline-block;
+  filter: url(#ww-myway-warp);
+  transform: skewX(-8deg) scaleY(1.08);
+  text-shadow:
+    -5px 0 var(--ww-magenta),
+    5px 0 var(--ww-mint),
+    0 0 6px var(--ww-ink),
+    0 0 14px var(--ww-ink),
+    0 0 28px var(--ww-ink),
+    0 0 28px var(--ww-ink),
+    0 0 56px color-mix(in srgb, var(--ww-ink) 80%, transparent);
 }
 
 /* ─── The bootstrap: one sentence, and a queue that writes itself ─────────
@@ -1986,8 +2051,8 @@
 /* One window, the whole stage: the queue it builds is the next slide's job,
    not this one's. */
 .ww-boot {
-  flex: 1;
-  min-height: 0;
+  position: absolute;
+  inset: var(--stage-pad-y) var(--stage-pad-x);
   display: flex;
 }
 .ww-boot__term {
@@ -2077,6 +2142,22 @@
   padding-left: 34px;
   color: var(--cc-dim);
 }
+.ww-boot__preview {
+  margin-top: 4px;
+  padding-left: 68px;
+  color: var(--cc-text);
+}
+.ww-boot__previewline {
+  display: flex;
+  gap: var(--space-md);
+  white-space: pre;
+}
+.ww-boot__lineno {
+  flex: none;
+  width: 1.5em;
+  text-align: right;
+  color: var(--cc-dim);
+}
 .ww-boot__bullet--done {
   color: var(--cc-success);
 }
@@ -2122,129 +2203,407 @@
 
 
 
-/* ─── CLAUDE.md — the file the harness pastes in ──────────────────────────
-   Same room as the MCP slide; the right panel is the repository instead of
-   a list of servers. */
+/* ─── CLAUDE.md — what goes in it, and where it goes ──────────────────────
+   No title. Beats 1–5: the file alone, one section per click, each a heading
+   line (name + who writes it) with what it holds underneath. Beat 2: the system prompt from the coding-agent slide, with the
+   same file pasted in at the bottom under a magenta edge. */
 
-.ww-cmd .ww-llm__panel {
-  justify-content: flex-start;
-  gap: var(--space-sm);
-  overflow: hidden;
-  padding: var(--space-md) var(--space-lg);
+.ww-cmd {
+  position: absolute;
+  inset: var(--stage-pad-y) var(--stage-pad-x);
 }
-.ww-cmd .ww-llm__script {
-  min-height: 0;
+/* two layers in one box: the file alone, and the prompt it is pasted into */
+.ww-cmd__layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.ww-cmd__card {
-  flex: none;
+/* the file's text fades, its card stays — the card is what flies */
+.ww-cmd__layer--fading .ww-cmd__name,
+.ww-cmd__layer--fading .ww-cmd__sections {
+  opacity: 0;
+  transition: opacity 250ms var(--ease);
 }
-.ww-cmd__file {
-  margin: 0;
-  overflow: hidden;
-  font-family: var(--font-mono);
-  font-size: var(--font-size-code);
-  line-height: var(--line-height-normal);
-  color: var(--ww-purple);
-  white-space: pre-wrap;
-  padding: var(--space-sm) var(--space-md);
-  border-left: 4px solid var(--ww-magenta);
-  background: var(--ww-white);
-  border-radius: 0 12px 12px 0;
+.ww-cmd__layer--gone {
+  visibility: hidden;
 }
-.ww-cmd__card {
-  padding: var(--space-md) var(--space-lg);
+.ww-cmd__layer--prompt {
+  /* pinned to the top, so the block opening up pushes the text below it down
+     instead of re-centring the whole panel */
+  align-items: flex-start;
+  animation: wwCmdIn 600ms var(--ease) 150ms backwards;
+}
+.ww-cmd__layer--waiting {
+  opacity: 0;
+}
+@keyframes wwCmdIn {
+  from { opacity: 0; }
+}
+.ww-cmd__slot--empty {
+  visibility: hidden;
+}
+.ww-cmd__ghost {
+  position: absolute;
   border-radius: var(--radius-card);
   background: var(--ww-white);
   box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ww-purple) 12%, transparent);
+  pointer-events: none;
+}
+.ww-cmd__ghost--flying {
+  box-shadow: inset 0 0 0 3px var(--ww-magenta), 0 18px 48px color-mix(in srgb, var(--ww-purple) 25%, transparent);
+}
+.ww-cmd__card {
+  padding: var(--space-lg) var(--space-xl);
+  border-radius: var(--radius-card);
+  background: var(--ww-white);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ww-purple) 12%, transparent);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-body);
+  color: var(--ww-purple);
 }
 .ww-cmd__name {
-  font-family: var(--font-mono);
   font-weight: 600;
-  color: var(--ww-purple);
+  font-size: var(--font-size-heading);
 }
 .ww-cmd__sections {
-  margin-top: var(--space-xs);
+  margin-top: var(--space-md);
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  font-size: var(--font-size-code);
-  color: var(--ww-text-muted);
+  gap: var(--space-md);
 }
-.ww-cmd__section::before {
-  content: '## ';
-  color: var(--ww-magenta);
-  font-family: var(--font-mono);
-}
-.ww-cmd__practice {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  font-size: var(--font-size-code);
-  color: var(--ww-purple);
-}
-.ww-cmd__line {
-  transition: opacity var(--transition-normal);
-}
-.ww-cmd__line--hidden {
-  opacity: 0;
-}
-
-/* ─── A loop is a cron ────────────────────────────────────────────────────
-   Same room again: the text on the left, the two boxes, and on the right the
-   schedule — which is the whole of the feature. */
-
-.ww-cron .ww-llm__panel {
-  justify-content: flex-start;
-  gap: var(--space-sm);
-  overflow: hidden;
-  padding: var(--space-md) var(--space-lg);
-}
-.ww-cron__turn {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.ww-cron__tag {
-  padding-left: var(--space-lg);
-  font-size: var(--font-size-code);
-  color: var(--ww-violet);
-  font-style: italic;
-}
-.ww-cron__answer {
-  padding-left: var(--space-lg);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-code);
-  color: var(--ww-text-muted);
-}
-.ww-cron__job {
+/* one section per beat: a heading line with who writes it, the hint under it */
+.ww-cmd__section {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
-  padding: var(--space-md) var(--space-lg);
-  border-radius: var(--radius-card);
-  background: var(--ww-white);
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ww-purple) 12%, transparent);
-  font-size: var(--font-size-code);
+  transition: opacity var(--transition-normal);
 }
-.ww-cron__cmd {
-  font-family: var(--font-mono);
-  font-weight: 600;
-  color: var(--ww-magenta);
-  margin-bottom: var(--space-xs);
+.ww-cmd__section--hidden {
+  opacity: 0;
 }
-.ww-cron__row {
+.ww-cmd__head {
   display: flex;
-  justify-content: space-between;
+  align-items: baseline;
   gap: var(--space-md);
+}
+.ww-cmd__hash {
+  color: var(--ww-magenta);
+}
+.ww-cmd__sname {
+  font-weight: 600;
+}
+.ww-cmd__hint {
+  padding-left: 2.6ch;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-code);
   color: var(--ww-text-muted);
 }
-.ww-cron__row strong {
-  color: var(--ww-purple);
-  font-weight: 600;
-  text-align: right;
-}
-.ww-cron__note {
+.ww-cmd__who {
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-pill);
+  background: var(--ww-lavender);
+  font-family: var(--font-sans);
   font-size: var(--font-size-code);
+}
+/* beat 6: the same file, inside the prompt — names only. The harness's line
+   and the file are ONE inserted block, outlined in magenta so the eye finds
+   what was pasted (and the flying card lands exactly on it) */
+.ww-cmd__prompt {
+  width: 100%;
+  min-height: 0;
+}
+/* no title to share the stage with, so the prompt is set a tier up */
+.ww-cmd__prompt .ww-llm__script,
+.ww-cmd__card--pasted {
+  font-size: var(--font-size-body);
+}
+.ww-cmd__slot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-card);
+  background: var(--ww-white);
+  box-shadow: inset 0 0 0 3px var(--ww-magenta);
+}
+.ww-cmd__pasteline {
+  color: var(--ww-violet);
+}
+.ww-cmd__card--pasted {
+  padding: 0;
+  box-shadow: none;
+  background: none;
+}
+.ww-cmd__decl {
+  text-indent: calc(-1 * var(--space-lg));
+  padding-left: var(--space-lg);
+}
+.ww-cmd__card--pasted .ww-cmd__sections {
+  margin-top: var(--space-xs);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  column-gap: var(--space-lg);
+  row-gap: var(--space-xs);
+}
+.ww-cmd__card--pasted .ww-cmd__head {
+  gap: var(--space-sm);
+}
+
+/* ─── A loop is a cron — one sheet, three writers, no words ──────────────
+   A fixed 1700×870 canvas centred in the stage. The sheet in the middle; the
+   writers as objects in their own ink — a laptop (user, purple), a terminal
+   window (harness, violet) whose screen holds the loop, an orb (model,
+   magenta); time is mint, on the harness's dial.
+   Every moving value is set inline off the slide's clock — no CSS animation
+   here, so the PDF exporter has nothing to wait on. */
+
+.ww-ctxstage {
+  position: absolute;
+  inset: 0;
+}
+.ww-ctx {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1700px;
+  height: 870px;
+  transform: translate(-50%, -50%);
+  font-size: var(--font-size-body);
+}
+.ww-ctx > * {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+}
+
+/* the sheet: white paper on a lavender halo, ruled, with a margin for stamps */
+.ww-ctx .ww-ctx__sheet {
+  padding: 40px var(--space-xl) 40px 112px;
+  border-radius: 8px;
+  background-color: var(--ww-white);
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--ww-lavender) 55%, transparent) 0 88px, transparent 88px),
+    repeating-linear-gradient(to bottom, transparent 0 54px, color-mix(in srgb, var(--ww-lavender) 80%, transparent) 54px 56px);
+  background-position: 0 0, 0 40px;
+  box-shadow:
+    0 2px 4px color-mix(in srgb, var(--ww-purple) 12%, transparent),
+    0 30px 80px color-mix(in srgb, var(--ww-purple) 18%, transparent),
+    0 0 0 18px color-mix(in srgb, var(--ww-lavender) 45%, transparent);
+  font-family: var(--font-mono);
+  font-weight: 500;
+  line-height: 56px;
+  transform-origin: 50% 50%;
+}
+.ww-ctx__turn {
+  position: relative;
+}
+.ww-ctx__turn--harness { color: var(--ww-violet); }
+.ww-ctx__turn--user { color: var(--ww-purple); }
+.ww-ctx__turn--model { color: var(--ww-magenta); font-weight: 600; }
+.ww-ctx__label {
+  font-weight: 700;
+}
+.ww-ctx__u {
+  display: inline-block;
+  white-space: pre;
+  border-radius: 6px;
+}
+.ww-ctx__u--char {
+  border-radius: 0;
+}
+.ww-ctx__caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: -0.18em;
+  background: var(--ww-purple);
+}
+
+/* the writer's stamp in the margin of every turn */
+.ww-ctx__stamp {
+  position: absolute;
+  left: -94px;
+  top: 4px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+.ww-ctx__stamp svg { width: 30px; height: 30px; }
+.ww-ctx__stamp--harness { background: var(--ww-violet); }
+.ww-ctx__stamp--user { background: var(--ww-purple); }
+.ww-ctx__stamp--model { background: var(--ww-magenta); }
+
+/* the writers — objects, not avatars */
+.ww-ctx__stamp svg,
+.ww-ctx__orb svg {
+  fill: var(--ww-white);
+}
+.ww-ctx__stampline {
+  fill: none;
+  stroke: var(--ww-white);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* the user: a laptop */
+.ww-ctx__laptop {
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 18px 28px color-mix(in srgb, var(--ww-purple) 22%, transparent));
+}
+.ww-ctx__lid { fill: var(--ww-purple); stroke: var(--ww-purple); stroke-width: 8; stroke-linejoin: round; }
+.ww-ctx__screen { fill: color-mix(in srgb, var(--ww-lavender) 70%, var(--ww-white)); }
+.ww-ctx__laptop.is-lit .ww-ctx__screen { fill: var(--ww-white); }
+.ww-ctx__screenline { fill: color-mix(in srgb, var(--ww-purple) 55%, transparent); }
+.ww-ctx__screencaret { fill: var(--ww-purple); }
+.ww-ctx__base { fill: color-mix(in srgb, var(--ww-lavender) 55%, var(--ww-white)); stroke: color-mix(in srgb, var(--ww-purple) 30%, transparent); stroke-width: 2; stroke-linejoin: round; }
+.ww-ctx__lip { fill: color-mix(in srgb, var(--ww-purple) 70%, var(--ww-violet)); }
+.ww-ctx__trackpad { fill: color-mix(in srgb, var(--ww-purple) 12%, var(--ww-white)); stroke: color-mix(in srgb, var(--ww-purple) 25%, transparent); stroke-width: 1.5; }
+.ww-ctx__lidback { fill: var(--ww-purple); stroke: var(--ww-purple); stroke-width: 2; stroke-linejoin: round; }
+.ww-ctx__logo { fill: color-mix(in srgb, var(--ww-white) 35%, transparent); }
+.ww-ctx__key { fill: var(--ww-white); stroke: color-mix(in srgb, var(--ww-purple) 22%, transparent); stroke-width: 1; }
+.ww-ctx__key.is-on { fill: var(--ww-violet); stroke: none; }
+
+/* the model: an orb */
+.ww-ctx__orb {
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 34% 30%,
+    color-mix(in srgb, var(--ww-white) 70%, var(--ww-magenta)) 0%,
+    var(--ww-magenta) 38%,
+    var(--ww-violet) 100%);
+  opacity: 0.55;
+  box-shadow: 0 18px 40px color-mix(in srgb, var(--ww-magenta) 25%, transparent);
+  transition: opacity 0.35s var(--ease), box-shadow 0.35s var(--ease);
+}
+.ww-ctx__orb.is-lit {
+  opacity: 1;
+  box-shadow:
+    0 0 0 16px color-mix(in srgb, var(--ww-magenta) 14%, transparent),
+    0 0 90px color-mix(in srgb, var(--ww-magenta) 55%, transparent),
+    0 18px 40px color-mix(in srgb, var(--ww-magenta) 30%, transparent);
+}
+.ww-ctx__orb svg { width: 38%; height: 38%; }
+
+/* the harness: a terminal window across the top; its screen is the desk */
+.ww-ctx__win {
+  border-radius: 16px;
+  background: var(--ww-white);
+  box-shadow: 0 2px 4px color-mix(in srgb, var(--ww-purple) 10%, transparent),
+    0 18px 44px color-mix(in srgb, var(--ww-purple) 14%, transparent),
+    inset 0 0 0 2px color-mix(in srgb, var(--ww-violet) 18%, transparent);
+  overflow: hidden;
+  transition: box-shadow 0.3s var(--ease);
+}
+.ww-ctx__win.is-lit {
+  box-shadow: 0 2px 4px color-mix(in srgb, var(--ww-purple) 10%, transparent),
+    0 18px 44px color-mix(in srgb, var(--ww-violet) 28%, transparent),
+    0 0 0 6px color-mix(in srgb, var(--ww-violet) 16%, transparent),
+    inset 0 0 0 3px var(--ww-violet);
+}
+.ww-ctx__winbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 var(--space-sm);
+  background: color-mix(in srgb, var(--ww-violet) 10%, var(--ww-white));
+}
+.ww-ctx__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+.ww-ctx__dot--red { background: var(--term-red); }
+.ww-ctx__dot--amber { background: var(--term-yellow); }
+.ww-ctx__dot--green { background: var(--term-green); }
+.ww-ctx__wintitle {
+  margin-left: var(--space-sm);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  font-weight: 600;
+  color: var(--ww-violet);
+}
+.ww-ctx__winprompt {
+  position: absolute;
+  left: 40px;
+  top: 70px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-heading);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ww-violet);
+}
+.ww-ctx__name {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-caps);
+  white-space: nowrap;
+  transform-origin: 0 0;
+}
+.ww-ctx__name--user { color: var(--ww-purple); }
+.ww-ctx__name--model { color: var(--ww-magenta); }
+
+/* the harness's desk */
+.ww-ctx__dial {
+  width: 136px;
+  height: 136px;
+  overflow: visible;
+  transform-origin: 50% 50% !important;
+}
+.ww-ctx__dialtrack {
+  fill: var(--ww-white);
+  stroke: color-mix(in srgb, var(--ww-mint) 30%, var(--ww-paper));
+  stroke-width: 10;
+}
+.ww-ctx__dialfill {
+  fill: none;
+  stroke: var(--ww-mint);
+  stroke-width: 10;
+  stroke-linecap: round;
+}
+
+/* a quoted token, on the desk or in flight */
+.ww-ctx__chip {
+  display: inline-flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 var(--space-sm);
+  border-radius: 10px;
+  background: var(--ww-white);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--ww-purple) 16%, transparent);
+  will-change: transform;
+}
+.ww-ctx__chip--user { color: var(--ww-purple); box-shadow: 0 6px 16px color-mix(in srgb, var(--ww-purple) 16%, transparent), inset 0 0 0 2px var(--ww-purple); }
+.ww-ctx__chip--harness { color: var(--ww-violet); box-shadow: 0 6px 16px color-mix(in srgb, var(--ww-purple) 16%, transparent), inset 0 0 0 3px var(--ww-violet); }
+.ww-ctx__chip--model { color: var(--ww-white); background: var(--ww-magenta); font-size: var(--font-size-body); }
+.ww-ctx__chip.is-small { height: 38px; padding: 0 8px; box-shadow: none; }
+/* special tokens (the protocol's own markers) are outlined, as on the
+   coding-agent slide: not words, structure */
+.ww-ctx__u--special {
+  padding: 0 6px;
+  margin-right: 0.4em;
+  box-shadow: inset 0 0 0 2px var(--ww-magenta);
+  font-size: var(--font-size-code);
+  vertical-align: 0.1em;
+}
+.ww-ctx__chip.is-special {
+  background: var(--ww-white);
   color: var(--ww-magenta);
-  transition: opacity var(--transition-normal);
+  font-size: var(--font-size-code);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--ww-purple) 16%, transparent), inset 0 0 0 3px var(--ww-magenta);
 }
