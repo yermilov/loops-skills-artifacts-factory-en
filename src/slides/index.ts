@@ -42,6 +42,7 @@ import { SkillUnitSlide, SkillUnitRefsSlide, SkillUnitScriptsSlide } from './Ski
 import { SkillReadRefSlide, SkillRunScriptSlide } from './SkillFilesSlide';
 import { SkillLabyrinthSlide } from './SkillLabyrinthSlide';
 import { SelfLearningSlide } from './SelfLearningSlide';
+import { GoldbergSlide } from './GoldbergSlide';
 import { SkillToolSlide } from './SkillToolSlide';
 
 /**
@@ -102,5 +103,6 @@ export const slides = [
   SkillRunScriptSlide,
   SkillLabyrinthSlide,
   SelfLearningSlide,
+  GoldbergSlide,
   FinalSlide,
 ];

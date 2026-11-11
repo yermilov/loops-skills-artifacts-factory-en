@@ -2497,3 +2497,61 @@
   color: var(--ww-purple);
   transform: rotate(2deg);
 }
+
+/* ─── How it works — the Goldberg machine (GoldbergSlide.tsx) ──────────────
+   One SVG on a 1700 × 650 canvas: the Jira board, the agent and the skills
+   marketplace, joined by a ramp, a tube, a belt and a spring. Every moving value
+   is set inline off the slide's own clock; here only the look. The three token
+   inks are custom properties because a slot's flash mixes them inline. */
+.ww-gb {
+  --ww-gb-pull: var(--ww-violet);
+  --ww-gb-update: var(--ww-magenta);
+  --ww-gb-add: var(--ww-mint);
+  position: absolute;
+  inset: var(--stage-pad-y) var(--stage-pad-x);
+  display: flex;
+}
+.ww-gb__svg { width: 100%; height: 100%; overflow: visible; }
+.ww-gb__frame { fill: var(--ww-card); }
+.ww-gb__label { font-family: var(--font-sans); font-size: var(--font-size-code); font-weight: 700; fill: var(--ww-purple); }
+.ww-gb__row { font-family: var(--font-sans); font-size: var(--font-size-code); font-weight: 600; letter-spacing: 0.06em; fill: var(--ww-text-muted); }
+.ww-gb__card { fill: var(--ww-white); stroke: var(--ww-purple); stroke-width: 3; }
+.ww-gb__card--done { fill: color-mix(in srgb, var(--ww-mint) 32%, var(--ww-white)); }
+.ww-gb__card--ghost { fill: none; stroke: var(--ww-violet); stroke-dasharray: 10 8; }
+.ww-gb__key { font-family: var(--font-mono); font-size: var(--font-size-code); fill: var(--ww-purple); }
+.ww-gb__key--ghost { fill: var(--ww-violet); }
+.ww-gb__log { fill: var(--ww-white); stroke: var(--ww-violet); stroke-width: 2.5; }
+.ww-gb__logline { stroke: var(--ww-violet); stroke-width: 2.5; stroke-linecap: round; }
+.ww-gb__ramp { stroke: var(--ww-purple); stroke-width: 6; stroke-linecap: round; }
+.ww-gb__belt { fill: var(--ww-lavender); stroke: var(--ww-purple); stroke-width: 2; }
+.ww-gb__roller { fill: var(--ww-purple); }
+.ww-gb__spring { fill: none; stroke: var(--ww-purple); stroke-width: 3; stroke-linejoin: round; }
+.ww-gb__pipe { fill: none; stroke: var(--ww-lavender); stroke-width: 24; stroke-linecap: round; stroke-linejoin: round; }
+.ww-gb__token { stroke: var(--ww-purple); stroke-width: 2; }
+.ww-gb__token--pull { fill: var(--ww-gb-pull); }
+.ww-gb__token--update { fill: var(--ww-gb-update); }
+.ww-gb__token--add { fill: var(--ww-gb-add); }
+.ww-gb__body { fill: var(--ww-white); stroke: var(--ww-purple); stroke-width: 4; }
+.ww-gb__mouth { fill: var(--ww-purple); }
+.ww-gb__screen { fill: var(--cc-bg); }
+.ww-gb__tty { font-family: var(--font-mono); font-size: var(--font-size-code); fill: var(--cc-text); }
+.ww-gb__tty--claude { fill: var(--cc-claude); }
+.ww-gb__tty--dim { fill: var(--cc-dim); }
+.ww-gb__gear { fill: var(--ww-lavender); stroke: var(--ww-purple); stroke-width: 3; stroke-linejoin: round; }
+.ww-gb__hub { fill: var(--ww-purple); }
+.ww-gb__slot { stroke: var(--ww-lavender); stroke-width: 2; }
+.ww-gb__slot--new { fill: none; stroke: var(--ww-violet); stroke-dasharray: 8 6; }
+/* user-information: the one skill every task reads, pinned on top */
+.ww-gb__slot--special { stroke: var(--ww-magenta); stroke-width: 4; }
+.ww-gb__skill { font-family: var(--font-mono); font-size: var(--font-size-code); fill: var(--ww-purple); }
+.ww-gb__skill--special { font-weight: 600; fill: var(--ww-magenta); }
+.ww-gb__ver { font-family: var(--font-mono); font-size: var(--font-size-code); fill: var(--ww-text-muted); }
+.ww-gb__mark text { font-family: var(--font-sans); font-size: var(--font-size-body); font-weight: 700; }
+.ww-gb__mark--ask circle { fill: var(--ww-lavender); }
+.ww-gb__mark--ask text { fill: var(--ww-purple); }
+.ww-gb__mark--done circle { fill: var(--ww-mint); }
+.ww-gb__mark--done text { fill: var(--ww-purple); }
+.ww-gb__mark--more circle { fill: var(--ww-magenta); }
+.ww-gb__mark--more text { fill: var(--ww-white); }
+.ww-gb__badge { fill: var(--ww-magenta); }
+.ww-gb__badgetext { font-family: var(--font-sans); font-size: var(--font-size-code); font-weight: 700; fill: var(--ww-white); }
