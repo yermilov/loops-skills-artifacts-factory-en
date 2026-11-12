@@ -31,6 +31,7 @@ const EXPORT_MODE =
 
 const API = 'myclaw-api.up.railway.app';
 const TYPO_ID = '5d1e07b2';
+const MIGRATION_ID = '8b3f61e4';
 /** The one model the whole loop runs on — the name to swap when the line-up moves. */
 const MODEL = 'Opus 5.5';
 /** An illustrative step, not a measurement: the sum only has to GROW on every tick. */
@@ -193,6 +194,53 @@ const STEPS: Step[] = [
   },
   {
     great: false,
+    claim: 'Chat is the most generic UX — not the handiest',
+    prop: 'map',
+    lines: [
+      {
+        kind: 'you',
+        draft: true,
+        text:
+          'book a table at that place — past the bridge, the second one, on the corner with the '
+          + 'green awning, next to the pharmacy, no, the other pharmacy, across from the',
+      },
+    ],
+  },
+  {
+    great: false,
+    claim: 'One model for every task',
+    prop: 'model',
+    lines: [
+      { kind: 'you', text: '', fired: '10:10am' },
+      {
+        kind: 'tool',
+        text: `Bash(curl -s '${API}/api/tasks?status=todo')`,
+        result: `[{"id":"${TYPO_ID}","title":"Fix a typo in the README"}]`,
+        ms: 700,
+      },
+      { kind: 'tool', text: 'Update(README.md)', result: 'Added 1 line, removed 1 line', ms: 900 },
+      {
+        kind: 'say',
+        text: `Fixed the typo. ${TYPO_ID} is closed.`,
+      },
+      // the same model for the opposite end of the scale — the status line never moves
+      { kind: 'you', text: '', fired: '10:20am' },
+      {
+        kind: 'tool',
+        text: `Bash(curl -s '${API}/api/tasks?status=todo')`,
+        result: `[{"id":"${MIGRATION_ID}","title":"Migrate tasks to recurring schedules"}]`,
+        ms: 700,
+      },
+      { kind: 'tool', text: 'Read(src/db/schema.ts)', result: 'Read 214 lines', ms: 700 },
+      {
+        kind: 'say',
+        text: 'Plan: a schedules table, a cron expression per task, and a backfill for the 40 open ones. Starting with the migration.',
+        fx: { ctx: 11, cost: 0.62, at: 'done' },
+      },
+    ],
+  },
+  {
+    great: false,
     claim: 'The context fills up — and compaction forgets',
     prop: 'ctx',
     lines: [
@@ -222,40 +270,6 @@ const STEPS: Step[] = [
       ...tick('2:10pm', 4.8 + TICK_COST),
       ...tick('2:20pm', 4.8 + 2 * TICK_COST),
       ...tick('2:30pm', 4.8 + 3 * TICK_COST),
-    ],
-  },
-  {
-    great: false,
-    claim: 'One model for every task',
-    prop: 'model',
-    lines: [
-      { kind: 'you', text: '', fired: '2:40pm' },
-      {
-        kind: 'tool',
-        text: `Bash(curl -s '${API}/api/tasks?status=todo')`,
-        result: `[{"id":"${TYPO_ID}","title":"Fix a typo in the README"}]`,
-        ms: 700,
-      },
-      { kind: 'tool', text: 'Update(README.md)', result: 'Added 1 line, removed 1 line', ms: 900 },
-      {
-        kind: 'say',
-        text: `Fixed the typo. ${TYPO_ID} is closed.`,
-        fx: { ctx: 15, cost: 5.71, at: 'done' },
-      },
-    ],
-  },
-  {
-    great: false,
-    claim: 'Chat is the most generic UX — not the handiest',
-    prop: 'map',
-    lines: [
-      {
-        kind: 'you',
-        draft: true,
-        text:
-          'book a table at that place — past the bridge, the second one, on the corner with the '
-          + 'green awning, next to the pharmacy, no, the other pharmacy, across from the',
-      },
     ],
   },
 ];
@@ -544,7 +558,7 @@ function Scene({ stage }: { stage: number }) {
 
           <div className="ww-boot__body">
             {earlier.map(
-              (line, i) => !line.silent && <Row key={`p${i}`} line={line} shown={line.text} done />
+              (line, i) => !line.silent && !line.draft && <Row key={`p${i}`} line={line} shown={line.text} done />
             )}
             {drawn.map((row, i) => {
               const line = row.line as Beat;
@@ -621,17 +635,18 @@ export const AssistantSessionSlide: SlideDefinition = {
     + 'Even greater — and I did not write a line of that. Every feature Claude Code ever ships, '
     + 'this assistant gets for free. '
     + 'Now the other four — keep them, because the rest of the talk is these. '
-    + '4 — then a normal day: a dentist, the building chat, the landlord, meal plans — four ticks and a lot of back-and-forth, and every word of it stays in the context. I cannot clear it '
+    + '4 — chat is the most generic UX, not the most convenient: I am stuck describing a place '
+    + 'in words when opening a map and searching would take one tap. '
+    + '5 — the model in the status line is fixed. One model executes everything: a typo in a '
+    + 'README runs on the biggest one, and so does a schema migration, ten minutes later. I can '
+    + 'change it by hand; the loop cannot pick per task. '
+    + '6 — and then a normal day: a dentist, the building chat, the landlord, meal plans — four ticks, still the same model, and a lot of back-and-forth, and every word of it stays in the context. I cannot clear it '
     + 'automatically between them. It compacts, and what it knew becomes a summary: ask about the '
     + 'bill and it has to ask for the photo again. '
-    + '5 — the loop ticks every ten minutes and every tick costs tokens, even when the queue is '
+    + '7 — the loop ticks every ten minutes and every tick costs tokens, even when the queue is '
     + 'empty. Watch the cost in the status line. And it gets worse as the session goes on: a tick '
     + 'sends the whole conversation again, so the bigger the context, the more an EMPTY tick '
     + 'costs. (The sum on screen is illustrative — say so if asked; I did not measure a tick.) '
-    + '6 — the model in the status line is fixed. One model executes everything: a typo in a '
-    + 'README runs on the biggest one. I can change it by hand; the loop cannot pick per task. '
-    + '7 — and chat is the most generic UX, not the most convenient: I am stuck describing a place '
-    + 'in words when opening a map and searching would take one tap. '
     + 'Honest about the replay: rebuilt for the stage — the bill, the ids and the sums are '
     + 'illustrative, the fast-forwarded day is mine, and the status line is a custom one '
     + '(Claude Code draws whatever your statusLine command prints). The lines the CLI prints '
