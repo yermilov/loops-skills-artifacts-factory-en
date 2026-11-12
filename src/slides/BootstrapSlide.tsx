@@ -25,7 +25,7 @@ const TICK_MS = 50;
 const TYPE_MS = 26;
 const WORD_MS = 70;
 const RUN_MS = 800;
-const GAP_MS = 280;
+export const GAP_MS = 280;
 
 export type Line =
   /** `note`: a line the CLI prints by itself, dim — «/remote-control is active», «Conversation
@@ -38,8 +38,8 @@ export type Line =
    *  `paste`: a paste shown EXPANDED under the prompt, once it is sent. The CLI itself
    *  collapses a paste to «[Pasted text #N +M lines]»; this is a stage choice, so the
    *  room can read what was pasted. */
-  | { kind: 'you'; text: string; fired?: string; paste?: string[] }
-  | { kind: 'say'; text: string }
+  | { kind: 'you'; text: string; fired?: string; paste?: string[]; ms?: number }
+  | { kind: 'say'; text: string; ms?: number }
   | {
       kind: 'tool';
       text: string;
@@ -473,6 +473,8 @@ export function useClock(resetKey: number): number {
 /** How long a line takes to arrive. */
 function span(line: Line): number {
   if (line.kind === 'note') return line.ms ?? 0;
+  // `ms` on a typed or spoken line: fast-forward — it lands whole after `ms`
+  if ((line.kind === 'you' || line.kind === 'say') && line.ms !== undefined) return line.ms;
   if (line.kind === 'you') return line.fired ? 0 : line.text.length * TYPE_MS;
   if (line.kind === 'say') return line.text.split(' ').length * WORD_MS;
   return line.ms ?? RUN_MS;
@@ -492,7 +494,7 @@ export function played(lines: Line[], t: number): Played[] {
     if (line.kind === 'tool' || line.kind === 'note') {
       return { line, shown: line.text, started, done, typing: false };
     }
-    if (line.kind === 'you' && line.fired) {
+    if ((line.kind === 'you' && line.fired) || line.ms !== undefined) {
       return { line, shown: line.text, started, done, typing: false };
     }
     const units = line.kind === 'you' ? line.text.length : line.text.split(' ').length;

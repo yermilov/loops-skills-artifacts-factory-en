@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { SlideDefinition } from '../types/slides';
 import { CornerRings } from '../components/wawtech';
 import { useAnimating } from '../components/frameSettled';
-import { Line, Played, Row, played, useClock } from './BootstrapSlide';
+import { GAP_MS, Line, Played, Row, played, useClock } from './BootstrapSlide';
 
 /**
  * «Our barebones AI assistant is ready» — the ledger of the Loops arc, PLAYED
@@ -19,7 +19,7 @@ import { Line, Played, Row, played, useClock } from './BootstrapSlide';
  *   or at <url>» · «Context low (N% remaining) · Run /compact to compact &
  *   continue» · «Compacting conversation…» · «Conversation compacted» ·
  *   «Claude resuming /loop wakeup (<when>)».
- * Two things are stage devices and NOT the CLI: the «three hours later» line,
+ * Two things are stage devices and NOT the CLI: the fast-forwarded three hours (beat 4),
  * and the status line (model · context · cost) — Claude Code draws whatever
  * your own `statusLine` command prints, and this is one such command's output.
  * The phone is drawn after the session view at claude.ai/code (the mobile app's
@@ -68,22 +68,91 @@ const tick = (when: string, cost: number): Beat[] => [
   },
 ];
 
+/** The cost beat does not end: /loop keeps waking up, every tick on an empty queue,
+ *  until the speaker moves on. One tick every TICK_EVERY ms of slide time, ten minutes
+ *  apart on the clock; the PDF keeps the beat's three fixed ticks. */
+const TICK_EVERY = 2800;
+const ENDLESS_FROM = 14 * 60 + 10; // 2:10pm, in minutes
+const clockAt = (minutes: number) => {
+  const h = Math.floor(minutes / 60) % 24;
+  const m = minutes % 60;
+  return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')}${h < 12 ? 'am' : 'pm'}`;
+};
+/** One tick plays as: wakeup (0) · gap · curl (700) · gap · silence · gap — the silence
+ *  is whatever makes the whole thing exactly TICK_EVERY long. */
+const TICK_PAUSE = TICK_EVERY - (3 * GAP_MS + 700);
+/** Only the last few ticks are generated (and the newest rows drawn): however long the
+ *  speaker talks, the work per frame stays the same. */
+const ENDLESS_KEEP = 14;
+const ENDLESS_ROWS = 40;
+/** The ticks from `first` on, and the beat time to play them at. */
+function endlessTicks(t: number, from: number): { lines: Beat[]; first: number; at: number } {
+  const first = Math.max(0, Math.floor(t / TICK_EVERY) - ENDLESS_KEEP);
+  const n = Math.floor(t / TICK_EVERY) + 2;
+  const lines: Beat[] = [];
+  for (let i = first; i < n; i++) {
+    lines.push(...tick(clockAt(ENDLESS_FROM + 10 * i), from + (i + 1) * TICK_COST));
+    // the wait until the next wakeup: nothing printed
+    lines.push({ kind: 'note', text: '', ms: TICK_PAUSE, silent: true });
+  }
+  return { lines, first, at: t - first * TICK_EVERY };
+}
+/** How many ticks the endless beat really ran — the beats after it carry on from there
+ *  (later on the clock, dearer), instead of rewinding to the scripted three. */
+const SCRIPTED_TICKS = 3;
+let ticksRun = SCRIPTED_TICKS;
+
+/** Three hours of a day, fast-forwarded (each line lands whole): what fills the context. */
+const FF = 420;
+const LATER: Beat[] = [
+  { kind: 'you', text: '', fired: '10:40am', fx: { ctx: 93, cost: 4.58, at: 'start', over: 12500 } },
+  { kind: 'tool', text: `Bash(curl -s '${API}/api/tasks?status=todo')`, result: '[{"id":"a41c9e03","title":"Find a dentist with Saturday hours"}]', ms: 300 },
+  { kind: 'say', text: 'Three near you with Saturday hours: Dentalux, Smile Lab, Doctor Zub.', ms: FF },
+  { kind: 'you', text: 'not Dentalux, the reviews are awful. which one is closer to the metro?', ms: FF },
+  { kind: 'say', text: 'Smile Lab — 4 minutes from Lukianivska. Saturday slots: 10:30 and 13:00.', ms: FF },
+  { kind: 'you', text: 'book 10:30', ms: FF },
+  { kind: 'say', text: 'Booked: Smile Lab, Saturday 10:30. a41c9e03 is closed.', ms: FF },
+  { kind: 'you', text: '', fired: '11:50am' },
+  { kind: 'tool', text: `Bash(curl -s '${API}/api/tasks?status=todo')`, result: '[{"id":"c7d20f11","title":"Summarise the building chat"}]', ms: 300 },
+  { kind: 'say', text: '43 messages this week. What matters: no water on Thursday, 10:00–14:00.', ms: FF },
+  { kind: 'you', text: 'remind me on Wednesday evening to fill the bath', ms: FF },
+  { kind: 'say', text: 'Done — Wednesday, 20:00. c7d20f11 is closed.', ms: FF },
+  { kind: 'you', text: '', fired: '12:30pm' },
+  { kind: 'tool', text: `Bash(curl -s '${API}/api/tasks?status=todo')`, result: '[{"id":"e902bb5a","title":"Reply to the landlord about the radiator"}]', ms: 300 },
+  { kind: 'say', text: 'Draft: «Dear Oksana, the radiator in the bedroom is still cold…»', ms: FF },
+  { kind: 'you', text: 'less formal. and mention the photo I sent her last week', ms: FF },
+  { kind: 'say', text: 'Rewritten and sent. e902bb5a is closed.', ms: FF },
+  { kind: 'you', text: '', fired: '1:20pm' },
+  { kind: 'tool', text: `Bash(curl -s '${API}/api/tasks?status=todo')`, result: '[{"id":"f1c3a8d0","title":"Plan meals for next week"}]', ms: 300 },
+  { kind: 'say', text: 'Seven dinners, one shopping list. Fish on Tuesday and Friday.', ms: FF },
+  { kind: 'you', text: 'no fish, I told you last month', ms: FF },
+  { kind: 'say', text: 'Sorry — swapped for chicken and lentils. f1c3a8d0 is closed.', ms: FF },
+];
+
 const STEPS: Step[] = [
   {
     great: true,
     claim: 'Open Claude Code and just talk to it',
     prop: 'recipe',
     lines: [
-      { kind: 'you', text: 'morning. what is in my queue?' },
+      { kind: 'you', text: 'morning. do I need an umbrella today?' },
+      // who «I» is — where I live, how I get to work — comes from the user-information
+      // skill; «Successfully loaded skill» is the CLI's own result line (2.1.322)
       {
         kind: 'tool',
-        text: `Bash(curl -s '${API}/api/tasks?status=todo')`,
-        result: '[]',
+        text: 'Skill(user-information)',
+        result: 'Successfully loaded skill',
+        ms: 600,
+      },
+      {
+        kind: 'tool',
+        text: "Bash(curl -s 'wttr.in/Kyiv?format=%C+%t')",
+        result: 'Light rain +4°C',
         ms: 700,
       },
       {
         kind: 'say',
-        text: 'Good morning. The queue is empty — nothing is waiting on me. What do you need?',
+        text: 'Good morning. Light rain and 4°C in Kyiv — take the umbrella, and maybe not the bike to the office today.',
         fx: { ctx: 4, cost: 0.06, at: 'done' },
       },
     ],
@@ -127,12 +196,9 @@ const STEPS: Step[] = [
     claim: 'The context fills up — and compaction forgets',
     prop: 'ctx',
     lines: [
-      {
-        kind: 'note',
-        text: '· · · three hours and eleven tasks later · · ·',
-        ms: 2600,
-        fx: { ctx: 93, cost: 4.58, at: 'start', over: 2600 },
-      },
+      // three hours of an ordinary day, fast-forwarded: four ticks, four tasks, and the
+      // back-and-forth that real tasks take — every line of it stays in the context
+      ...LATER,
       { kind: 'note', tone: 'error', text: 'Context low (7% remaining) · Run /compact to compact & continue', ms: 900 },
       {
         kind: 'note',
@@ -194,13 +260,35 @@ const STEPS: Step[] = [
   },
 ];
 
+const COST_BEAT = STEPS.findIndex((s) => s.prop === 'cost');
+const shiftClock = (label: string, minutes: number) => {
+  const m = /^(\d+):(\d+)(am|pm)$/.exec(label);
+  if (!m) return label;
+  const h = (Number(m[1]) % 12) + (m[3] === 'pm' ? 12 : 0);
+  return clockAt(h * 60 + Number(m[2]) + minutes);
+};
+/** A line as a beat after the endless one shows it. */
+function carried(line: Beat, stepIndex: number): Beat {
+  const extra = ticksRun - SCRIPTED_TICKS;
+  if (stepIndex < COST_BEAT || extra <= 0) return line;
+  let out = line;
+  // the endless beat's own scripted ticks keep their clock (they are history), but the
+  // bill they leave behind is the real one — the next beat starts from it
+  if (stepIndex > COST_BEAT && out.kind === 'you' && out.fired) {
+    out = { ...out, fired: shiftClock(out.fired, 10 * extra) };
+  }
+  if (out.fx?.cost !== undefined) out = { ...out, fx: { ...out.fx, cost: out.fx.cost + extra * TICK_COST } };
+  return out;
+}
+const linesOf = (stepIndex: number) => STEPS[stepIndex].lines.map((line) => carried(line, stepIndex));
+
 type Status = { ctx: number; cost: number; ctxOver: number; costOver: number };
 
 /** The status line once every beat before `upTo` has played out. */
 function settled(upTo: number): Status {
   const status: Status = { ctx: 2, cost: 0, ctxOver: 0, costOver: 0 };
-  STEPS.slice(0, upTo).forEach((step) =>
-    step.lines.forEach((line) => {
+  STEPS.slice(0, upTo).forEach((_, i) =>
+    linesOf(i).forEach((line) => {
       if (line.fx?.ctx !== undefined) status.ctx = line.fx.ctx;
       if (line.fx?.cost !== undefined) status.cost = line.fx.cost;
     })
@@ -228,9 +316,11 @@ function statusAt(beat: number, rows: Played[]): Status {
 }
 
 /** A number that walks to its target instead of jumping — a meter, not a label. */
-function useTween(target: number, over: number): number {
-  const [value, setValue] = useState(target);
-  const from = useRef(target);
+/** `initial`: where the figure stood when this beat began — a beat whose first line
+ *  moves it at t = 0 still climbs from there instead of starting at the end. */
+function useTween(target: number, over: number, initial = target): number {
+  const [value, setValue] = useState(EXPORT_MODE ? target : initial);
+  const from = useRef(EXPORT_MODE ? target : initial);
   useEffect(() => {
     if (EXPORT_MODE || over <= 0) {
       from.current = target;
@@ -256,19 +346,6 @@ function useTween(target: number, over: number): number {
 const money = (value: number) => `$${value.toFixed(2)}`;
 
 /* ─── The props beside the terminal: the one thing to look at this beat ──── */
-
-/** What «barebones» means: the three parts, and nothing else. */
-function Recipe() {
-  return (
-    <div className="ww-asst__recipe">
-      <span className="ww-asst__part">Claude Code</span>
-      <span className="ww-asst__plus">+</span>
-      <span className="ww-asst__part">/loop</span>
-      <span className="ww-asst__plus">+</span>
-      <span className="ww-asst__part">a task queue</span>
-    </div>
-  );
-}
 
 /** The photo behind «[Image #1]» — the CLI shows only the placeholder. */
 function Bill() {
@@ -373,21 +450,6 @@ function Phone({ rows }: { rows: Played[] }) {
   );
 }
 
-function Gauge({ label, value, note, bar }: { label: string; value: string; note: string; bar?: number }) {
-  return (
-    <div className="ww-asst__gauge">
-      <span className="ww-asst__gaugelabel">{label}</span>
-      <span className="ww-asst__gaugevalue">{value}</span>
-      {bar !== undefined && (
-        <span className="ww-asst__bar">
-          <span className="ww-asst__barfill" style={{ width: `${Math.round(bar)}%` }} />
-        </span>
-      )}
-      <span className="ww-asst__gaugenote">{note}</span>
-    </div>
-  );
-}
-
 /** One search and a tap — against the paragraph being typed on the left. Reused
  *  by the Artifacts slide, where the agent draws this very map as its answer. */
 const PINS: [number, number][] = [
@@ -429,20 +491,29 @@ function Scene({ stage }: { stage: number }) {
   const beat = stage - 1;
   const step = STEPS[beat] ?? STEPS[0];
   const t = useClock(stage);
-  const live = played(step.lines, t);
-  useAnimating(live.some((row) => !row.done));
+  const endless = step.prop === 'cost' && !EXPORT_MODE;
+  const ticks = endless ? endlessTicks(t, settled(beat).cost) : null;
+  const live = ticks ? played(ticks.lines, ticks.at) : played(linesOf(Math.max(0, beat)), t);
+  // an endless beat is ambient for the ready mark, like any loop
+  useAnimating(!endless && live.some((row) => !row.done));
+  // only rows that have arrived — never a window of rows still to come
+  const drawn = endless ? live.filter((row) => row.started).slice(-ENDLESS_ROWS) : live;
+  const ticksDone = ticks ? ticks.first + live.filter((row) => row.line.kind === 'tool' && row.done).length : 0;
+  useEffect(() => {
+    if (endless) ticksRun = Math.max(SCRIPTED_TICKS, ticksDone);
+  }, [endless, ticksDone]);
 
-  const earlier = STEPS.slice(0, beat).flatMap((s) => s.lines);
+  const earlier = STEPS.slice(0, beat).flatMap((_, i) => linesOf(i));
   const draft = live.find((row) => (row.line as Beat).draft);
   // a line being written in the prompt box: its dropped part is there in one piece
   const boxed = live.find((row) => (row.line as Beat).box !== undefined && row.started && !row.done);
   const inBox =
     draft?.shown
     ?? (boxed && boxed.line.text.slice(0, Math.max(boxed.shown.length, (boxed.line as Beat).box ?? 0)));
-  const compacted = live.some((row) => row.line.kind === 'note' && row.line.busy !== undefined && row.done);
   const status = statusAt(beat, live);
-  const ctx = useTween(status.ctx, status.ctxOver);
-  const cost = useTween(status.cost, status.costOver);
+  const before = settled(beat);
+  const ctx = useTween(status.ctx, status.ctxOver, before.ctx);
+  const cost = useTween(status.cost, status.costOver, before.cost);
 
   // The phone shows the conversation since it took over (beat 3 onward).
   const phoneRows: Played[] = [
@@ -455,7 +526,10 @@ function Scene({ stage }: { stage: number }) {
   return (
     <div className="ww-asst">
       <div className={`ww-asst__claim ww-asst__claim--${step.great ? 'great' : 'not'}`} key={beat}>
-        <span className="ww-asst__verdict">{step.great ? 'great' : 'not so great'}</span>
+        <span className="ww-asst__verdict">
+          <span aria-hidden="true">{step.great ? '✓' : '✕'}</span>
+          {step.great ? 'great' : 'not so great'}
+        </span>
         <span>{step.claim}</span>
       </div>
 
@@ -472,7 +546,7 @@ function Scene({ stage }: { stage: number }) {
             {earlier.map(
               (line, i) => !line.silent && <Row key={`p${i}`} line={line} shown={line.text} done />
             )}
-            {live.map((row, i) => {
+            {drawn.map((row, i) => {
               const line = row.line as Beat;
               if (line.draft || line.silent) return null;
               // a message typed on the phone — or in the prompt box — arrives whole, when sent
@@ -514,28 +588,11 @@ function Scene({ stage }: { stage: number }) {
             <Bill />
           </div>
         )}
+        {/* only real interfaces here — Finder, the phone, a map; the rest is narrated,
+            and the figures that matter are already in the status line */}
         <div className="ww-asst__side" key={step.prop}>
-          {step.prop === 'recipe' && <Recipe />}
           {step.prop === 'bill' && <Finder />}
           {step.prop === 'phone' && <Phone rows={phoneRows} />}
-          {step.prop === 'ctx' && (
-            <Gauge
-              label="context"
-              value={`${Math.round(ctx)}%`}
-              bar={ctx}
-              note={
-                compacted
-                  ? 'compacted — what it knew is now a summary'
-                  : 'full of the last eleven tasks — nothing clears it between them'
-              }
-            />
-          )}
-          {step.prop === 'cost' && (
-            <Gauge label="this session" value={money(cost)} note="every tick adds to it — empty queue or not" />
-          )}
-          {step.prop === 'model' && (
-            <Gauge label="model" value={MODEL} note="for a typo and for a schema alike" />
-          )}
           {step.prop === 'map' && <MapWindow />}
         </div>
       </div>
@@ -557,14 +614,14 @@ export const AssistantSessionSlide: SlideDefinition = {
   notes:
     'The assistant is done, and it is barely any code: Claude Code, a loop, a task queue. Seven '
     + 'clicks, one session — three that are great, four that are not. '
-    + '1 — I open Claude Code and talk to it. It is my assistant already: it knows the queue. '
+    + '1 — I open Claude Code and just talk to it: do I need an umbrella? First it loads my user-information skill — where I live, that I ride a bike to the office — then checks the weather in MY city and answers for ME. (The forecast is illustrative.) '
     + '2 — it supports everything Claude Code supports out of the box. A photo of a bill: it '
     + 'reads it. New models the day they land, the same way. '
     + '3 — remote control: I leave the laptop and carry on from the phone, in the SAME session. '
     + 'Even greater — and I did not write a line of that. Every feature Claude Code ever ships, '
     + 'this assistant gets for free. '
     + 'Now the other four — keep them, because the rest of the talk is these. '
-    + '4 — three hours later the context is full of the previous tasks, and I cannot clear it '
+    + '4 — then a normal day: a dentist, the building chat, the landlord, meal plans — four ticks and a lot of back-and-forth, and every word of it stays in the context. I cannot clear it '
     + 'automatically between them. It compacts, and what it knew becomes a summary: ask about the '
     + 'bill and it has to ask for the photo again. '
     + '5 — the loop ticks every ten minutes and every tick costs tokens, even when the queue is '
@@ -576,7 +633,7 @@ export const AssistantSessionSlide: SlideDefinition = {
     + '7 — and chat is the most generic UX, not the most convenient: I am stuck describing a place '
     + 'in words when opening a map and searching would take one tap. '
     + 'Honest about the replay: rebuilt for the stage — the bill, the ids and the sums are '
-    + 'illustrative, the «three hours later» line is mine, and the status line is a custom one '
+    + 'illustrative, the fast-forwarded day is mine, and the status line is a custom one '
     + '(Claude Code draws whatever your statusLine command prints). The lines the CLI prints '
     + 'itself — image placeholder, remote-control, context low, compaction, loop wakeup — are read '
     + 'off the 2.1.322 binary. The phone is drawn after the Claude app\'s session view as claude.ai/code '

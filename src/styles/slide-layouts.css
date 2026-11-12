@@ -2631,15 +2631,21 @@
   align-items: center;
   gap: var(--space-md);
   color: var(--ww-purple);
+  font-size: var(--font-size-body);
+  font-weight: 600;
   line-height: var(--line-height-tight);
   animation: ww-asst-in 360ms var(--ease) backwards;
 }
+/* the verdict is the beat's headline: as big as the claim, a ✓ or ✕ in front */
 .ww-asst__verdict {
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
   padding: var(--space-xs) var(--space-md);
   border-radius: var(--radius-pill);
-  font-size: var(--font-size-code);
-  font-weight: 600;
+  font-size: var(--font-size-body);
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: var(--letter-spacing-caps);
 }
@@ -2662,10 +2668,19 @@
   flex: 1;
   min-height: 0;
   display: flex;
-  gap: var(--space-lg);
+  position: relative;
 }
+/* one width on every beat, so nothing moves when a prop comes and goes; the prop
+   floats over the terminal's right edge */
 .ww-asst__term {
-  flex: 1;
+  flex: none;
+  width: calc(100% - 240px);
+}
+/* the gutter the prop lands on: text wraps before it on every beat, prop or not,
+   so a floating window never covers a word and nothing re-wraps between beats */
+.ww-asst__term .ww-boot__body,
+.ww-asst__term .ww-boot__prompt {
+  padding-right: 200px;
 }
 /* under the prompt: the hint on the left, your own status line on the right */
 .ww-asst__status {
@@ -2687,31 +2702,16 @@
 }
 
 .ww-asst__side {
-  flex: none;
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  right: 0;
+  bottom: 0;
   width: 420px;
   display: flex;
   align-items: center;
   justify-content: center;
   animation: ww-asst-in 420ms var(--ease) 120ms backwards;
-}
-
-/* beat 1 — what «barebones» is made of */
-.ww-asst__recipe {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-sm);
-  font-family: var(--font-mono);
-  color: var(--ww-purple);
-}
-.ww-asst__part {
-  padding: var(--space-sm) var(--space-lg);
-  border-radius: var(--radius-card);
-  background: var(--ww-lavender);
-}
-.ww-asst__plus {
-  color: var(--ww-magenta);
-  font-weight: 600;
 }
 
 /* beat 2 — the photo behind «[Image #1]» */
@@ -2872,17 +2872,19 @@
 /* beats 3–4 — the phone: drawn large in the deck's own type, then scaled down
    as one object, so no fifth font size appears */
 .ww-asst__phonewrap {
-  width: 350px;
-  height: 650px;
+  width: 403px;
+  height: 670px;
   position: relative;
 }
+/* drawn at phone size and scaled down — 0.72, as large as the scene's height
+   allows, so the bubbles stay readable from the back */
 .ww-asst__phone {
   position: absolute;
   top: 0;
   left: 0;
   width: 560px;
-  height: 1040px;
-  transform: scale(0.625);
+  height: 930px;
+  transform: scale(0.72);
   transform-origin: top left;
   display: flex;
   flex-direction: column;
@@ -2891,7 +2893,8 @@
   overflow: hidden;
   background: var(--app-bg);
   box-shadow: 0 40px 80px color-mix(in srgb, var(--ww-purple) 28%, transparent);
-  font-size: var(--font-size-code);
+  /* the body size, so that after the 0.72 scale it reads like the terminal */
+  font-size: var(--font-size-body);
   line-height: var(--line-height-tight);
   color: var(--app-text);
 }
@@ -2991,43 +2994,6 @@
 .ww-asst__send--on {
   background: var(--cc-claude);
   color: var(--ww-white);
-}
-
-/* beats 5–7 — the status line's figure, big enough for the back row */
-.ww-asst__gauge {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  color: var(--ww-purple);
-}
-.ww-asst__gaugelabel {
-  font-size: var(--font-size-code);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-caps);
-}
-.ww-asst__gaugevalue {
-  font-size: var(--font-size-heading);
-  font-weight: 500;
-  line-height: 1;
-  color: var(--ww-magenta);
-  font-variant-numeric: tabular-nums;
-}
-.ww-asst__bar {
-  height: 20px;
-  border-radius: var(--radius-pill);
-  background: var(--ww-lavender);
-  overflow: hidden;
-}
-.ww-asst__barfill {
-  display: block;
-  height: 100%;
-  background: var(--ww-magenta);
-}
-.ww-asst__gaugenote {
-  font-size: var(--font-size-code);
-  line-height: var(--line-height-normal);
 }
 
 /* beat 8 — one search and a tap */
