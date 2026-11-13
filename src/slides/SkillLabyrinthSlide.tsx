@@ -233,5 +233,7 @@ export const SkillLabyrinthSlide: SlideDefinition = {
     + 'again: every one of the three now depends on both of them — and the two new ones depend on '
     + 'themselves, on each other and on skill-authoring. [reveal] Then '
     + 'install the marketplace for your agents and force regular auto-updates, so every agent always '
-    + 'runs the latest version. Mine are meta:skill-authoring, meta:plugin-dev and meta:enable-autoupdate.',
+    + 'runs the latest version. Mine are public, in the yermilov/yystack marketplace: meta:skill-authoring, '
+    + 'meta:plugin-dev and meta:enable-autoupdate, and research:deep-research as the research skill — '
+    + 'install them and you start out of the labyrinth.',
 };
