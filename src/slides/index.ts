@@ -44,6 +44,7 @@ import { SkillLabyrinthSlide } from './SkillLabyrinthSlide';
 import { SelfLearningSlide } from './SelfLearningSlide';
 import { GoldbergSlide } from './GoldbergSlide';
 import { SkillToolSlide } from './SkillToolSlide';
+import { AssistantReadySlide } from './AssistantReadySlide';
 import { AssistantSessionSlide } from './AssistantSessionSlide';
 import {
   TaskBoardSlide,
@@ -114,6 +115,7 @@ export const slides = [
   SkillLabyrinthSlide,
   SelfLearningSlide,
   GoldbergSlide,
+  AssistantReadySlide,
   AssistantSessionSlide,
   TaskBoardSlide,
   AttentionQueueSlide,

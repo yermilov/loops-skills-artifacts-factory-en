@@ -46,7 +46,9 @@ src/
 │   ├── history.tsx               # «Origins of AI agents» 2022 + 2023 — Remotion clips
 │   ├── MusicPrototypeSlide.tsx   # 2024 — live Ghostty/oh-my-zsh terminal + macOS Music, random song
 │   ├── BootstrapSlide.tsx        # the Claude Code session replay — also EXPORTS its engine (Line, played, Row, useClock)
-│   ├── AssistantSessionSlide.tsx # «Our barebones AI assistant is ready»: one session, seven beats, a prop beside it
+│   ├── AssistantReadySlide.tsx   # «Our barebones AI assistant is ready» — the full-bleed announcement over a Phantom Menace still
+│   ├── AssistantSessionSlide.tsx # the session that tests it (no title band): one errand, eight beats, a prop beside it
+│   ├── RouteMap.tsx              # the maps app with three routes — the session's map reveal and the Artifacts slide share it
 │   ├── improve.tsx               # «How do we improve it?» — six slides sharing one problem LEDGER at the foot
 │   ├── factory.tsx               # SCHEMATIC placeholders (DRAFT pill) for the last arc — outlines, not slides
 │   ├── AgendaSlide.tsx           # template p.3 — exports AGENDA (the four words)
@@ -181,6 +183,37 @@ only DISPLAYS code containing `await`/`fetch` must be listed in `ASYNC_LITERAL_F
 are spoken, and they live in each slide's `notes`, which is also where a reconstruction says it is
 one. What is verbatim (the gpt-shell run, the tweet) is marked as such in the composition's own
 comment. Keep that when editing.
+
+**A replayed session may only call what the assistant HAS at that point of the story.** On the
+«assistant is ready» slide it is Claude Code, a loop and a task queue — so the only API of ours is
+`/api/tasks`; everything else is a skill, a file, a public URL or an MCP connector Claude Code
+already ships with. Twice (13.11.2026) a beat invented an endpoint nobody built (`/api/car`,
+`/api/calendar`) and Yarik caught both: an invented endpoint is a factual claim about the system.
+Ask «where would it really get this?» — the answer is usually a better line anyway (last year's
+closed task in the queue → «the queue is its memory»).
+
+**One errand through a multi-beat session, and the later beats pay the earlier ones off.** The
+session used to be six unrelated errands, so nothing landed. Now the photo read in beat 2 is the
+thing compaction forgets in beat 7, and the Artifacts slide answers the question the chat answered
+with a wall of text. When you change the errand, follow every slide that calls back to it
+(`improve.tsx` does, three times).
+
+**A recreated app with a dozen small type sizes: draw it in the deck's sizes and `zoom` it as one
+object.** `ledgerApp.tsx` (the web app) and `Herdr` (in `improve.tsx`) are built at the deck's code
+/ body / heading sizes inside a container with `zoom: 0.7`, so deck-lint stays at four tiers and
+the proportions stay the product's. Their colours and fonts are the product's own (`--jg-*`,
+`--hd-*`, `--map-*` in `tokens.css`), never the deck's — and the deck's OWN annotations on top of
+them (a magenta highlight, the «my queue» labels, the mint artifact tag) are in the deck's palette,
+so the room can tell the product from the commentary. Watch for `.slide p` leaking the deck's
+colour into the recreation (reset it on the container).
+
+**A film still or clip: take it off the PLAYING video in Chrome, not with yt-dlp.** YouTube answers
+yt-dlp with 403, and working around that is bot-check circumvention — don't. In the logged-in
+Chrome: seek the `<video>`, draw it on a canvas and download the PNG (a still), or
+`video.captureStream()` → `MediaRecorder` → download the WebM (a clip), then cut with ffmpeg one
+frame inside each edit (`select='gt(scene,0.12)'` finds them). Chrome may leave the download as a
+hidden `~/Downloads/.com.google.Chrome.*` temp file — check its size and copy that. Look for a TRUE
+HD upload first: an «HD» clip that is an upscaled SD source stays soft however it is processed.
 
 **A slide that DRAWS Claude Code reuses the clips' own emulation.** `video/src/claudeTerminal.tsx`
 is the reference — it was built by reading the published packages, and it owns the shapes: the

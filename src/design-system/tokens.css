@@ -81,6 +81,66 @@
   --app-bubble: #30302e;
   --app-text: #e5e4de;
   --app-dim: #9c9a92;
+  /* The maps app drawn on the «assistant is ready» and Artifacts slides
+     (src/slides/RouteMap.tsx): the idiom of a consumer maps app — light land,
+     white streets, yellow arterials, blue water, the chosen route in blue and
+     the alternatives in grey. These belong to that one drawing. */
+  --map-land: #f1efe9;
+  --map-street: #ffffff;
+  --map-arterial: #fbe39a;
+  --map-arterial-edge: #e6c467;
+  --map-park: #cde6c5;
+  --map-water: #aad3f0;
+  --map-water-text: #4a7fb5;
+  --map-label: #6b7078;
+  --map-ink: #202124;
+  --map-route: #1a73e8;
+  --map-route-edge: #0b57d0;
+  --map-alt: #a9aeb5;
+  --map-alt-edge: #878c94;
+  --map-pin: #ea4335;
+  --map-card: #ffffff;
+  --map-rule: #dadce0;
+  --map-chosen: #e8f0fe;
+
+  /* The assistant's own web app, as drawn on the «how do we improve it» slides
+     (src/slides/ledgerApp.tsx): the real product's «Studio Ledger» identity, read
+     off its tailwind.config.ts and index.css on 13.11.2026 — warm paper, ink,
+     and five rationed accents. They belong to that recreation, never to the deck. */
+  --jg-paper: #fbf8f1;
+  --jg-paper-100: #f5efe0;
+  --jg-paper-200: #eae0c8;
+  --jg-paper-300: #d6caa8;
+  --jg-ink: #13110d;
+  --jg-ink-700: #2a2620;
+  --jg-ink-500: #5c5448;
+  --jg-ink-400: #7a6f5e;
+  --jg-ink-300: #a89f8f;
+  --jg-ink-200: #d6cfc0;
+  --jg-moss: #465d3c;
+  --jg-moss-300: #96ab86;
+  --jg-moss-50: #ecf1e5;
+  --jg-vermilion: #b0301f;
+  --jg-vermilion-300: #e78371;
+  --jg-vermilion-50: #fbeae6;
+  --jg-ochre: #8a5e1d;
+  --jg-ochre-300: #cfa663;
+  --jg-ochre-50: #f8eccf;
+  --jg-iris: #5b4189;
+  --jg-iris-50: #efebf7;
+  --jg-serif: 'Fraunces', Georgia, serif;
+  --jg-sans: 'DM Sans', system-ui, sans-serif;
+  --jg-mono: 'JetBrains Mono', ui-monospace, monospace;
+  /* herdr, the terminal workspace manager the daemon drives: its own sidebar greys
+     and status dots, read off the running app (13.11.2026) */
+  --hd-bg: #1b1b22;
+  --hd-side: #15151b;
+  --hd-row: #262633;
+  --hd-text: #d9d9e3;
+  --hd-dim: #7f8091;
+  --hd-work: #e6c35c;
+  --hd-done: #5cc8b8;
+
   --music-bg: #1c1c1e;
   --music-chrome: #2a2a2c;
   --music-fg: #f2f2f7;

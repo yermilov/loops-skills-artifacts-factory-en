@@ -1,7 +1,23 @@
 import { ReactNode } from 'react';
 import { SlideDefinition } from '../types/slides';
 import { CornerRings, Reveal } from '../components/wawtech';
-import { MapWindow } from './AssistantSessionSlide';
+import { ROUTES, RouteMap } from './RouteMap';
+import {
+  App,
+  Chip,
+  Comment,
+  Fields,
+  Ico,
+  IconName,
+  STATUS,
+  Status,
+  StatusMark,
+  Task,
+  TaskBar,
+  TaskCard,
+  Verdict,
+  Who,
+} from './ledgerApp';
 
 /**
  * «How do we improve it?» — six slides that answer the four «not so great»
@@ -12,8 +28,11 @@ import { MapWindow } from './AssistantSessionSlide';
  *
  * Yarik's outline (12.11.2026), drawn from what juggernaut actually is — the
  * project is aliased «myclaw» throughout the deck. The interfaces are
- * RECREATIONS for the stage (tasks, sums and names are illustrative), but the
- * mechanics are read off the code, not memory:
+ * RECREATIONS for the stage (tasks, sums and names are invented — the real app is
+ * full of private data), but since 13.11.2026 they are recreations of the REAL
+ * interface, studied in the running product: the web app's look and structure
+ * (ledgerApp.tsx) and herdr's sidebar of spaces and agents (Herdr below). And
+ * the mechanics are read off the code, not memory:
  *   - the board, the per-task thread and the session attached back to its task:
  *     apps/web/src/routes/board.tsx, task-detail.tsx, session-view.tsx;
  *   - the human's queue: an answer re-assigns the task to the agent that asked
@@ -74,34 +93,12 @@ function Browser({ url, children }: { url: string; children: ReactNode }) {
 
 /* ─── 1 · A web UI for the tasks ──────────────────────────────────────────── */
 
-type Status = 'doing' | 'todo' | 'you' | 'done';
-const STATUS_LABEL: Record<Status, string> = {
-  doing: 'in progress',
-  todo: 'to do',
-  you: 'needs you',
-  done: 'done',
-};
-const TASKS: { status: Status; title: string; who: string; high?: boolean }[] = [
-  { status: 'doing', title: 'Pay the water bill', who: 'claude', high: true },
-  { status: 'you', title: 'Plan: move photos off the old NAS', who: 'you' },
-  { status: 'todo', title: 'Renew the car insurance', who: 'codex' },
-  { status: 'todo', title: 'Find a dentist slot next week', who: 'claude' },
-  { status: 'done', title: 'Fix a typo in the README', who: 'claude' },
-  { status: 'done', title: 'Add priorities to tasks', who: 'claude' },
-];
-
-function TaskRow({ task, selected = false }: { task: (typeof TASKS)[number]; selected?: boolean }) {
-  return (
-    <div className={`ww-imp__row${selected ? ' ww-imp__row--selected' : ''}`}>
-      <span className={`ww-imp__dot ww-imp__dot--${task.status}`} />
-      <span className={`ww-imp__rowtitle${task.status === 'done' ? ' ww-imp__rowtitle--done' : ''}`}>
-        {task.title}
-      </span>
-      {task.high && <span className="ww-imp__high">high</span>}
-      <span className={`ww-imp__who ww-imp__who--${task.who}`}>{task.who}</span>
-    </div>
-  );
-}
+const CAR: Task = { title: 'Book the car service', status: 'doing', who: 'My Claude Code', high: true, age: '12m' };
+const NAS: Task = { title: 'Plan: move photos off the old NAS', status: 'plan', who: '@me', age: '2h' };
+const INSURANCE: Task = { title: 'Renew the car insurance', status: 'todo', who: 'My Codex CLI', age: '1d' };
+const DENTIST: Task = { title: 'Find a dentist slot next week', status: 'todo', who: 'My Claude Code', age: '2d' };
+const WATER: Task = { title: 'Pay the water bill', status: 'input', who: '@me', high: true, age: '3d' };
+const INBOX = [CAR, NAS, INSURANCE, DENTIST, WATER];
 
 export const TaskBoardSlide: SlideDefinition = {
   id: 'improve-board',
@@ -113,39 +110,47 @@ export const TaskBoardSlide: SlideDefinition = {
       <CornerRings corner="top-right" />
       <div className="ww-imp">
         <Browser url="myclaw.app">
-          <div className="ww-imp__board">
-            <div className="ww-imp__list">
-              <div className="ww-imp__filters">
-                <span className="ww-imp__filter ww-imp__filter--on">Actual</span>
-                <span className="ww-imp__filter">Parked</span>
-                <span className="ww-imp__filter">Closed</span>
-                <span className="ww-imp__new">+ New task</span>
+          <App active="Tasks">
+            <TaskBar view="Inbox" />
+            <div className="ww-jg__split">
+              <div className="ww-jg__list">
+                {INBOX.map((task, i) => (
+                  <TaskCard key={task.title} task={task} withStatus selected={revealStage >= 2 && i === 0} />
+                ))}
               </div>
-              {TASKS.map((task, i) => (
-                <TaskRow key={task.title} task={task} selected={revealStage >= 2 && i === 0} />
-              ))}
+              {revealStage < 2 ? (
+                <div className="ww-jg__empty ww-jg__label">Select a task</div>
+              ) : (
+                <div className="ww-jg__detail" key="detail">
+                  <span className="ww-jg__title">{CAR.title}</span>
+                  <span className="ww-jg__label">ID 5d1e07b2</span>
+                  <Fields
+                    fields={[
+                      { label: 'Status', value: 'In progress', tone: 'time' },
+                      { label: 'Priority', value: 'High', tone: 'danger' },
+                      { label: 'Assignee', value: 'Claude Code' },
+                      { label: 'Model', value: 'Opus 5.5' },
+                    ]}
+                  />
+                  <div className="ww-jg__timeline">
+                    <Comment who="My Claude Code" tag="Session report" when="12m ago">
+                      <p>
+                        Booked: AutoHub Podil, Thursday 19 November, 9:40. I told them about the
+                        tyre-pressure light.
+                      </p>
+                      <span className="ww-jg__chips">
+                        <Chip>dash-light.jpg</Chip>
+                        <Chip>session-5d1e07b2.jsonl</Chip>
+                      </span>
+                    </Comment>
+                    <Comment who="@me" when="1h ago">
+                      <p>Thursday morning, Podil. Mention the light.</p>
+                    </Comment>
+                  </div>
+                </div>
+              )}
             </div>
-            <Reveal at={2} stage={revealStage}>
-              <div className="ww-imp__detail">
-                <div className="ww-imp__detailtitle">Pay the water bill</div>
-                <div className="ww-imp__meta">
-                  <span className="ww-imp__dot ww-imp__dot--doing" /> {STATUS_LABEL.doing} · high · claude
-                </div>
-                <div className="ww-imp__comment ww-imp__comment--you">
-                  <span className="ww-imp__author">you</span>
-                  Pay the water bill on Friday.
-                </div>
-                <div className="ww-imp__comment">
-                  <span className="ww-imp__author">claude</span>
-                  On it: 412.80 UAH, due on the 20th. Paying on Friday.
-                  <span className="ww-imp__chips">
-                    <span className="ww-imp__chip">water-bill.jpg</span>
-                    <span className="ww-imp__chip">session · 3 min</span>
-                  </span>
-                </div>
-              </div>
-            </Reveal>
-          </div>
+          </App>
         </Browser>
         <Ledger now={['chat-only UX']} />
       </div>
@@ -166,11 +171,19 @@ export const TaskBoardSlide: SlideDefinition = {
 
 /* ─── 2 · A queue for the human, too ──────────────────────────────────────── */
 
-const ROUNDS: { side: 'agent' | 'you'; status: string; who: string; text: string }[] = [
-  { side: 'agent', status: 'in progress', who: 'you', text: 'Pay the water bill on Friday.' },
-  { side: 'you', status: 'needs you', who: 'claude', text: 'Two cards on file. Utilities or main?' },
-  { side: 'agent', status: 'in progress', who: 'you', text: 'Utilities.' },
-  { side: 'you', status: 'needs you', who: 'claude', text: 'Paid 412.80 UAH. Receipt attached — close it?' },
+const COLUMNS: { status: Status; cards: Task[] }[] = [
+  { status: 'todo', cards: [INSURANCE, DENTIST] },
+  { status: 'doing', cards: [] },
+  { status: 'plan', cards: [NAS] },
+  { status: 'input', cards: [] },
+];
+
+/** The one task we follow, a click at a time: where it sits, and what was just said. */
+const ROUNDS: { side: 'agent' | 'you'; who: Who; text: string; proposal?: boolean }[] = [
+  { side: 'agent', who: '@me', text: 'Pay the water bill on Friday.' },
+  { side: 'you', who: 'My Claude Code', text: 'Two cards on file. Utilities or main?' },
+  { side: 'agent', who: '@me', text: 'Utilities.' },
+  { side: 'you', who: 'My Claude Code', text: 'Paid 412.80 UAH, receipt attached.', proposal: true },
 ];
 
 export const AttentionQueueSlide: SlideDefinition = {
@@ -181,47 +194,70 @@ export const AttentionQueueSlide: SlideDefinition = {
   content: ({ revealStage }) => {
     const stage = Math.min(Math.max(revealStage, 1), ROUNDS.length);
     const round = ROUNDS[stage - 1];
+    const ticket: Task = {
+      title: 'Pay the water bill',
+      status: round.side === 'agent' ? 'doing' : 'input',
+      who: round.side === 'agent' ? 'My Claude Code' : '@me',
+      high: true,
+      age: 'now',
+    };
     return (
       <>
         <CornerRings corner="bottom-left" />
         <div className="ww-imp">
-          <div className="ww-imp__queues">
-            <div className="ww-imp__queue">
-              <span className="ww-imp__queuename">Agent queue</span>
-              <span className="ww-imp__queuehint">picked up by the loop</span>
-              <div className="ww-imp__ghost">Renew the car insurance</div>
-              <div className="ww-imp__ghost">Find a dentist slot</div>
-            </div>
-            <div className="ww-imp__lane">
-              <span className={`ww-imp__hop${round.side === 'you' ? ' ww-imp__hop--on' : ''}`}>
-                it reports →
-              </span>
-              <span className={`ww-imp__hop${round.side === 'agent' && stage > 1 ? ' ww-imp__hop--on' : ''}`}>
-                ← my answer hands it back
-              </span>
-            </div>
-            <div className="ww-imp__queue ww-imp__queue--you">
-              <span className="ww-imp__queuename">My queue</span>
-              <span className="ww-imp__queuehint">one by one, when I have a minute</span>
-              <div className="ww-imp__ghost">Approve the plan: photo migration</div>
-              <div className="ww-imp__ghost">Dentist: Tue 9:00 or Thu 17:30?</div>
-            </div>
-            {/* the one task we follow: it crosses over on every click */}
-            <div className={`ww-imp__ticket ww-imp__ticket--${round.side}`}>
-              <div className="ww-imp__tickethead">
-                <span>Pay the water bill</span>
-                <span className={`ww-imp__state ww-imp__state--${round.side}`}>{round.status}</span>
+          <Browser url="myclaw.app">
+            <App active="Tasks">
+              <TaskBar
+                view="Board"
+                filters={
+                  <>
+                    <span className="ww-jg__filter ww-jg__filter--on">Actual</span>
+                    <span className="ww-jg__filter">Done / cancelled</span>
+                    <span className="ww-jg__filter ww-jg__filter--unread">Unread · 3</span>
+                    <span className="ww-jg__filter">@me</span>
+                  </>
+                }
+              />
+              {/* the deck's own annotation: which columns are whose */}
+              <div className="ww-jg__owners">
+                <span className={round.side === 'agent' ? 'ww-jg__owner ww-jg__owner--on' : 'ww-jg__owner'}>
+                  the agents' queue
+                </span>
+                <span className={round.side === 'you' ? 'ww-jg__owner ww-jg__owner--on' : 'ww-jg__owner'}>
+                  my queue
+                </span>
               </div>
-              <div className="ww-imp__thread">
-                {ROUNDS.slice(0, stage).map((r, i) => (
-                  <div key={i} className={`ww-imp__line${i === stage - 1 ? ' ww-imp__line--new' : ''}`}>
-                    <span className="ww-imp__author">{r.who}</span>
-                    {r.text}
+              <div className="ww-jg__board">
+                {COLUMNS.map((column) => (
+                  <div key={column.status} className="ww-jg__column">
+                    <span className="ww-jg__columnhead">
+                      <StatusMark status={column.status} />
+                      {STATUS[column.status]}
+                    </span>
+                    {column.cards.map((task) => (
+                      <TaskCard key={task.title} task={task} />
+                    ))}
                   </div>
                 ))}
+                {/* the one task we follow: it crosses over on every click */}
+                <div className={`ww-jg__ticket ww-jg__ticket--${round.side}`}>
+                  <TaskCard task={ticket} selected>
+                    <span className="ww-jg__thread">
+                      {ROUNDS.slice(0, stage).map((r, i) => (
+                        <span key={i} className={`ww-jg__line${i === stage - 1 ? ' ww-jg__line--new' : ''}`}>
+                          <span className={`ww-jg__label ww-jg__label--${r.who === '@me' ? 'ink' : 'agent'}`}>
+                            {r.who === '@me' ? 'me' : 'claude'}
+                          </span>
+                          {r.text}
+                        </span>
+                      ))}
+                      {round.proposal && <Verdict />}
+                    </span>
+                  </TaskCard>
+                </div>
               </div>
-            </div>
-          </div>
+            </App>
+          </Browser>
           <Ledger now={['chat-only UX']} />
         </div>
       </>
@@ -243,12 +279,6 @@ export const AttentionQueueSlide: SlideDefinition = {
 
 /* ─── 3 · Artifacts ───────────────────────────────────────────────────────── */
 
-const PLACES = [
-  { name: 'Zelena', where: '600 m past the bridge', slots: ['19:00', '20:30'] },
-  { name: 'Awning & Co', where: 'on the corner', slots: ['19:30'] },
-  { name: 'Verde', where: 'by the pharmacy', slots: ['18:30', '21:00'] },
-];
-
 export const ArtifactsSlide: SlideDefinition = {
   id: 'improve-artifacts',
   title: (
@@ -262,58 +292,71 @@ export const ArtifactsSlide: SlideDefinition = {
     <>
       <CornerRings corner="top-right" />
       <div className="ww-imp">
-        <Browser url="myclaw.app/tasks/book-a-table">
-          <div className="ww-imp__task">
-            <div className="ww-imp__detailtitle">Book a table at the place with the green awning</div>
-            {revealStage < 2 ? (
-              <div className="ww-imp__comment ww-imp__wall" key="text">
-                <span className="ww-imp__author">claude</span>
-                I found three places that match. 1) Zelena — 600 m past the second bridge, on the left,
-                tables at 19:00 and 20:30. 2) Awning & Co — on the corner across from the first pharmacy,
-                one table at 19:30. 3) Verde — next to the other pharmacy, 18:30 or 21:00. Reply with the
-                number of the place and the time, and I will book it.
-              </div>
-            ) : (
-              <div className="ww-imp__artifact" key="artifact">
-                <span className="ww-imp__artifacttag">
-                  artifact · <code>set_task_artifact(task_id, html_wide, html_narrow)</code>
-                </span>
-                <div className="ww-imp__artifactmap">
-                  <MapWindow search="green awning" pins={3} />
+        <Browser url="myclaw.app/tasks/8b3f61e4">
+          <App active="Tasks">
+            <div className="ww-jg__page">
+              <span className="ww-jg__back ww-jg__label">
+                <Ico name="back" />
+                Back to board
+              </span>
+              <span className="ww-jg__title">How do I get from the service to the office?</span>
+              {revealStage >= 2 && (
+                <div className="ww-jg__artifact" key="artifact">
+                  <span className="ww-imp__artifacttag">
+                    artifact · <code>set_task_artifact(task_id, html_wide, html_narrow)</code>
+                  </span>
+                  <div className="ww-jg__artifactmap">
+                    <RouteMap bare />
+                  </div>
+                  <div className="ww-jg__routes">
+                    {ROUTES.map((route, i) => (
+                      <div key={route.mode} className={`ww-jg__route${i === 0 ? ' ww-jg__route--on' : ''}`}>
+                        <span className="ww-jg__routeno">{i + 1}</span>
+                        <span className="ww-jg__routename">
+                          {route.mode}
+                          <span className="ww-jg__label">{route.detail}</span>
+                        </span>
+                        <span className="ww-jg__routetime">{route.time}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="ww-imp__places">
-                  {PLACES.map((place, i) => (
-                    <div key={place.name} className="ww-imp__place">
-                      <span className="ww-imp__placename">
-                        <span className="ww-imp__pinno">{i + 1}</span>
-                        {place.name}
-                      </span>
-                      <span className="ww-imp__placewhere">{place.where}</span>
-                      <span className="ww-imp__slots">
-                        {place.slots.map((slot) => (
-                          <span key={slot} className="ww-imp__slot">
-                            {slot}
-                          </span>
-                        ))}
-                      </span>
-                    </div>
-                  ))}
+              )}
+              <Fields
+                fields={[
+                  { label: 'Status', value: 'Needs your input', tone: 'hold' },
+                  { label: 'Priority', value: 'Med' },
+                  { label: 'Assignee', value: '@me' },
+                  { label: 'Created', value: 'Nov 17 · 10:21' },
+                ]}
+              />
+              {revealStage < 2 && (
+                <div className="ww-jg__timeline" key="text">
+                  <Comment who="My Claude Code" tag="Session report" when="2m ago">
+                    <p>
+                      Three ways. By metro: walk 650 m down Kyrylivska to Tarasa Shevchenka, take the blue
+                      line five stops to Olimpiiska, then 300 m up Velyka Vasylkivska — 24 minutes. By taxi:
+                      along the embankment, up Volodymyrskyi Descent and across Khreshchatyk — 16 minutes
+                      now, closer to 30 at ten, about 190 UAH. On foot: up Andriivskyi Descent and along
+                      Volodymyrska — 5.6 km, an hour and ten. I would take the metro.
+                    </p>
+                  </Comment>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </App>
         </Browser>
         <Ledger now={['chat-only UX']} />
       </div>
     </>
   ),
   notes:
-    'Third — the word from the title: ARTIFACTS. Remember the place past the second bridge with '
-    + 'the green awning. With a task queue the agent can find it — and answers like this: three '
-    + 'places, in a paragraph, reply with a number and a time. That is still chat. '
+    'Third — the word from the title: ARTIFACTS. Remember the paragraph about getting from the '
+    + 'service to the office. In a task it is the same paragraph: three routes, street by street. '
+    + 'That is still chat. '
     + 'Click. So we allow the agent to put into a task not only text but dynamic HTML it '
-    + 'generates for THIS case: a map with the three pins, and the free tables as buttons. One '
-    + 'tap. Nobody designed a «restaurant booking» feature; the agent decided what the most '
+    + 'generates for THIS case: the map with the three routes, and each one as a row to pick. One '
+    + 'glance. Nobody designed a «directions» feature; the agent decided what the most '
     + 'convenient UX for this answer is, and wrote it. '
     + 'Mechanically it is one tool call: set_task_artifact with the HTML in two versions, wide '
     + 'and narrow, and the task page renders it at the very top. Next task, a different UI: a '
@@ -323,49 +366,19 @@ export const ArtifactsSlide: SlideDefinition = {
 
 /* ─── 4 · …and stable pages ───────────────────────────────────────────────── */
 
-type Tile = { name: string; figure: string; note: string; viz: 'spark' | 'bars' | 'dots' | 'meter' };
-const TILES: Tile[] = [
-  { name: 'Money', figure: '+2.4%', note: 'net worth, this month', viz: 'spark' },
-  { name: 'Smart home', figure: '21.5°', note: '3 lights on · power: on', viz: 'dots' },
-  { name: 'Movies', figure: '4 picks', note: 'recommended for tonight', viz: 'bars' },
-  { name: 'Books & songs', figure: 'top 10', note: 'my own ratings', viz: 'bars' },
-  { name: 'Nanny', figure: '32 h', note: 'this week · to pay Friday', viz: 'meter' },
-  { name: 'Coffee', figure: '2 bags', note: 'left · reorder in 9 days', viz: 'dots' },
-  { name: 'Threat alerts', figure: 'medium', note: 'tonight, by weapon class', viz: 'bars' },
-  { name: 'Sleep', figure: '7 h 12 m', note: 'last night · forecast 23:40', viz: 'spark' },
-];
+/** The 21-day ribbon of the threat page: one cell a slot, coloured by what happened. */
+const RIBBON = 'mmmmommmmmmmoomvmmmmmmmmommmoommmmmmvommmmmmmmomm'.split('');
 
-function Viz({ kind, seed }: { kind: Tile['viz']; seed: number }) {
-  if (kind === 'spark') {
-    const points = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => `${i * 20},${34 - ((i * 7 + seed * 5) % 13) - i * 2}`);
-    return (
-      <svg className="ww-imp__viz" viewBox="0 0 140 40" aria-hidden="true">
-        <polyline className="ww-imp__spark" points={points.join(' ')} />
-      </svg>
-    );
-  }
-  if (kind === 'bars') {
-    return (
-      <span className="ww-imp__viz ww-imp__bars" aria-hidden="true">
-        {[0, 1, 2, 3, 4, 5].map((i) => (
-          <span key={i} style={{ height: `${30 + ((i * 37 + seed * 23) % 70)}%` }} />
-        ))}
-      </span>
-    );
-  }
-  if (kind === 'dots') {
-    return (
-      <span className="ww-imp__viz ww-imp__dots" aria-hidden="true">
-        {[0, 1, 2, 3, 4].map((i) => (
-          <span key={i} className={(i + seed) % 3 === 0 ? undefined : 'ww-imp__dots--on'} />
-        ))}
-      </span>
-    );
-  }
+function Panel({ name, icon, note, children }: { name: string; icon: IconName; note: string; children: ReactNode }) {
   return (
-    <span className="ww-imp__viz ww-imp__meter" aria-hidden="true">
-      <span style={{ width: '64%' }} />
-    </span>
+    <div className="ww-jg__panel">
+      <span className="ww-jg__panelhead">
+        <Ico name={icon} />
+        <span className="ww-jg__panelname">{name}</span>
+        <span className="ww-jg__label">{note}</span>
+      </span>
+      {children}
+    </div>
   );
 }
 
@@ -380,16 +393,86 @@ export const ArtifactPagesSlide: SlideDefinition = {
     <>
       <CornerRings corner="bottom-right" />
       <div className="ww-imp">
-        <div className="ww-imp__tiles">
-          {TILES.map((tile, i) => (
-            <div key={tile.name} className="ww-imp__tile" style={{ animationDelay: `${i * 70}ms` }}>
-              <span className="ww-imp__tilename">{tile.name}</span>
-              <span className="ww-imp__tilefigure">{tile.figure}</span>
-              <Viz kind={tile.viz} seed={i} />
-              <span className="ww-imp__tilenote">{tile.note}</span>
+        <Browser url="myclaw.app/coffee">
+          <App active="" lit={['Coffee', 'Health', 'Movies', 'Threat forecast']}>
+            <div className="ww-jg__panels">
+              <Panel name="Coffee" icon="coffee" note="2 bags open">
+                <div className="ww-jg__item">
+                  <span className="ww-jg__swatch ww-jg__swatch--bag" aria-hidden="true" />
+                  <span className="ww-jg__itemtext">
+                    <span className="ww-jg__itemname">Guatemala, Nuevo Oriente</span>
+                    <span className="ww-jg__label">Washed · filter · opened 12 Nov</span>
+                  </span>
+                </div>
+                <span className="ww-jg__seg">
+                  <span>Sealed</span>
+                  <span className="ww-jg__seg--on">Open</span>
+                  <span>Finished</span>
+                </span>
+                <span className="ww-jg__seg ww-jg__seg--soft">
+                  <span>Love</span>
+                  <span>OK</span>
+                  <span className="ww-jg__seg--pick">Not really</span>
+                  <span>No</span>
+                </span>
+              </Panel>
+              <Panel name="Health" icon="health" note="today">
+                {[
+                  { name: 'Vitamin D', note: '2000 IU · last taken Tuesday', doses: [false] },
+                  { name: 'Magnesium', note: '2 tablets · 9 h ago', doses: [true, false, false] },
+                ].map((pill) => (
+                  <div key={pill.name} className="ww-jg__item ww-jg__item--row">
+                    <span className="ww-jg__itemtext">
+                      <span className="ww-jg__itemname">{pill.name}</span>
+                      <span className="ww-jg__label">{pill.note}</span>
+                    </span>
+                    <span className="ww-jg__doses" aria-hidden="true">
+                      {pill.doses.map((taken, i) => (
+                        <span key={i} className={taken ? 'ww-jg__dose ww-jg__dose--taken' : 'ww-jg__dose'} />
+                      ))}
+                    </span>
+                  </div>
+                ))}
+              </Panel>
+              <Panel name="Movies" icon="movies" note="watching now">
+                <div className="ww-jg__item">
+                  <span className="ww-jg__swatch ww-jg__swatch--poster" aria-hidden="true" />
+                  <span className="ww-jg__itemtext">
+                    <span className="ww-jg__itemname">Severance</span>
+                    <span className="ww-jg__label">2022 · Apple TV+ · 7 of 20 left</span>
+                  </span>
+                </div>
+                <span className="ww-jg__episode">
+                  <span className="ww-jg__box" aria-hidden="true" />
+                  <span className="ww-jg__label">S02E03</span>
+                  Who Is Alive?
+                </span>
+                <span className="ww-jg__stars">
+                  <span className="ww-jg__label">Would watch again</span>
+                  <span aria-hidden="true">★★★★☆</span>
+                </span>
+              </Panel>
+              <Panel name="Threat forecast" icon="alert" note="no alert · 34 min">
+                <span className="ww-jg__ribbon" aria-hidden="true">
+                  {RIBBON.map((cell, i) => (
+                    <span key={i} className={`ww-jg__cell ww-jg__cell--${cell}`} />
+                  ))}
+                </span>
+                <span className="ww-jg__ribbonlegend ww-jg__label">
+                  <span>21 days ago</span>
+                  <span>now</span>
+                </span>
+                <div className="ww-jg__item ww-jg__item--row">
+                  <span className="ww-jg__itemtext">
+                    <span className="ww-jg__itemname">Drones, the next 24 hours</span>
+                    <span className="ww-jg__label">19 channels read · rated 23:52</span>
+                  </span>
+                  <span className="ww-jg__pill ww-jg__pill--time">Medium</span>
+                </div>
+              </Panel>
             </div>
-          ))}
-        </div>
+          </App>
+        </Browser>
         <Ledger fixed={['chat-only UX']} />
       </div>
     </>
@@ -404,59 +487,124 @@ export const ArtifactPagesSlide: SlideDefinition = {
     + 'None of them is a chat. Every one of them started as a task. '
     + 'And that is the first problem ticked: chat is no longer the only UX — it is the one I use '
     + 'when nothing better exists yet. '
-    + 'Honest about the picture: tiles with illustrative numbers, not my real ones.',
+    + 'Honest about the picture: four of the pages, each cut down to one corner, drawn after the '
+    + 'real ones — with invented data, because the real ones hold my real life.',
 };
 
 /* ─── 5 · The runner: plain code, a pane per task ─────────────────────────── */
 
-type Pane = { name: string; legend: string; task: string; lines: string[] };
+type Run = 'working' | 'idle' | 'done';
+type Space = { name: string; state: Run; focused?: boolean };
+type Agent = { title: string; role: string; state: string; run: Run; focused?: boolean; model?: string };
+type PaneLine = { kind: 'you' | 'tool' | 'say' | 'dim'; text: string };
 
-/** A herdr window, drawn after the real one: spaces and agents on the left,
- *  bordered panes with their agent in the legend. */
-function Herdr({ panes, highlight }: { panes: Pane[]; highlight?: 'legend' }) {
+/**
+ * herdr, drawn after the running app (13.11.2026): on the left «spaces» — the
+ * runner's own space first, carrying the status lines it keeps there, then one
+ * space per task, named after the task, with a dot for its state (amber working,
+ * hollow idle, teal done) — and under it «agents», each with its role, its tool and
+ * its state. On the right the focused space: a tab strip and its pane(s).
+ * `model` on an agent row is the deck's addition (the real sidebar does not print
+ * it) — it is how the slide puts two tasks' models side by side.
+ */
+function Herdr({
+  status,
+  spaces,
+  agents,
+  hotModel = false,
+  children,
+}: {
+  status: string[];
+  spaces: Space[];
+  agents: Agent[];
+  hotModel?: boolean;
+  children: ReactNode;
+}) {
   return (
-    <div className="ww-imp__herdr">
-      <div className="ww-imp__side">
-        <span className="ww-imp__sidehead">agents</span>
-        {panes.map((pane) => (
-          <span key={pane.name} className="ww-imp__agent">
-            <span className="ww-imp__agentdot" />
-            {pane.name}
+    <div className="ww-hd">
+      <div className="ww-hd__side">
+        <span className="ww-hd__head">spaces</span>
+        <span className="ww-hd__space">
+          <span className="ww-hd__dot ww-hd__dot--none" />
+          myclaw
+        </span>
+        {status.map((line) => (
+          <span key={line} className="ww-hd__status">
+            {line}
+          </span>
+        ))}
+        {spaces.map((space) => (
+          <span key={space.name} className={`ww-hd__space${space.focused ? ' ww-hd__space--on' : ''}`}>
+            <span className={`ww-hd__dot ww-hd__dot--${space.state}`} />
+            <span className="ww-hd__clip">{space.name}</span>
+          </span>
+        ))}
+        <span className="ww-hd__head ww-hd__head--agents">
+          <span>agents</span>
+          <span>grouped</span>
+        </span>
+        {agents.map((agent) => (
+          <span key={agent.title + agent.role} className={`ww-hd__agent${agent.focused ? ' ww-hd__agent--on' : ''}`}>
+            <span className="ww-hd__space">
+              <span className={`ww-hd__dot ww-hd__dot--${agent.run}`} />
+              <span className="ww-hd__clip">{agent.title}</span>
+            </span>
+            <span className="ww-hd__status">{agent.role}</span>
+            <span className="ww-hd__status">
+              {agent.state}
+              {agent.model && (
+                <span className={hotModel ? 'ww-hd__model ww-hd__model--hot' : 'ww-hd__model'}> · {agent.model}</span>
+              )}
+            </span>
           </span>
         ))}
       </div>
-      <div className="ww-imp__panes">
-        {panes.map((pane) => (
-          <div key={pane.name} className="ww-imp__pane">
-            <span className={`ww-imp__legend${highlight === 'legend' ? ' ww-imp__legend--hot' : ''}`}>
-              {pane.legend}
-            </span>
-            <div className="ww-imp__panetask">&gt; {pane.task}</div>
-            {pane.lines.map((line) => (
-              <div key={line} className="ww-imp__paneline">
-                <span className="ww-imp__panebullet">⏺</span> {line}
-              </div>
-            ))}
-          </div>
-        ))}
+      <div className="ww-hd__main">
+        <span className="ww-hd__tabs">
+          <span className="ww-hd__tab">1</span>
+          <span>+</span>
+        </span>
+        <div className="ww-hd__panes">{children}</div>
       </div>
     </div>
   );
 }
 
-const RUNNER_PANES: Pane[] = [
-  {
-    name: 'jg-7f3a',
-    legend: 'claude · opus · high',
-    task: 'Plan: move photos off the NAS',
-    lines: ['Read(docs/storage.md)', 'Comparing three paths…'],
-  },
-  {
-    name: 'jg-5d1e',
-    legend: 'claude · haiku · low',
-    task: 'Fix a typo in the README',
-    lines: ['Update(README.md)', 'Done — closing the task.'],
-  },
+function HPane({ lines }: { lines: PaneLine[] }) {
+  return (
+    <div className="ww-hd__pane">
+      {lines.map((line) => (
+        <span key={line.text} className={`ww-hd__line ww-hd__line--${line.kind}`}>
+          {line.kind === 'you' && <span className="ww-hd__caret">&gt; </span>}
+          {(line.kind === 'tool' || line.kind === 'say') && <span className="ww-hd__bullet">⏺ </span>}
+          {line.text}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+const DAEMON_PANE: PaneLine[] = [
+  { kind: 'dim', text: '$ myclaw start' },
+  { kind: 'dim', text: '23:41:07  GET /api/tasks/next → none' },
+  { kind: 'dim', text: '23:42:07  GET /api/tasks/next → none' },
+  { kind: 'dim', text: '23:43:07  GET /api/tasks/next → none' },
+];
+const CAR_PANE: PaneLine[] = [
+  { kind: 'you', text: 'Work the task «Book the car service»' },
+  { kind: 'tool', text: 'Skill(do-task)' },
+  { kind: 'tool', text: 'Read(car/history.md)' },
+  { kind: 'say', text: 'Three quotes against six years of history…' },
+];
+const RUN_SPACES: Space[] = [
+  { name: 'Book the car service', state: 'working', focused: true },
+  { name: 'Put the service in the calendar', state: 'working' },
+  { name: 'Summarise the building chat', state: 'done' },
+];
+const RUN_AGENTS: Agent[] = [
+  { title: 'Book the car service', role: 'autonomous · Claude Code', state: 'in progress', run: 'working', focused: true, model: 'opus · high' },
+  { title: 'Put the service in the calendar', role: 'autonomous · Claude Code', state: 'in progress', run: 'working', model: 'haiku · low' },
+  { title: 'Summarise the building chat', role: 'autonomous · Claude Code', state: 'finished', run: 'done', model: 'sonnet · low' },
 ];
 
 /** The loop, as code: each line tagged with the beat that lights it. */
@@ -489,8 +637,39 @@ const RUNNER_BEATS: { claim: string; fixed: Problem[] }[] = [
 /** The pace rule, as the server applies it when the daemon asks for the next task
  *  (juggernaut apps/api/src/services/tasks.ts): utilization of the 7-day window minus
  *  the share of the window already elapsed. Above pace → low-priority work waits;
- *  more than 3 points above → only high is served. The two figures are illustrative. */
+ *  more than 3 points above → only high is served. The two figures are illustrative;
+ *  the card is the app's own, off its Agents page: the week's usage as a line against
+ *  the dotted diagonal of an even pace. */
 const PACE = { used: 62, elapsed: 58 };
+/** Usage over the week so far, as (share of the week, share of the limit). */
+const USAGE: [number, number][] = [
+  [0, 0], [6, 3], [10, 3], [14, 11], [20, 14], [24, 22], [31, 26], [36, 37], [43, 41], [47, 50], [52, 54], [58, 62],
+];
+
+function PaceCard() {
+  const x = (v: number) => 20 + v * 5.6;
+  const y = (v: number) => 150 - v * 1.3;
+  return (
+    <div className="ww-jg ww-jg--card">
+      <div className="ww-jg__pace">
+        <span className="ww-jg__pacehead">
+          <span className="ww-jg__panelname">Anthropic personal</span>
+          <span className="ww-jg__label">used {PACE.used}%</span>
+          <span className="ww-jg__label ww-jg__label--danger">
+            +{PACE.used - PACE.elapsed}% above pace
+          </span>
+          <span className="ww-jg__label">resets in 3d</span>
+        </span>
+        <svg className="ww-jg__pacechart" viewBox="0 0 600 160" preserveAspectRatio="none" aria-hidden="true">
+          <path className="ww-jg__paceeven" d={`M${x(0)} ${y(0)} L${x(100)} ${y(100)}`} />
+          <path className="ww-jg__paceline" d={`M${USAGE.map(([a, b]) => `${x(a)} ${y(b)}`).join(' L')}`} />
+          <path className="ww-jg__pacenow" d={`M${x(PACE.elapsed)} ${y(0)} L${x(PACE.elapsed)} ${y(PACE.used)}`} />
+        </svg>
+        <span className="ww-jg__paceverdict">above pace → only high priority</span>
+      </div>
+    </div>
+  );
+}
 
 export const RunnerSlide: SlideDefinition = {
   id: 'improve-runner',
@@ -504,6 +683,7 @@ export const RunnerSlide: SlideDefinition = {
   content: ({ revealStage }) => {
     const stage = Math.min(Math.max(revealStage, 1), RUNNER_BEATS.length);
     const beat = RUNNER_BEATS[stage - 1];
+    const running = stage >= 2;
     return (
       <>
         <CornerRings corner="top-right" />
@@ -513,40 +693,32 @@ export const RunnerSlide: SlideDefinition = {
           </div>
           <div className="ww-imp__runner">
             <div className="ww-imp__runnerleft">
-            <pre className="ww-imp__code">
-              {RUNNER_CODE.map((line) => (
-                <span
-                  key={line.text}
-                  className={line.at === stage || line.also === stage ? 'ww-imp__codeline--hot' : undefined}
-                >
-                  {line.text}
-                  {'\n'}
-                </span>
-              ))}
-            </pre>
-            <Reveal at={4} stage={revealStage}>
-              <div className="ww-imp__pace">
-                <span className="ww-imp__pacehead">
-                  <span>weekly limit</span>
-                  <span className="ww-imp__paceverdict">
-                    +{PACE.used - PACE.elapsed}% above pace → only high priority
+              <pre className="ww-imp__code">
+                {RUNNER_CODE.map((line) => (
+                  <span
+                    key={line.text}
+                    className={line.at === stage || line.also === stage ? 'ww-imp__codeline--hot' : undefined}
+                  >
+                    {line.text}
+                    {'\n'}
                   </span>
-                </span>
-                <span className="ww-imp__pacebar">
-                  <span className="ww-imp__paceused" style={{ width: `${PACE.used}%` }} />
-                  <span className="ww-imp__pacenow" style={{ left: `${PACE.elapsed}%` }} />
-                </span>
-                <span className="ww-imp__pacelegend">
-                  <span>{PACE.used}% used</span>
-                  <span>{PACE.elapsed}% of the week gone</span>
-                </span>
-              </div>
+                ))}
+              </pre>
+            </div>
+            <div className="ww-imp__runnerright">
+            <Herdr
+              status={running ? ['inbox: 3', 'in work: 2', 'Claude 7d 62%'] : ['inbox: 3', 'queue: empty', 'Claude 7d 62%']}
+              spaces={running ? RUN_SPACES : []}
+              agents={running ? RUN_AGENTS : []}
+              hotModel={stage === 3}
+            >
+              <HPane lines={running ? CAR_PANE : DAEMON_PANE} />
+            </Herdr>
+            {/* the web app's own card, held over the terminal: what the server looks at */}
+            <Reveal at={4} stage={revealStage}>
+              <PaceCard />
             </Reveal>
             </div>
-            <Herdr
-              panes={stage >= 2 ? RUNNER_PANES : []}
-              highlight={stage === 3 ? 'legend' : undefined}
-            />
           </div>
           <Ledger fixed={['chat-only UX', ...beat.fixed]} />
         </div>
@@ -578,6 +750,9 @@ export const RunnerSlide: SlideDefinition = {
     + 'And what we lose from the «great» list: nothing. Each pane IS Claude Code — every feature '
     + 'it ships still arrives for free, and the panes start with remote control on, so the phone '
     + 'still works. '
+    + 'Honest about the picture: the terminal is drawn after my real herdr, with one addition — '
+    + 'the model beside each agent, which the real sidebar does not print. The usage card is the '
+    + 'app\'s own, with illustrative figures. '
     + 'Honest about the code: it is the idea in ten lines. The real one, `juggernaut start`, is '
     + 'about five thousand, because it also heartbeats, reaps dead panes, uploads the transcript '
     + 'and survives a sleeping laptop. The server resolves the model — task override, then the '
@@ -586,25 +761,25 @@ export const RunnerSlide: SlideDefinition = {
 
 /* ─── 6 · Any agent — and they talk ───────────────────────────────────────── */
 
-const FLEET_PANES: Pane[] = [
-  {
-    name: 'jg-7f3a',
-    legend: 'claude',
-    task: 'Add priorities to tasks',
-    lines: ['Bash(pnpm test) — 17 passed', 'Bash(juggernaut review)'],
-  },
-  {
-    name: 'rv-myclaw',
-    legend: 'codex · reviewer',
-    task: '/review the uncommitted diff',
-    lines: ['2 findings · no index on status…'],
-  },
-  {
-    name: 'jg-b81c',
-    legend: 'opencode · openrouter · free',
-    task: 'Renew the car insurance',
-    lines: ['Comparing three quotes…'],
-  },
+const FLEET_SPACES: Space[] = [
+  { name: 'Add priorities to tasks', state: 'working', focused: true },
+  { name: 'Renew the car insurance', state: 'working' },
+];
+const FLEET_AGENTS: Agent[] = [
+  { title: 'Add priorities to tasks', role: 'autonomous · Claude Code', state: 'in progress', run: 'working', focused: true },
+  { title: 'Add priorities to tasks', role: 'review · Codex', state: 'finished', run: 'done' },
+  { title: 'Renew the car insurance', role: 'autonomous · OpenCode', state: 'in progress', run: 'working' },
+];
+const AUTHOR_PANE: PaneLine[] = [
+  { kind: 'you', text: 'Work the task «Add priorities to tasks»' },
+  { kind: 'tool', text: 'Bash(pnpm test) — 17 passed' },
+  { kind: 'tool', text: 'Bash(myclaw review)' },
+  { kind: 'say', text: 'Codex found two things. Fixing the index first.' },
+];
+const REVIEW_PANE: PaneLine[] = [
+  { kind: 'you', text: 'Review the uncommitted changes' },
+  { kind: 'tool', text: 'git diff' },
+  { kind: 'say', text: '2 findings: no index on status; a migration without a default.' },
 ];
 
 const TALK = [
@@ -627,7 +802,10 @@ export const AnyAgentSlide: SlideDefinition = {
       <CornerRings corner="bottom-left" />
       <div className="ww-imp">
         <div className="ww-imp__fleet">
-          <Herdr panes={FLEET_PANES} />
+          <Herdr status={['inbox: 3', 'in work: 2', 'Codex 7d 3%']} spaces={FLEET_SPACES} agents={FLEET_AGENTS}>
+            <HPane lines={AUTHOR_PANE} />
+            <HPane lines={REVIEW_PANE} />
+          </Herdr>
           <div className="ww-imp__fleetside">
             <code className="ww-imp__call">herdr agent start --kind …</code>
             <div className="ww-imp__kinds">
@@ -672,5 +850,6 @@ export const AnyAgentSlide: SlideDefinition = {
     + 'opinion on a plan, read-only. Delegate: one writes the spec and keeps the judgement, the '
     + 'other does the typing. '
     + 'And look at the foot of the slide: all four are green. '
-    + 'Honest about the picture: the three panes are staged; the commands are the real ones.',
+    + 'Honest about the picture: the window is drawn after my real herdr — spaces named after '
+    + 'tasks, an agent list with roles — but these panes are staged; the commands are the real ones.',
 };

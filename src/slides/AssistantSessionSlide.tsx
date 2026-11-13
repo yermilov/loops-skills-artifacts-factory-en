@@ -1,24 +1,32 @@
-import { useEffect, useRef, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { SlideDefinition } from '../types/slides';
 import { CornerRings } from '../components/wawtech';
 import { useAnimating } from '../components/frameSettled';
 import { GAP_MS, Line, Played, Row, played, useClock } from './BootstrapSlide';
+import dashLight from '../assets/assistant/dash-light.jpg';
+import { MapsWindow } from './RouteMap';
 
 /**
  * «Our barebones AI assistant is ready» — the ledger of the Loops arc, PLAYED
- * instead of listed: one Claude Code session, seven clicks. The first three are
- * what you get for free (you talk to it, it reads a photo, you carry on from
- * the phone); the last four are what it costs (the
- * context fills and compacts, every tick is paid for, the model is fixed, and
- * chat is the wrong tool for a place on a map).
+ * instead of listed: one Claude Code session, eight clicks, and ONE errand
+ * running through all of them — the car is due for a service. The first three
+ * beats are what you get for free (you talk to it, it reads the photo of the
+ * dashboard, you carry on from the phone); the rest is what it costs (chat
+ * answers «how do I get there» with a paragraph where a map would do — the map
+ * is its own click, over the paragraph — the model is fixed, the context fills
+ * and compacts — and forgets the very photo of beat 2 — and every tick is paid
+ * for).
  *
- * Yarik's own script (12.11.2026). The session is a reconstruction for the
- * stage — ids, sums and the bill are illustrative — but every line the CLI
+ * One errand end to end is Yarik's call (13.11.2026): the beats used to be six
+ * unrelated errands, so nothing paid anything off. The session is a
+ * reconstruction for the stage — ids, sums, the service and the car are
+ * illustrative — but every line the CLI
  * prints BY ITSELF is read off the installed binary (2.1.322), not memory:
  *   «[Image #1]» · «/remote-control is active · Continue here, on your phone,
  *   or at <url>» · «Context low (N% remaining) · Run /compact to compact &
  *   continue» · «Compacting conversation…» · «Conversation compacted» ·
- *   «Claude resuming /loop wakeup (<when>)».
+ *   «Claude resuming /loop wakeup (<when>)» · an MCP call as «<server> - <tool>(args) (MCP)»
+ *   (that one re-read on 2.1.323).
  * Two things are stage devices and NOT the CLI: the fast-forwarded three hours (beat 4),
  * and the status line (model · context · cost) — Claude Code draws whatever
  * your own `statusLine` command prints, and this is one such command's output.
@@ -29,9 +37,8 @@ import { GAP_MS, Line, Played, Row, played, useClock } from './BootstrapSlide';
 const EXPORT_MODE =
   typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('export') === '1';
 
-const API = 'myclaw-api.up.railway.app';
-const TYPO_ID = '5d1e07b2';
-const MIGRATION_ID = '8b3f61e4';
+const API = 'https://myclaw-api.up.railway.app';
+const CAL_ID = '5d1e07b2';
 /** The one model the whole loop runs on — the name to swap when the line-up moves. */
 const MODEL = 'Opus 5.5';
 /** An illustrative step, not a measurement: the sum only has to GROW on every tick. */
@@ -46,8 +53,6 @@ type Beat = Line & {
   fx?: Fx;
   /** Typed on the phone: it lands in the terminal whole, once sent. */
   phone?: boolean;
-  /** Still being written: it stays in the prompt box and is never sent. */
-  draft?: boolean;
   /** Written in the prompt box and sent when finished — and its first `box` characters
    *  are there at once, the way a dropped file lands as «[Image #1]» in one piece. */
   box?: number;
@@ -55,14 +60,17 @@ type Beat = Line & {
   silent?: boolean;
 };
 
-type Prop = 'recipe' | 'bill' | 'phone' | 'ctx' | 'cost' | 'model' | 'map';
+type Prop = 'talk' | 'photo' | 'phone' | 'ctx' | 'cost' | 'model' | 'map';
 type Step = { great: boolean; claim: string; prop: Prop; lines: Beat[] };
+
+/** The queue poll the loop makes on every tick — the one line the session repeats. */
+const curl = `Bash(curl -s '${API}/api/tasks?status=todo')`;
 
 const tick = (when: string, cost: number): Beat[] => [
   { kind: 'you', text: '', fired: when },
   {
     kind: 'tool',
-    text: `Bash(curl -s '${API}/api/tasks?status=todo')`,
+    text: curl,
     result: '[]',
     ms: 700,
     fx: { cost, at: 'done', over: 500 },
@@ -103,42 +111,50 @@ function endlessTicks(t: number, from: number): { lines: Beat[]; first: number; 
 const SCRIPTED_TICKS = 3;
 let ticksRun = SCRIPTED_TICKS;
 
-/** Three hours of a day, fast-forwarded (each line lands whole): what fills the context. */
+/** Three hours of the SAME errand, fast-forwarded (each line lands whole): the
+ *  small print of one car service — the insurance, the quotes, the morning it
+ *  eats, the tyres. Four ticks, four tasks, and every word of it stays in the
+ *  context, which is the point of the beat it belongs to. */
 const FF = 420;
 const LATER: Beat[] = [
   { kind: 'you', text: '', fired: '10:40am', fx: { ctx: 93, cost: 4.58, at: 'start', over: 12500 } },
-  { kind: 'tool', text: `Bash(curl -s '${API}/api/tasks?status=todo')`, result: '[{"id":"a41c9e03","title":"Find a dentist with Saturday hours"}]', ms: 300 },
-  { kind: 'say', text: 'Three near you with Saturday hours: Dentalux, Smile Lab, Doctor Zub.', ms: FF },
-  { kind: 'you', text: 'not Dentalux, the reviews are awful. which one is closer to the metro?', ms: FF },
-  { kind: 'say', text: 'Smile Lab — 4 minutes from Lukianivska. Saturday slots: 10:30 and 13:00.', ms: FF },
-  { kind: 'you', text: 'book 10:30', ms: FF },
-  { kind: 'say', text: 'Booked: Smile Lab, Saturday 10:30. a41c9e03 is closed.', ms: FF },
+  { kind: 'tool', text: curl, result: '[{"id":"a41c9e03","title":"What does the insurance cover?"}]', ms: 300 },
+  { kind: 'say', text: 'Casco covers the suspension, not the consumables — oil, filters and pads are yours.', ms: FF },
+  { kind: 'you', text: 'and if they find something with the steering rack?', ms: FF },
+  { kind: 'say', text: 'Covered, but only on a report from an approved service. AutoHub is one. a41c9e03 is closed.', ms: FF },
   { kind: 'you', text: '', fired: '11:50am' },
-  { kind: 'tool', text: `Bash(curl -s '${API}/api/tasks?status=todo')`, result: '[{"id":"c7d20f11","title":"Summarise the building chat"}]', ms: 300 },
-  { kind: 'say', text: '43 messages this week. What matters: no water on Thursday, 10:00–14:00.', ms: FF },
-  { kind: 'you', text: 'remind me on Wednesday evening to fill the bath', ms: FF },
-  { kind: 'say', text: 'Done — Wednesday, 20:00. c7d20f11 is closed.', ms: FF },
+  { kind: 'tool', text: curl, result: '[{"id":"c7d20f11","title":"Compare the three quotes"}]', ms: 300 },
+  { kind: 'say', text: 'The cheapest is 4,200 UAH less — aftermarket parts throughout, brakes included.', ms: FF },
+  { kind: 'you', text: 'original for the brakes, aftermarket for the filters', ms: FF },
+  { kind: 'say', text: 'That lands between the two: 11,800 UAH. c7d20f11 is closed.', ms: FF },
   { kind: 'you', text: '', fired: '12:30pm' },
-  { kind: 'tool', text: `Bash(curl -s '${API}/api/tasks?status=todo')`, result: '[{"id":"e902bb5a","title":"Reply to the landlord about the radiator"}]', ms: 300 },
-  { kind: 'say', text: 'Draft: «Dear Oksana, the radiator in the bedroom is still cold…»', ms: FF },
-  { kind: 'you', text: 'less formal. and mention the photo I sent her last week', ms: FF },
-  { kind: 'say', text: 'Rewritten and sent. e902bb5a is closed.', ms: FF },
+  { kind: 'tool', text: curl, result: '[{"id":"e902bb5a","title":"Clear Thursday morning"}]', ms: 300 },
+  { kind: 'say', text: 'The standup is at 9:30 and it clashes. Draft: «moving to 11, car service».', ms: FF },
+  { kind: 'you', text: 'just move it, no explanation', ms: FF },
+  { kind: 'say', text: 'Moved to 11:00, nothing in the body. e902bb5a is closed.', ms: FF },
   { kind: 'you', text: '', fired: '1:20pm' },
-  { kind: 'tool', text: `Bash(curl -s '${API}/api/tasks?status=todo')`, result: '[{"id":"f1c3a8d0","title":"Plan meals for next week"}]', ms: 300 },
-  { kind: 'say', text: 'Seven dinners, one shopping list. Fish on Tuesday and Friday.', ms: FF },
-  { kind: 'you', text: 'no fish, I told you last month', ms: FF },
-  { kind: 'say', text: 'Sorry — swapped for chicken and lentils. f1c3a8d0 is closed.', ms: FF },
+  { kind: 'tool', text: curl, result: '[{"id":"f1c3a8d0","title":"Winter tyres — swap at the same visit?"}]', ms: 300 },
+  { kind: 'say', text: 'They can, 900 UAH, and they store the summer set until spring.', ms: FF },
+  { kind: 'you', text: 'I have my own set in the garage, tell them that', ms: FF },
+  { kind: 'say', text: 'Noted on the booking: own tyres, fitting only. f1c3a8d0 is closed.', ms: FF },
 ];
 
+/** ONE errand, eight beats: the car is due, the dashboard is photographed, the
+ *  slot is taken from the phone, the way back is a paragraph and then a map, the
+ *  calendar entry runs on the biggest model there is, three hours of
+ *  small print fill the context — and compaction loses the photo from beat 2. */
+const CHAT_CLAIM = 'Chat is the most generic UX — not the handiest';
 const STEPS: Step[] = [
   {
     great: true,
     claim: 'Open Claude Code and just talk to it',
-    prop: 'recipe',
+    prop: 'talk',
     lines: [
-      { kind: 'you', text: 'morning. do I need an umbrella today?' },
-      // who «I» is — where I live, how I get to work — comes from the user-information
-      // skill; «Successfully loaded skill» is the CLI's own result line (2.1.322)
+      { kind: 'you', text: 'morning. when was the car last serviced?' },
+      // who «I» is — what I drive, how often it goes in — comes from the user-information
+      // skill; «Successfully loaded skill» is the CLI's own result line. WHEN comes from
+      // the only API this assistant has: its own task queue, where last year's booking
+      // sits closed. The queue is its memory — no endpoint here that was never built.
       {
         kind: 'tool',
         text: 'Skill(user-information)',
@@ -147,13 +163,13 @@ const STEPS: Step[] = [
       },
       {
         kind: 'tool',
-        text: "Bash(curl -s 'wttr.in/Kyiv?format=%C+%t')",
-        result: 'Light rain +4°C',
+        text: `Bash(curl -s '${API}/api/tasks?q=service&status=done')`,
+        result: '[{"id":"b7c41d02","title":"Book the car service","closedAt":"2025-09-18"}]',
         ms: 700,
       },
       {
         kind: 'say',
-        text: 'Good morning. Light rain and 4°C in Kyiv — take the umbrella, and maybe not the bike to the office today.',
+        text: 'September 2025 — fourteen months ago, and you service it yearly. Want me to find a slot this week?',
         fx: { ctx: 4, cost: 0.06, at: 'done' },
       },
     ],
@@ -161,14 +177,14 @@ const STEPS: Step[] = [
   {
     great: true,
     claim: 'It reads images, out of the box',
-    prop: 'bill',
+    prop: 'photo',
     lines: [
       // the drag: the file leaves Finder and lands on the prompt (see `.ww-asst__ghost`)
       { kind: 'note', text: '', ms: DRAG_MS, silent: true },
-      { kind: 'you', text: '[Image #1] how much is this, and when is it due?', box: '[Image #1] '.length },
+      { kind: 'you', text: '[Image #1] yes. and this lit up on the way home — part of the same thing?', box: '[Image #1] '.length },
       {
         kind: 'say',
-        text: 'A water bill for October: 412.80 UAH, due on 20 November.',
+        text: 'No — that is tyre pressure, not the service light. Different problem, same visit: say it when you book.',
         fx: { ctx: 6, cost: 0.14, at: 'done' },
       },
     ],
@@ -184,58 +200,64 @@ const STEPS: Step[] = [
         text: `/remote-control is active · Continue here, on your phone, or at ${REMOTE_URL}`,
         ms: 900,
       },
-      { kind: 'you', text: 'I am out. Can it wait until Friday?', phone: true },
+      { kind: 'you', text: 'they called back — Thursday 9:40 or Friday 17:00?', phone: true },
       {
         kind: 'say',
-        text: 'Yes — it is due on the 20th, so Friday is fine.',
+        text: 'Thursday. On Friday you are at the station by four — the Warsaw train.',
         fx: { ctx: 7, cost: 0.19, at: 'done' },
       },
     ],
   },
   {
     great: false,
-    claim: 'Chat is the most generic UX — not the handiest',
-    prop: 'map',
+    claim: CHAT_CLAIM,
+    prop: 'talk',
     lines: [
+      { kind: 'you', text: 'thursday 9:40 works. how do I get from the service to the office after I drop the car?' },
+      // the answer is correct, complete — and a wall: three routes that are one glance on a map
       {
-        kind: 'you',
-        draft: true,
+        kind: 'say',
         text:
-          'book a table at that place — past the bridge, the second one, on the corner with the '
-          + 'green awning, next to the pharmacy, no, the other pharmacy, across from the',
+          'Three ways. By metro: walk 650 m down Kyrylivska to Tarasa Shevchenka, take the blue line '
+          + 'five stops to Olimpiiska — past Kontraktova, Poshtova, Maidan and Ploshcha Ukrainskykh '
+          + 'Heroiv — then 300 m up Velyka Vasylkivska: 24 minutes door to door. By taxi: along the '
+          + 'embankment, up Volodymyrskyi Descent, across Khreshchatyk and down Velyka Vasylkivska — '
+          + '16 minutes now, closer to 30 at ten in the morning, about 190 UAH. On foot: Kyrylivska, '
+          + 'Kostiantynivska, up Andriivskyi Descent, along Volodymyrska past the Opera, then down to '
+          + 'Velyka Vasylkivska — 5.6 km, an hour and ten. I would take the metro.',
+        fx: { ctx: 8, cost: 0.27, at: 'done' },
       },
     ],
   },
+  // the same beat, one more click: what that paragraph should have been
+  { great: false, claim: CHAT_CLAIM, prop: 'map', lines: [] },
   {
     great: false,
-    claim: 'One model for every task',
+    claim: 'One model — Opus even for a calendar entry',
     prop: 'model',
     lines: [
-      { kind: 'you', text: '', fired: '10:10am' },
-      {
-        kind: 'tool',
-        text: `Bash(curl -s '${API}/api/tasks?status=todo')`,
-        result: `[{"id":"${TYPO_ID}","title":"Fix a typo in the README"}]`,
-        ms: 700,
-      },
-      { kind: 'tool', text: 'Update(README.md)', result: 'Added 1 line, removed 1 line', ms: 900 },
-      {
-        kind: 'say',
-        text: `Fixed the typo. ${TYPO_ID} is closed.`,
-      },
-      // the same model for the opposite end of the scale — the status line never moves
+      // the loop wakes up and takes the smallest task there is: one connector call. The
+      // model in the status line is the same one that will read contracts and plan a week —
+      // and the bill moves for a calendar entry
       { kind: 'you', text: '', fired: '10:20am' },
       {
         kind: 'tool',
-        text: `Bash(curl -s '${API}/api/tasks?status=todo')`,
-        result: `[{"id":"${MIGRATION_ID}","title":"Migrate tasks to recurring schedules"}]`,
+        text: curl,
+        result: `[{"id":"${CAL_ID}","title":"Put the service in the calendar"}]`,
         ms: 700,
       },
-      { kind: 'tool', text: 'Read(src/db/schema.ts)', result: 'Read 214 lines', ms: 700 },
+      // a connector, not an API of ours: the Google Calendar MCP server Claude Code already
+      // has. The line's shape — «<server> - <tool>(args) (MCP)» — is the CLI's own (2.1.323)
+      {
+        kind: 'tool',
+        text: 'claude.ai Google Calendar - create_event(summary: "Car service", start: "2026-11-19T09:40") (MCP)',
+        result: '{"status":"confirmed","htmlLink":"https://calendar.google.com/…"}',
+        ms: 900,
+      },
       {
         kind: 'say',
-        text: 'Plan: a schedules table, a cron expression per task, and a backfill for the 40 open ones. Starting with the migration.',
-        fx: { ctx: 11, cost: 0.62, at: 'done' },
+        text: `In the calendar: Thursday 9:40, Car service. ${CAL_ID} is closed.`,
+        fx: { ctx: 9, cost: 0.41, at: 'done', over: 900 },
       },
     ],
   },
@@ -244,8 +266,8 @@ const STEPS: Step[] = [
     claim: 'The context fills up — and compaction forgets',
     prop: 'ctx',
     lines: [
-      // three hours of an ordinary day, fast-forwarded: four ticks, four tasks, and the
-      // back-and-forth that real tasks take — every line of it stays in the context
+      // three hours of the same errand, fast-forwarded: four ticks, four tasks, and the
+      // back-and-forth each one takes — every line of it stays in the context
       ...LATER,
       { kind: 'note', tone: 'error', text: 'Context low (7% remaining) · Run /compact to compact & continue', ms: 900 },
       {
@@ -255,10 +277,10 @@ const STEPS: Step[] = [
         ms: 2200,
         fx: { ctx: 12, cost: 4.8, at: 'done', over: 600 },
       },
-      { kind: 'you', text: 'so when is that water bill due?' },
+      { kind: 'you', text: 'on that dashboard photo — was the engine light on as well?' },
       {
         kind: 'say',
-        text: 'I no longer have the bill itself — only a summary of what we said about it. Can you send the photo again?',
+        text: 'I no longer have the photo — only a note that the tyre-pressure light was on. Can you send it again?',
       },
     ],
   },
@@ -361,30 +383,19 @@ const money = (value: number) => `$${value.toFixed(2)}`;
 
 /* ─── The props beside the terminal: the one thing to look at this beat ──── */
 
-/** The photo behind «[Image #1]» — the CLI shows only the placeholder. */
-function Bill() {
-  return (
-    <div className="ww-asst__bill">
-      <div className="ww-asst__billhead">Water · October</div>
-      <div className="ww-asst__billrow">
-        <span>water</span>
-        <span>268.40</span>
-      </div>
-      <div className="ww-asst__billrow">
-        <span>sewerage</span>
-        <span>144.40</span>
-      </div>
-      <div className="ww-asst__billtotal">
-        <span>to pay</span>
-        <span>412.80 ₴</span>
-      </div>
-      <div className="ww-asst__billdue">due 20 Nov</div>
-    </div>
-  );
+/**
+ * The photo behind «[Image #1]»: the instrument cluster with the tyre-pressure
+ * lamp lit. The CLI shows only the placeholder — this is the picture it stands
+ * in for. It is a GENERATED image (gpt-image-2 via Codex, 13.11.2026), not a
+ * photograph of a real car: no make, no logo, and the notes say so.
+ */
+function Photo() {
+  return <img className="ww-asst__photo" src={dashLight} alt="" />;
 }
 
-/** Where the photo comes from: a Finder window, the bill selected in it. The CLI
- *  shows only «[Image #1]»; this is the file behind it. */
+/** Where the photo comes from: a Finder window in gallery view — the selected
+ *  shot large, the rest of the folder as a strip under it. The CLI shows only
+ *  «[Image #1]»; this is the file behind it. */
 function Finder() {
   return (
     <div className="ww-asst__finder">
@@ -394,17 +405,21 @@ function Finder() {
         <span className="ww-dot ww-dot--green" />
         <span className="ww-asst__findertitle">Downloads</span>
       </div>
-      <div className="ww-asst__files">
-        <div className="ww-asst__file ww-asst__file--picked">
-          <div className="ww-asst__thumb">
-            <Bill />
-          </div>
-          <span className="ww-asst__filename">water-bill.jpg</span>
-        </div>
-        <div className="ww-asst__file">
-          <div className="ww-asst__thumb ww-asst__thumb--blank" />
-          <span className="ww-asst__filename">IMG_2291.jpg</span>
-        </div>
+      <div className="ww-asst__preview">
+        <img
+          className="ww-asst__photo"
+          src={dashLight}
+          alt="A car's instrument cluster with the amber tyre-pressure lamp lit"
+        />
+      </div>
+      <div className="ww-asst__filename">dash-light.jpg</div>
+      <div className="ww-asst__strip" aria-hidden="true">
+        <span className="ww-asst__mini ww-asst__mini--picked">
+          <Photo />
+        </span>
+        <span className="ww-asst__mini" />
+        <span className="ww-asst__mini" />
+        <span className="ww-asst__mini" />
       </div>
     </div>
   );
@@ -464,42 +479,27 @@ function Phone({ rows }: { rows: Played[] }) {
   );
 }
 
-/** One search and a tap — against the paragraph being typed on the left. Reused
- *  by the Artifacts slide, where the agent draws this very map as its answer. */
-const PINS: [number, number][] = [
-  [262, 300],
-  [104, 262],
-  [356, 398],
-];
-export function MapWindow({ search = 'green awning café', pins = 1 }: { search?: string; pins?: number }) {
+/**
+ * One figure of the status line. `hot` marks the one this beat is about; `loupe`
+ * also holds a magnifying glass over it — the same text, twice the size — because
+ * a status line is the smallest type on the slide and the whole beat is that
+ * number. One loupe per beat: the model, then the context, then the cost.
+ */
+function Figure({ hot, loupe, children }: { hot: boolean; loupe: boolean; children: ReactNode }) {
   return (
-    <div className="ww-asst__map">
-      <div className="ww-asst__mapsearch">{search}</div>
-      <svg className="ww-asst__mapart" viewBox="0 0 400 420" aria-hidden="true">
-        <path className="ww-asst__river" d="M-20 150 C 90 110, 150 230, 250 200 S 380 110, 430 140 L 430 215 C 370 190, 330 280, 240 275 S 100 190, -20 230 Z" />
-        <path className="ww-asst__road" d="M70 -10 L 110 430" />
-        <path className="ww-asst__road" d="M225 -10 L 265 430" />
-        <path className="ww-asst__road" d="M-10 330 L 410 290" />
-        <path className="ww-asst__road ww-asst__road--minor" d="M-10 60 L 410 40" />
-        <path className="ww-asst__road ww-asst__road--minor" d="M340 -10 L 360 430" />
-        {PINS.slice(0, pins).map(([x, y], i) => (
-          <g key={i} transform={`translate(${x} ${y})`}>
-            <g className="ww-asst__pin" style={{ animationDelay: `${700 + i * 160}ms` }}>
-              <path d="M0 0 C -26 -34, -30 -52, -30 -64 A 30 30 0 1 1 30 -64 C 30 -52, 26 -34, 0 0 Z" />
-              {pins > 1 ? (
-                <text className="ww-asst__pinno" y="-54" textAnchor="middle">
-                  {i + 1}
-                </text>
-              ) : (
-                <circle cy="-64" r="11" />
-              )}
-            </g>
-          </g>
-        ))}
-      </svg>
-    </div>
+    <span className={hot ? 'ww-asst__hot' : undefined}>
+      {children}
+      {loupe && (
+        <span className="ww-asst__loupe" aria-hidden="true">
+          {children}
+        </span>
+      )}
+    </span>
   );
 }
+
+/** The beats whose point is one figure of the status line: it gets the loupe. */
+const LOUPE: Prop[] = ['model', 'ctx', 'cost'];
 
 function Scene({ stage }: { stage: number }) {
   const beat = stage - 1;
@@ -518,12 +518,9 @@ function Scene({ stage }: { stage: number }) {
   }, [endless, ticksDone]);
 
   const earlier = STEPS.slice(0, beat).flatMap((_, i) => linesOf(i));
-  const draft = live.find((row) => (row.line as Beat).draft);
   // a line being written in the prompt box: its dropped part is there in one piece
   const boxed = live.find((row) => (row.line as Beat).box !== undefined && row.started && !row.done);
-  const inBox =
-    draft?.shown
-    ?? (boxed && boxed.line.text.slice(0, Math.max(boxed.shown.length, (boxed.line as Beat).box ?? 0)));
+  const inBox = boxed && boxed.line.text.slice(0, Math.max(boxed.shown.length, (boxed.line as Beat).box ?? 0));
   const status = statusAt(beat, live);
   const before = settled(beat);
   const ctx = useTween(status.ctx, status.ctxOver, before.ctx);
@@ -539,7 +536,7 @@ function Scene({ stage }: { stage: number }) {
 
   return (
     <div className="ww-asst">
-      <div className={`ww-asst__claim ww-asst__claim--${step.great ? 'great' : 'not'}`} key={beat}>
+      <div className={`ww-asst__claim ww-asst__claim--${step.great ? 'great' : 'not'}`} key={step.claim}>
         <span className="ww-asst__verdict">
           <span aria-hidden="true">{step.great ? '✓' : '✕'}</span>
           {step.great ? 'great' : 'not so great'}
@@ -548,7 +545,7 @@ function Scene({ stage }: { stage: number }) {
       </div>
 
       <div className="ww-asst__scene">
-        <div className="ww-boot__term ww-asst__term">
+        <div className={`ww-boot__term ww-asst__term${LOUPE.includes(step.prop) ? ' ww-asst__term--loupe' : ''}`}>
           <div className="ww-boot__chrome">
             <span className="ww-dot ww-dot--red" />
             <span className="ww-dot ww-dot--amber" />
@@ -558,11 +555,11 @@ function Scene({ stage }: { stage: number }) {
 
           <div className="ww-boot__body">
             {earlier.map(
-              (line, i) => !line.silent && !line.draft && <Row key={`p${i}`} line={line} shown={line.text} done />
+              (line, i) => !line.silent && <Row key={`p${i}`} line={line} shown={line.text} done />
             )}
             {drawn.map((row, i) => {
               const line = row.line as Beat;
-              if (line.draft || line.silent) return null;
+              if (line.silent) return null;
               // a message typed on the phone — or in the prompt box — arrives whole, when sent
               const visible = line.phone || line.box !== undefined ? row.done : row.started;
               return (
@@ -584,30 +581,34 @@ function Scene({ stage }: { stage: number }) {
             <div className="ww-asst__status">
               <span>? for shortcuts</span>
               <span className="ww-asst__statusline">
-                <span className={step.prop === 'model' ? 'ww-asst__hot' : undefined}>{MODEL}</span>
+                <Figure hot={step.prop === 'model'} loupe={step.prop === 'model'}>
+                  {MODEL}
+                </Figure>
                 {' · '}
-                <span className={step.prop === 'ctx' ? 'ww-asst__hot' : undefined}>
+                <Figure hot={step.prop === 'ctx'} loupe={step.prop === 'ctx'}>
                   {Math.round(ctx)}% context
-                </span>
+                </Figure>
                 {' · '}
-                <span className={step.prop === 'cost' ? 'ww-asst__hot' : undefined}>{money(cost)}</span>
+                <Figure hot={step.prop === 'cost' || step.prop === 'model'} loupe={step.prop === 'cost'}>
+                  {money(cost)}
+                </Figure>
               </span>
             </div>
           </div>
         </div>
 
         {/* the file in flight, Finder → prompt; it is gone by the time «[Image #1]» lands */}
-        {step.prop === 'bill' && (
+        {step.prop === 'photo' && (
           <div className="ww-asst__ghost" key={`ghost-${stage}`} aria-hidden="true">
-            <Bill />
+            <Photo />
           </div>
         )}
         {/* only real interfaces here — Finder, the phone, a map; the rest is narrated,
             and the figures that matter are already in the status line */}
-        <div className="ww-asst__side" key={step.prop}>
-          {step.prop === 'bill' && <Finder />}
+        <div className={`ww-asst__side${step.prop === 'map' ? ' ww-asst__side--wide' : ''}`} key={step.prop}>
+          {step.prop === 'photo' && <Finder />}
           {step.prop === 'phone' && <Phone rows={phoneRows} />}
-          {step.prop === 'map' && <MapWindow />}
+          {step.prop === 'map' && <MapsWindow />}
         </div>
       </div>
     </div>
@@ -616,7 +617,8 @@ function Scene({ stage }: { stage: number }) {
 
 export const AssistantSessionSlide: SlideDefinition = {
   id: 'assistant-session',
-  title: 'Our barebones AI assistant is ready',
+  // no title band: «Our barebones AI assistant is ready» is the slide BEFORE this one
+  // (AssistantReadySlide), and the room goes to the terminal and to the verdict line
   maxRevealStages: STEPS.length,
   initialRevealStage: 1,
   content: ({ revealStage }) => (
@@ -627,30 +629,45 @@ export const AssistantSessionSlide: SlideDefinition = {
   ),
   notes:
     'The assistant is done, and it is barely any code: Claude Code, a loop, a task queue. Seven '
-    + 'clicks, one session — three that are great, four that are not. '
-    + '1 — I open Claude Code and just talk to it: do I need an umbrella? First it loads my user-information skill — where I live, that I ride a bike to the office — then checks the weather in MY city and answers for ME. (The forecast is illustrative.) '
-    + '2 — it supports everything Claude Code supports out of the box. A photo of a bill: it '
-    + 'reads it. New models the day they land, the same way. '
-    + '3 — remote control: I leave the laptop and carry on from the phone, in the SAME session. '
-    + 'Even greater — and I did not write a line of that. Every feature Claude Code ever ships, '
-    + 'this assistant gets for free. '
-    + 'Now the other four — keep them, because the rest of the talk is these. '
-    + '4 — chat is the most generic UX, not the most convenient: I am stuck describing a place '
-    + 'in words when opening a map and searching would take one tap. '
-    + '5 — the model in the status line is fixed. One model executes everything: a typo in a '
-    + 'README runs on the biggest one, and so does a schema migration, ten minutes later. I can '
-    + 'change it by hand; the loop cannot pick per task. '
-    + '6 — and then a normal day: a dentist, the building chat, the landlord, meal plans — four ticks, still the same model, and a lot of back-and-forth, and every word of it stays in the context. I cannot clear it '
-    + 'automatically between them. It compacts, and what it knew becomes a summary: ask about the '
-    + 'bill and it has to ask for the photo again. '
+    + 'ONE session, and one errand running through all of it — my car is due for a service. '
+    + 'Eight clicks: three things about it are great, four are not (the first of the four takes '
+    + 'two clicks). '
+    + '1 — I open Claude Code and just talk to it: when was the car last serviced? First it loads '
+    + 'my user-information skill — what I drive, that I service it yearly — then asks the only API '
+    + 'it has, its own task queue: last year\'s «Book the car service» sits there, closed. The '
+    + 'queue is its memory — say that out loud, it comes back later. (The dates are illustrative.) '
+    + '2 — it supports everything Claude Code supports out of the box. I drag the photo of the '
+    + 'dashboard onto the prompt and it reads it: that lamp is tyre pressure, not the service '
+    + 'light. New models the day they land, the same way. '
+    + '3 — remote control: I leave the laptop, the service calls back, and I take the slot from '
+    + 'the phone — in the SAME session. Even greater — and I wrote not a line of it. Every feature '
+    + 'Claude Code ever ships, this assistant gets for free. '
+    + 'Now the other four — keep them, because the rest of the talk is these four. '
+    + '4 — chat is the most generic UX, not the most convenient. I ask how to get from the '
+    + 'service to the office, and the answer is correct, complete — and a paragraph: three routes, '
+    + 'street by street. Let them start reading it. Click — THIS is what I wanted: the same three '
+    + 'routes on a map, one glance. Claude Code cannot show me that; a terminal has only words. '
+    + '(The routes and times are illustrative; the map is a sketch of Kyiv, not a real app.) '
+    + '5 — the model in the status line is fixed. The loop wakes up and takes the smallest task '
+    + 'there is: «put the service in the calendar» — one call to the Google Calendar connector. '
+    + 'And it is done by Opus, at Opus prices, with the whole conversation sent along. Look at '
+    + 'the status line: the biggest model, and the bill moved for one calendar entry. A model ten '
+    + 'times cheaper would have done it; the hard tasks do need the big one — and the loop '
+    + 'cannot pick per task, it runs whatever the session was started with. (Sums illustrative.) '
+    + '6 — and then three hours of the small print of that ONE errand: what the insurance covers, '
+    + 'comparing the quotes, clearing Thursday morning, the winter tyres. Four ticks, and every '
+    + 'word of it stays in the context. I cannot clear it automatically between tasks. It '
+    + 'compacts — and what it knew becomes a summary: it still «knows» the tyre-pressure light was '
+    + 'on, because that was SAID; ask anything else about the photo from beat 2 and it has to ask '
+    + 'for the photo again. '
     + '7 — the loop ticks every ten minutes and every tick costs tokens, even when the queue is '
     + 'empty. Watch the cost in the status line. And it gets worse as the session goes on: a tick '
     + 'sends the whole conversation again, so the bigger the context, the more an EMPTY tick '
     + 'costs. (The sum on screen is illustrative — say so if asked; I did not measure a tick.) '
-    + 'Honest about the replay: rebuilt for the stage — the bill, the ids and the sums are '
-    + 'illustrative, the fast-forwarded day is mine, and the status line is a custom one '
-    + '(Claude Code draws whatever your statusLine command prints). The lines the CLI prints '
-    + 'itself — image placeholder, remote-control, context low, compaction, loop wakeup — are read '
-    + 'off the 2.1.322 binary. The phone is drawn after the Claude app\'s session view as claude.ai/code '
-    + 'shows it — a recreation, not a capture.',
+    + 'Honest about the replay: rebuilt for the stage — the car, the service, the ids and the '
+    + 'sums are illustrative, the dashboard photo is a generated image and not a real car, the fast-forwarded three hours are a device, and the status line is '
+    + 'a custom one (Claude Code draws whatever your statusLine command prints). The lines the CLI '
+    + 'prints itself — image placeholder, remote-control, context low, compaction, loop wakeup — '
+    + 'are read off the 2.1.322 binary. The phone is drawn after the Claude app\'s session view as '
+    + 'claude.ai/code shows it — a recreation, not a capture.',
 };

@@ -48,7 +48,7 @@ const MESSAGES: { from: 'user' | 'bot'; text: string }[] = [
   { from: 'user', text: 'anything urgent in my mail?' },
   {
     from: 'bot',
-    text: 'One thing: the organisers still need your flight times for the transfer. '
+    text: 'One thing: the organisers still need your train times for the transfer. '
       + 'Want me to draft the reply?',
   },
   { from: 'user', text: 'yes please' },
