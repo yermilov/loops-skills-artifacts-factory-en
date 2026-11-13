@@ -107,6 +107,12 @@
      (src/slides/ledgerApp.tsx): the real product's «Studio Ledger» identity, read
      off its tailwind.config.ts and index.css on 13.11.2026 — warm paper, ink,
      and five rationed accents. They belong to that recreation, never to the deck. */
+  /* the supermarket's own app (MiniappsSlide.tsx), measured off his phone screenshots */
+  --sp-blue: #2356d0;
+  --sp-ground: #eaeefb;
+  --sp-ink: #1c1c1e;
+  --sp-dim: #6f7480;
+  --sp-heart: #d92d20;
   --jg-paper: #fbf8f1;
   --jg-paper-100: #f5efe0;
   --jg-paper-200: #eae0c8;

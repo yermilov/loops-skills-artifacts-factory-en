@@ -10,7 +10,7 @@ import { CornerRings } from '../components/wawtech';
  *   0. the architecture our system ended up with — a diagram, right after the
  *      herdr slides (added the same night; goes BEFORE the hunters)
  *   1. loop tasks that hunt problems — in logs, sloppy code, performance
- *   2. examples of cool stuff I did with my AI assistant (added the same night)
+ *   2. (was: examples of cool stuff — dropped 14.11.2026, the miniapps slide shows them)
  *   3. looks like we've built a software factory!
  *   4. my philosophy of a software factory
  *
@@ -37,6 +37,20 @@ const PARTS = [
   'herdr: a pane per task',
   'agents: Claude Code, Codex, OpenCode — and they talk',
 ];
+
+/** A stub for the closing beat (Yarik, 14.11.2026: «add a stub slide to the very
+ *  end — how I prepared this talk»). Only the title is his. */
+export const TalkPrepSlide: SlideDefinition = {
+  id: 'talk-prep',
+  title: 'How I prepared this talk',
+  content: (
+    <>
+      <CornerRings corner="top-right" />
+      <Draft />
+    </>
+  ),
+  notes: 'DRAFT — stub. How this talk was prepared — with the same assistant. To design: what to show.',
+};
 
 export const ArchitectureSlide: SlideDefinition = {
   id: 'factory-architecture',
@@ -79,25 +93,6 @@ export const HuntersSlide: SlideDefinition = {
     'DRAFT — outline only. Loop tasks that hunt problems: recurring tasks nobody has to file. One '
     + 'reads the logs, one looks for sloppy code, one watches performance — and each files what it '
     + 'finds as an ordinary task in the queue.',
-};
-
-export const CoolStuffSlide: SlideDefinition = {
-  id: 'factory-cool-stuff',
-  title: 'Cool stuff I did with my AI assistant',
-  content: (
-    <>
-      <CornerRings corner="top-right" />
-      <ul>
-        <li>example one — to be chosen</li>
-        <li>example two — to be chosen</li>
-        <li>example three — to be chosen</li>
-      </ul>
-      <Draft />
-    </>
-  ),
-  notes:
-    'DRAFT — outline only. Examples of cool stuff I did with my AI assistant: the examples are '
-    + 'not chosen yet.',
 };
 
 export const FactoryRevealSlide: SlideDefinition = {

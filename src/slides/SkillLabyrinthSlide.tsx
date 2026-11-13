@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { SlideDefinition } from '../types/slides';
 import { CornerRings } from '../components/wawtech';
 import { Code, Emphasis, SlideLink } from '../components/SlideElements';
@@ -180,6 +181,40 @@ function SkillGraphAll() {
   );
 }
 
+/**
+ * The last beat, after the whole list: the way out is already built and public.
+ * His own marketplace, in the bottom band the second labyrinth has just left —
+ * a QR, the link and the one command that installs it (the skills themselves
+ * are named in the notes).
+ */
+const YYSTACK_URL = 'https://github.com/yermilov/yystack';
+const YYSTACK_STAGE = WAY_IN.length + WAY_OUT.length + 1;
+
+function Yystack() {
+  return (
+    <aside className="ww-labyrinth__yystack ww-overlay reveal-in">
+      <QRCodeSVG
+        className="ww-labyrinth__yystack-qr"
+        value={YYSTACK_URL}
+        size={260}
+        level="M"
+        fgColor="var(--ww-purple)"
+        bgColor="var(--ww-white)"
+        title="QR code: github.com/yermilov/yystack"
+      />
+      <div className="ww-labyrinth__yystack-text">
+        <p>
+          or skip the labyrinth — <Emphasis color="magenta">copy from me</Emphasis>:
+        </p>
+        <a className="ww-labyrinth__yystack-url" href={YYSTACK_URL}>
+          github.com/yermilov/yystack
+        </a>
+        <Code>/plugin marketplace add yermilov/yystack</Code>
+      </div>
+    </aside>
+  );
+}
+
 /** The three «NOOOO because...» beats: Bobby Finn peeks up on each. */
 const FINN_STAGES = [1, 3, 4];
 
@@ -192,18 +227,19 @@ const WINDOW_WITH_BAND = 4;
 export const SkillLabyrinthSlide: SlideDefinition = {
   id: 'skill-labyrinth',
   title: 'Learn how to write great skills',
-  maxRevealStages: WAY_IN.length + WAY_OUT.length,
+  maxRevealStages: YYSTACK_STAGE,
   content: ({ revealStage }) => {
     // one list, one bullet a click; once it outgrows the slide, the oldest
     // bullets leave from the top, one by one
-    const shown = revealStage;
+    // (the yystack beat adds no bullet — the list stays as the last click left it)
+    const shown = Math.min(revealStage, ALL.length);
     const first = Math.max(0, shown - (shown >= ALL_STAGE ? WINDOW_WITH_BAND : WINDOW));
     return (
       <>
         <CornerRings corner="bottom-right" />
         <ul className="ww-labyrinth">
           {ALL.slice(first, shown).map((b, i) => (
-            <li key={first + i} className={first + i === shown - 1 ? 'reveal-in' : undefined}>
+            <li key={first + i} className={first + i === revealStage - 1 ? 'reveal-in' : undefined}>
               {b}
             </li>
           ))}
@@ -216,6 +252,7 @@ export const SkillLabyrinthSlide: SlideDefinition = {
         )}
         {revealStage === GRAPH_STAGE && <SkillGraph />}
         {revealStage === ALL_STAGE && <SkillGraphAll />}
+        {revealStage === YYSTACK_STAGE && <Yystack />}
       </>
     );
   },
@@ -233,7 +270,8 @@ export const SkillLabyrinthSlide: SlideDefinition = {
     + 'again: every one of the three now depends on both of them — and the two new ones depend on '
     + 'themselves, on each other and on skill-authoring. [reveal] Then '
     + 'install the marketplace for your agents and force regular auto-updates, so every agent always '
-    + 'runs the latest version. Mine are public, in the yermilov/yystack marketplace: meta:skill-authoring, '
+    + 'runs the latest version. [reveal] Or skip the labyrinth: mine are public, in the yermilov/yystack '
+    + 'marketplace — the QR and the link are on the screen, one command installs it: meta:skill-authoring, '
     + 'meta:plugin-dev and meta:enable-autoupdate, and research:deep-research as the research skill — '
-    + 'install them and you start out of the labyrinth.',
+    + 'install them and you start out of the labyrinth. Leave the QR up for a few seconds.',
 };

@@ -73,7 +73,10 @@ function Streets() {
   );
 }
 
-export function RouteMap({ bare = false }: { bare?: boolean }) {
+/** `pick`: which of ROUTES is the chosen one — the metro (0, the default) or the
+ *  taxi (1). The artifact on the task page is clickable, and a click re-draws it. */
+export function RouteMap({ bare = false, pick = 0 }: { bare?: boolean; pick?: 0 | 1 }) {
+  const metro = pick === 0;
   return (
     <svg
       className="ww-map__art"
@@ -117,24 +120,46 @@ export function RouteMap({ bare = false }: { bare?: boolean }) {
       <text className="ww-map__label ww-map__label--water" x="1120" y="230">Dnipro</text>
 
       {/* the alternatives, in grey, under the chosen one */}
-      <path className="ww-map__altedge" d={DRIVE} />
-      <path className="ww-map__alt" d={DRIVE} />
       <path className="ww-map__walk" d={WALK} />
+      {metro ? (
+        <>
+          <path className="ww-map__altedge" d={DRIVE} />
+          <path className="ww-map__alt" d={DRIVE} />
+          {/* the chosen route: a short walk, the metro, a short walk */}
+          <path className="ww-map__walk ww-map__walk--route" d={`M${A.join(' ')} L${STATIONS[0].join(' ')}`} />
+          <path className="ww-map__walk ww-map__walk--route" d={`M${STATIONS[5].join(' ')} L${B.join(' ')}`} />
+          <path className="ww-map__routeedge" d={METRO} />
+          <path className="ww-map__route" d={METRO} pathLength={1} />
+          {STATIONS.map(([x, y]) => (
+            <circle key={`${x}-${y}`} className="ww-map__station" cx={x} cy={y} r="9" />
+          ))}
+        </>
+      ) : (
+        <>
+          <path className="ww-map__altedge" d={METRO} />
+          <path className="ww-map__alt" d={METRO} />
+          {/* the chosen route: the car, door to door */}
+          <path className="ww-map__routeedge" d={DRIVE} />
+          <path key="drive" className="ww-map__route" d={DRIVE} pathLength={1} />
+        </>
+      )}
 
-      {/* the chosen route: a short walk, the metro, a short walk */}
-      <path className="ww-map__walk ww-map__walk--route" d={`M${A.join(' ')} L${STATIONS[0].join(' ')}`} />
-      <path className="ww-map__walk ww-map__walk--route" d={`M${STATIONS[5].join(' ')} L${B.join(' ')}`} />
-      <path className="ww-map__routeedge" d={METRO} />
-      <path className="ww-map__route" d={METRO} pathLength={1} />
-      {STATIONS.map(([x, y]) => (
-        <circle key={`${x}-${y}`} className="ww-map__station" cx={x} cy={y} r="9" />
-      ))}
-
-      <Bubble at={[905, 455]} text="16–30 min" />
       <Bubble at={[596, 318]} text="1 h 10" />
-      <g className="ww-map__picked">
-        <Bubble at={[720, 500]} text="24 min" picked />
-      </g>
+      {metro ? (
+        <>
+          <Bubble at={[905, 455]} text="16–30 min" />
+          <g className="ww-map__picked">
+            <Bubble at={[720, 500]} text="24 min" picked />
+          </g>
+        </>
+      ) : (
+        <>
+          <Bubble at={[720, 500]} text="24 min" />
+          <g className="ww-map__picked" key="drivetime">
+            <Bubble at={[905, 455]} text="16–30 min" picked />
+          </g>
+        </>
+      )}
 
       {/* A: where I leave the car. B: where I am going. */}
       <circle className="ww-map__origin" cx={A[0]} cy={A[1]} r="15" />

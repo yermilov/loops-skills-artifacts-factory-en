@@ -2,21 +2,20 @@ import { ReactNode } from 'react';
 import { SlideDefinition } from '../types/slides';
 import { CornerRings, Reveal } from '../components/wawtech';
 import { ROUTES, RouteMap } from './RouteMap';
+import { useClock } from './BootstrapSlide';
+import { useAnimating } from '../components/frameSettled';
+import dashLight from '../assets/assistant/dash-light.jpg';
 import {
   App,
   Chip,
   Comment,
+  Event,
   Fields,
-  Ico,
-  IconName,
-  STATUS,
-  Status,
-  StatusMark,
+  SessionFoot,
   Task,
   TaskBar,
   TaskCard,
-  Verdict,
-  Who,
+  Thumb,
 } from './ledgerApp';
 
 /**
@@ -77,7 +76,7 @@ function Ledger({ fixed = [], now = [] }: { fixed?: Problem[]; now?: Problem[] }
 }
 
 /** A browser window: the web app is the point of slides 1–4. */
-function Browser({ url, children }: { url: string; children: ReactNode }) {
+export function Browser({ url, children }: { url: string; children: ReactNode }) {
   return (
     <div className="ww-imp__browser">
       <div className="ww-imp__chrome">
@@ -93,402 +92,289 @@ function Browser({ url, children }: { url: string; children: ReactNode }) {
 
 /* ─── 1 · A web UI for the tasks ──────────────────────────────────────────── */
 
-const CAR: Task = { title: 'Book the car service', status: 'doing', who: 'My Claude Code', high: true, age: '12m' };
-const NAS: Task = { title: 'Plan: move photos off the old NAS', status: 'plan', who: '@me', age: '2h' };
-const INSURANCE: Task = { title: 'Renew the car insurance', status: 'todo', who: 'My Codex CLI', age: '1d' };
-const DENTIST: Task = { title: 'Find a dentist slot next week', status: 'todo', who: 'My Claude Code', age: '2d' };
-const WATER: Task = { title: 'Pay the water bill', status: 'input', who: '@me', high: true, age: '3d' };
-const INBOX = [CAR, NAS, INSURANCE, DENTIST, WATER];
-
-export const TaskBoardSlide: SlideDefinition = {
-  id: 'improve-board',
-  title: 'First: a web UI for the tasks',
-  maxRevealStages: 2,
-  initialRevealStage: 1,
-  content: ({ revealStage }) => (
-    <>
-      <CornerRings corner="top-right" />
-      <div className="ww-imp">
-        <Browser url="myclaw.app">
-          <App active="Tasks">
-            <TaskBar view="Inbox" />
-            <div className="ww-jg__split">
-              <div className="ww-jg__list">
-                {INBOX.map((task, i) => (
-                  <TaskCard key={task.title} task={task} withStatus selected={revealStage >= 2 && i === 0} />
-                ))}
-              </div>
-              {revealStage < 2 ? (
-                <div className="ww-jg__empty ww-jg__label">Select a task</div>
-              ) : (
-                <div className="ww-jg__detail" key="detail">
-                  <span className="ww-jg__title">{CAR.title}</span>
-                  <span className="ww-jg__label">ID 5d1e07b2</span>
-                  <Fields
-                    fields={[
-                      { label: 'Status', value: 'In progress', tone: 'time' },
-                      { label: 'Priority', value: 'High', tone: 'danger' },
-                      { label: 'Assignee', value: 'Claude Code' },
-                      { label: 'Model', value: 'Opus 5.5' },
-                    ]}
-                  />
-                  <div className="ww-jg__timeline">
-                    <Comment who="My Claude Code" tag="Session report" when="12m ago">
-                      <p>
-                        Booked: AutoHub Podil, Thursday 19 November, 9:40. I told them about the
-                        tyre-pressure light.
-                      </p>
-                      <span className="ww-jg__chips">
-                        <Chip>dash-light.jpg</Chip>
-                        <Chip>session-5d1e07b2.jsonl</Chip>
-                      </span>
-                    </Comment>
-                    <Comment who="@me" when="1h ago">
-                      <p>Thursday morning, Podil. Mention the light.</p>
-                    </Comment>
-                  </div>
-                </div>
-              )}
-            </div>
-          </App>
-        </Browser>
-        <Ledger now={['chat-only UX']} />
-      </div>
-    </>
-  ),
-  notes:
-    'How do we improve it? Four problems on the table — they stay at the foot of every slide '
-    + 'from here, and we tick them off. '
-    + 'First, the obvious one. Instead of creating tasks in a chat and asking the chat what is in '
-    + 'the queue, I write a web UI for the tasks: I can browse them like in Jira — what is in '
-    + 'progress, what is waiting, what is done, who has it. '
-    + 'Click — and a task is a page, not a paragraph in a scrollback: what I asked, what the agent '
-    + 'answered, the files it attached. And the session itself is attached back to the task — '
-    + 'every agent run, uploaded, so three weeks later I can open what it actually did. '
-    + 'It is a start on the «chat-only UX» problem — magenta, not mint yet. '
-    + 'Honest about the picture: a recreation of the real board, with illustrative tasks.',
+/*
+ * The first view is the INBOX, and the inbox is a queue for the human — the rule is
+ * read off the product (selectInboxCards in juggernaut's apps/web/src/routes/board.tsx,
+ * 13.11.2026): a task is in it when it is assigned to ME, in any open status, or when
+ * it sits with an agent in a status only a human can clear (blocked here). An agent
+ * quietly working its task is NOT in it. Order: priority, then the newest.
+ * So the car errand is NOT in the list while the agent has it, and lands on top only
+ * when the agent has finished and handed it back (paused, on me) — see TaskLife.
+ */
+const CAR: Task = {
+  title: 'Book the car service',
+  status: 'paused',
+  who: '@me',
+  high: true,
+  age: 'now',
 };
+const GYM: Task = {
+  title: 'Cancel the old gym membership',
+  status: 'blocked',
+  who: 'Claude Code',
+  age: '1d',
+};
+const BOILER: Task = {
+  title: 'Call the landlord about the boiler',
+  status: 'todo',
+  who: '@me',
+  age: '2d',
+};
+const NAS: Task = {
+  title: 'Plan: move photos off the old NAS',
+  status: 'plan',
+  who: '@me',
+  age: '2h',
+};
+const WATER: Task = {
+  title: 'Pay the water bill',
+  status: 'input',
+  who: '@me',
+  high: true,
+  age: '3d',
+};
+const INBOX = [WATER, NAS, GYM, BOILER];
 
-/* ─── 2 · A queue for the human, too ──────────────────────────────────────── */
-
-const COLUMNS: { status: Status; cards: Task[] }[] = [
-  { status: 'todo', cards: [INSURANCE, DENTIST] },
-  { status: 'doing', cards: [] },
-  { status: 'plan', cards: [NAS] },
-  { status: 'input', cards: [] },
+/**
+ * The task page plays the task's whole life by itself, no clicks — three moments,
+ * each as the app would show it (timeline newest first):
+ *   1. I create the task: one sentence and a photo, assigned to the agent;
+ *   2. the agent picks it up: «moved todo → in progress», a session in flight;
+ *   3. the agent answers: the report with the files it made, and the task is
+ *      handed back — paused, on me — so only NOW does it land in my inbox, on top.
+ * While the agent holds it the task is not in the list at all: that is the inbox
+ * rule above, and the reason the list does not move until the last moment.
+ */
+export const STREAM_MS = 750; // one line of the session per this long
+/** What the session is doing while it is in flight, streamed into the task page a
+ *  line at a time. NOT the product yet — the page says «Session is still running»
+ *  today; this is where it is going (Yarik, 13.11.2026), so the notes say so. The
+ *  calls are the ones the session slide already showed for this errand. */
+const STREAM = [
+  'Read(dash-light.jpg)',
+  'Skill(user-information)',
+  "Bash(curl -s '…/api/tasks?q=service&status=done')",
+  'WebSearch(car service Podil, Thursday morning)',
+  'Google Calendar - create_event("Car service") (MCP)',
+  'Write(booking-confirmation.pdf)',
 ];
+const STREAM_WINDOW = 4; // the lines the card shows; older ones scroll off its top
+const PICKED_MS = 2600;
+const LIFE_MS = [0, PICKED_MS, PICKED_MS + (STREAM.length + 1) * STREAM_MS] as const; // created · picked up · answered
+type Moment = 0 | 1 | 2;
 
-/** The one task we follow, a click at a time: where it sits, and what was just said. */
-const ROUNDS: { side: 'agent' | 'you'; who: Who; text: string; proposal?: boolean }[] = [
-  { side: 'agent', who: '@me', text: 'Pay the water bill on Friday.' },
-  { side: 'you', who: 'My Claude Code', text: 'Two cards on file. Utilities or main?' },
-  { side: 'agent', who: '@me', text: 'Utilities.' },
-  { side: 'you', who: 'My Claude Code', text: 'Paid 412.80 UAH, receipt attached.', proposal: true },
+/** The second round, a click of its own: I ask a follow-up in a comment, the agent
+ *  takes the task back, works — and answers with a map it WROTE, not a paragraph. */
+const MAP_STREAM = [
+  'Skill(user-information)',
+  'WebSearch(AutoHub Podil → the office, Thursday 10:00)',
+  'Write(routes.html)',
 ];
+const MAP_PICKED_MS = 1800;
+const MAP_ANSWERED_MS = MAP_PICKED_MS + (MAP_STREAM.length + 1) * STREAM_MS;
+/** …and the answer is an ARTIFACT, not a picture: a pointer comes in and clicks the
+ *  taxi row, and the map re-draws for it. POINTER_DELAY_MS / POINTER_MS are the
+ *  pointer's wait and travel — the same numbers as the CSS animation that moves it
+ *  (`ww-jg-point` in slide-layouts.css). */
+const POINTER_DELAY_MS = 1400;
+const POINTER_MS = 900;
+// asked · picked up · answered · clicked
+const MAP_MS = [0, MAP_PICKED_MS, MAP_ANSWERED_MS, MAP_ANSWERED_MS + POINTER_DELAY_MS + POINTER_MS] as const;
 
-export const AttentionQueueSlide: SlideDefinition = {
-  id: 'improve-queue',
-  title: 'Two queues: one for agents, one for me',
-  maxRevealStages: ROUNDS.length,
-  initialRevealStage: 1,
-  content: ({ revealStage }) => {
-    const stage = Math.min(Math.max(revealStage, 1), ROUNDS.length);
-    const round = ROUNDS[stage - 1];
-    const ticket: Task = {
-      title: 'Pay the water bill',
-      status: round.side === 'agent' ? 'doing' : 'input',
-      who: round.side === 'agent' ? 'My Claude Code' : '@me',
-      high: true,
-      age: 'now',
-    };
-    return (
-      <>
-        <CornerRings corner="bottom-left" />
-        <div className="ww-imp">
-          <Browser url="myclaw.app">
-            <App active="Tasks">
-              <TaskBar
-                view="Board"
-                filters={
-                  <>
-                    <span className="ww-jg__filter ww-jg__filter--on">Actual</span>
-                    <span className="ww-jg__filter">Done / cancelled</span>
-                    <span className="ww-jg__filter ww-jg__filter--unread">Unread · 3</span>
-                    <span className="ww-jg__filter">@me</span>
-                  </>
-                }
-              />
-              {/* the deck's own annotation: which columns are whose */}
-              <div className="ww-jg__owners">
-                <span className={round.side === 'agent' ? 'ww-jg__owner ww-jg__owner--on' : 'ww-jg__owner'}>
-                  the agents' queue
-                </span>
-                <span className={round.side === 'you' ? 'ww-jg__owner ww-jg__owner--on' : 'ww-jg__owner'}>
-                  my queue
-                </span>
-              </div>
-              <div className="ww-jg__board">
-                {COLUMNS.map((column) => (
-                  <div key={column.status} className="ww-jg__column">
-                    <span className="ww-jg__columnhead">
-                      <StatusMark status={column.status} />
-                      {STATUS[column.status]}
-                    </span>
-                    {column.cards.map((task) => (
-                      <TaskCard key={task.title} task={task} />
-                    ))}
-                  </div>
-                ))}
-                {/* the one task we follow: it crosses over on every click */}
-                <div className={`ww-jg__ticket ww-jg__ticket--${round.side}`}>
-                  <TaskCard task={ticket} selected>
-                    <span className="ww-jg__thread">
-                      {ROUNDS.slice(0, stage).map((r, i) => (
-                        <span key={i} className={`ww-jg__line${i === stage - 1 ? ' ww-jg__line--new' : ''}`}>
-                          <span className={`ww-jg__label ww-jg__label--${r.who === '@me' ? 'ink' : 'agent'}`}>
-                            {r.who === '@me' ? 'me' : 'claude'}
-                          </span>
-                          {r.text}
-                        </span>
-                      ))}
-                      {round.proposal && <Verdict />}
-                    </span>
-                  </TaskCard>
-                </div>
-              </div>
-            </App>
-          </Browser>
-          <Ledger now={['chat-only UX']} />
-        </div>
-      </>
-    );
-  },
-  notes:
-    'Second — look at the queue differently. The board is really TWO queues. The agents have '
-    + 'theirs: tasks the loop picks up. And I have mine: everything that needs a human. '
-    + 'Follow one task. Click — the agent gets stuck on a real question, so it does not guess and '
-    + 'it does not block a terminal: it puts the task in MY queue with the question. I go through '
-    + 'my queue one by one, when I have a minute — on the phone, in a lift. '
-    + 'Click — I answer in a comment, and the answer itself assigns the task back to the agent '
-    + 'that asked. No dragging cards around. '
-    + 'Click — it executes, and puts the task back in my queue with the result. I close it. '
-    + 'That is the whole protocol: the agent works, the human answers, and nobody waits on a '
-    + 'blinking cursor. I am not the operator of a chat any more — I am one more worker with a '
-    + 'queue.',
-};
-
-/* ─── 3 · Artifacts ───────────────────────────────────────────────────────── */
-
-export const ArtifactsSlide: SlideDefinition = {
-  id: 'improve-artifacts',
-  title: (
-    <>
-      Artifacts: <span className="ww-llm__titlesub">the agent answers with a UI</span>
-    </>
-  ),
-  maxRevealStages: 2,
-  initialRevealStage: 1,
-  content: ({ revealStage }) => (
-    <>
-      <CornerRings corner="top-right" />
-      <div className="ww-imp">
-        <Browser url="myclaw.app/tasks/8b3f61e4">
-          <App active="Tasks">
-            <div className="ww-jg__page">
-              <span className="ww-jg__back ww-jg__label">
-                <Ico name="back" />
-                Back to board
-              </span>
-              <span className="ww-jg__title">How do I get from the service to the office?</span>
-              {revealStage >= 2 && (
-                <div className="ww-jg__artifact" key="artifact">
-                  <span className="ww-imp__artifacttag">
-                    artifact · <code>set_task_artifact(task_id, html_wide, html_narrow)</code>
-                  </span>
-                  <div className="ww-jg__artifactmap">
-                    <RouteMap bare />
-                  </div>
-                  <div className="ww-jg__routes">
-                    {ROUTES.map((route, i) => (
-                      <div key={route.mode} className={`ww-jg__route${i === 0 ? ' ww-jg__route--on' : ''}`}>
-                        <span className="ww-jg__routeno">{i + 1}</span>
-                        <span className="ww-jg__routename">
-                          {route.mode}
-                          <span className="ww-jg__label">{route.detail}</span>
-                        </span>
-                        <span className="ww-jg__routetime">{route.time}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              <Fields
-                fields={[
-                  { label: 'Status', value: 'Needs your input', tone: 'hold' },
-                  { label: 'Priority', value: 'Med' },
-                  { label: 'Assignee', value: '@me' },
-                  { label: 'Created', value: 'Nov 17 · 10:21' },
-                ]}
-              />
-              {revealStage < 2 && (
-                <div className="ww-jg__timeline" key="text">
-                  <Comment who="My Claude Code" tag="Session report" when="2m ago">
-                    <p>
-                      Three ways. By metro: walk 650 m down Kyrylivska to Tarasa Shevchenka, take the blue
-                      line five stops to Olimpiiska, then 300 m up Velyka Vasylkivska — 24 minutes. By taxi:
-                      along the embankment, up Volodymyrskyi Descent and across Khreshchatyk — 16 minutes
-                      now, closer to 30 at ten, about 190 UAH. On foot: up Andriivskyi Descent and along
-                      Volodymyrska — 5.6 km, an hour and ten. I would take the metro.
-                    </p>
-                  </Comment>
-                </div>
-              )}
-            </div>
-          </App>
-        </Browser>
-        <Ledger now={['chat-only UX']} />
-      </div>
-    </>
-  ),
-  notes:
-    'Third — the word from the title: ARTIFACTS. Remember the paragraph about getting from the '
-    + 'service to the office. In a task it is the same paragraph: three routes, street by street. '
-    + 'That is still chat. '
-    + 'Click. So we allow the agent to put into a task not only text but dynamic HTML it '
-    + 'generates for THIS case: the map with the three routes, and each one as a row to pick. One '
-    + 'glance. Nobody designed a «directions» feature; the agent decided what the most '
-    + 'convenient UX for this answer is, and wrote it. '
-    + 'Mechanically it is one tool call: set_task_artifact with the HTML in two versions, wide '
-    + 'and narrow, and the task page renders it at the very top. Next task, a different UI: a '
-    + 'table to tick, a chart, a form with three fields. '
-    + 'Honest about the picture: this booking artifact is staged for the talk.',
-};
-
-/* ─── 4 · …and stable pages ───────────────────────────────────────────────── */
-
-/** The 21-day ribbon of the threat page: one cell a slot, coloured by what happened. */
-const RIBBON = 'mmmmommmmmmmoomvmmmmmmmmommmoommmmmmvommmmmmmmomm'.split('');
-
-function Panel({ name, icon, note, children }: { name: string; icon: IconName; note: string; children: ReactNode }) {
+/** A session in flight: its tool calls, the newest at the foot. */
+export function InFlight({ lines, since, t }: { lines: string[]; since: number; t: number }) {
+  const streamed = Math.max(1, Math.min(lines.length, Math.floor((t - since) / STREAM_MS) + 1));
   return (
-    <div className="ww-jg__panel">
-      <span className="ww-jg__panelhead">
-        <Ico name={icon} />
-        <span className="ww-jg__panelname">{name}</span>
-        <span className="ww-jg__label">{note}</span>
-      </span>
-      {children}
+    <div className="ww-jg__arrive">
+      <Comment who="Claude Code" tag="In flight" when="now">
+        <span className="ww-jg__stream">
+          {lines.slice(Math.max(0, streamed - STREAM_WINDOW), streamed).map((line) => (
+            <span key={line} className="ww-jg__streamline">
+              <span aria-hidden="true">⏺</span>
+              {line}
+            </span>
+          ))}
+        </span>
+      </Comment>
     </div>
   );
 }
 
-export const ArtifactPagesSlide: SlideDefinition = {
-  id: 'improve-pages',
-  title: (
-    <>
-      Artifacts that stay: <span className="ww-llm__titlesub">pages</span>
-    </>
-  ),
-  content: () => (
-    <>
-      <CornerRings corner="bottom-right" />
-      <div className="ww-imp">
-        <Browser url="myclaw.app/coffee">
-          <App active="" lit={['Coffee', 'Health', 'Movies', 'Threat forecast']}>
-            <div className="ww-jg__panels">
-              <Panel name="Coffee" icon="coffee" note="2 bags open">
-                <div className="ww-jg__item">
-                  <span className="ww-jg__swatch ww-jg__swatch--bag" aria-hidden="true" />
-                  <span className="ww-jg__itemtext">
-                    <span className="ww-jg__itemname">Guatemala, Nuevo Oriente</span>
-                    <span className="ww-jg__label">Washed · filter · opened 12 Nov</span>
-                  </span>
-                </div>
-                <span className="ww-jg__seg">
-                  <span>Sealed</span>
-                  <span className="ww-jg__seg--on">Open</span>
-                  <span>Finished</span>
-                </span>
-                <span className="ww-jg__seg ww-jg__seg--soft">
-                  <span>Love</span>
-                  <span>OK</span>
-                  <span className="ww-jg__seg--pick">Not really</span>
-                  <span>No</span>
-                </span>
-              </Panel>
-              <Panel name="Health" icon="health" note="today">
-                {[
-                  { name: 'Vitamin D', note: '2000 IU · last taken Tuesday', doses: [false] },
-                  { name: 'Magnesium', note: '2 tablets · 9 h ago', doses: [true, false, false] },
-                ].map((pill) => (
-                  <div key={pill.name} className="ww-jg__item ww-jg__item--row">
-                    <span className="ww-jg__itemtext">
-                      <span className="ww-jg__itemname">{pill.name}</span>
-                      <span className="ww-jg__label">{pill.note}</span>
-                    </span>
-                    <span className="ww-jg__doses" aria-hidden="true">
-                      {pill.doses.map((taken, i) => (
-                        <span key={i} className={taken ? 'ww-jg__dose ww-jg__dose--taken' : 'ww-jg__dose'} />
-                      ))}
-                    </span>
+function TaskLife({ withMap }: { withMap: boolean }) {
+  const t = useClock(0);
+  const tMap = useClock(withMap ? 1 : 0); // restarts on the map click
+  // landing on the map reveal directly (a link, the PDF) shows the first round
+  // finished, not replaying under the second one
+  const moment: Moment = withMap || t >= LIFE_MS[2] ? 2 : t >= LIFE_MS[1] ? 1 : 0;
+  const mapMoment = !withMap ? -1 : tMap >= MAP_MS[3] ? 3 : tMap >= MAP_MS[2] ? 2 : tMap >= MAP_MS[1] ? 1 : 0;
+  const picked = mapMoment === 3 ? 1 : 0; // the row the pointer has clicked
+  // with the agent: from the ask until its answer, in either round
+  const agentHasIt = moment < 2 || (withMap && mapMoment < 2);
+  // busy until the answer is in, so the PDF and the ready mark wait for the last moment
+  useAnimating(agentHasIt || mapMoment === 2);
+  const status =
+    moment === 0
+      ? ({ label: 'Status', value: 'Todo' } as const)
+      : agentHasIt
+        ? ({ label: 'Status', value: 'In progress', tone: 'time' } as const)
+        : ({ label: 'Status', value: 'Paused', tone: 'hold' } as const);
+  return (
+    <div className="ww-jg__split ww-jg__split--inbox">
+      <div className="ww-jg__list">
+        {!agentHasIt && (
+          <div className="ww-jg__arrive" key={withMap ? 'again' : 'first'}>
+            <TaskCard task={CAR} withStatus selected />
+          </div>
+        )}
+        {INBOX.map((task) => (
+          <TaskCard key={task.title} task={task} withStatus />
+        ))}
+      </div>
+      <div className="ww-jg__detail">
+        <span className="ww-jg__title">{CAR.title}</span>
+        <span className="ww-jg__label">ID 5d1e07b2</span>
+        <Fields
+          fields={[
+            status,
+            { label: 'Priority', value: 'High', tone: 'danger' },
+            { label: 'Assignee', value: agentHasIt ? 'Claude Code' : '@me' },
+            { label: 'Created', value: 'Nov 17, 09:02' },
+          ]}
+        />
+        <div className={`ww-jg__timeline${withMap ? ' ww-jg__timeline--fade' : ''}`}>
+          {mapMoment === 1 && <InFlight key="mapflight" lines={MAP_STREAM} since={MAP_PICKED_MS} t={tMap} />}
+          {mapMoment >= 2 && (
+            <div className="ww-jg__arrive" key="map">
+              <Comment who="Claude Code" tag="Session report" when="now">
+                <p>Three ways — I would take the metro.</p>
+                <div className="ww-jg__mapreply">
+                  <div className="ww-jg__artifactmap">
+                    <RouteMap bare pick={picked} />
                   </div>
-                ))}
-              </Panel>
-              <Panel name="Movies" icon="movies" note="watching now">
-                <div className="ww-jg__item">
-                  <span className="ww-jg__swatch ww-jg__swatch--poster" aria-hidden="true" />
-                  <span className="ww-jg__itemtext">
-                    <span className="ww-jg__itemname">Severance</span>
-                    <span className="ww-jg__label">2022 · Apple TV+ · 7 of 20 left</span>
-                  </span>
+                  <div className="ww-jg__routes">
+                    {ROUTES.map((route, i) => (
+                      <div key={route.mode} className={`ww-jg__route${i === picked ? ' ww-jg__route--on' : ''}`}>
+                        <span className="ww-jg__routeno">{i + 1}</span>
+                        <span className="ww-jg__routename">{route.mode}</span>
+                        <span className="ww-jg__routetime">{route.time}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {/* the deck's own actor: a pointer that comes in and clicks the second row */}
+                  <svg className="ww-jg__pointer" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 3l14 8-6.5 1.6L10 19z" />
+                  </svg>
+                  {mapMoment === 3 && <span className="ww-jg__click" aria-hidden="true" />}
                 </div>
-                <span className="ww-jg__episode">
-                  <span className="ww-jg__box" aria-hidden="true" />
-                  <span className="ww-jg__label">S02E03</span>
-                  Who Is Alive?
-                </span>
-                <span className="ww-jg__stars">
-                  <span className="ww-jg__label">Would watch again</span>
-                  <span aria-hidden="true">★★★★☆</span>
-                </span>
-              </Panel>
-              <Panel name="Threat forecast" icon="alert" note="no alert · 34 min">
-                <span className="ww-jg__ribbon" aria-hidden="true">
-                  {RIBBON.map((cell, i) => (
-                    <span key={i} className={`ww-jg__cell ww-jg__cell--${cell}`} />
-                  ))}
-                </span>
-                <span className="ww-jg__ribbonlegend ww-jg__label">
-                  <span>21 days ago</span>
-                  <span>now</span>
-                </span>
-                <div className="ww-jg__item ww-jg__item--row">
-                  <span className="ww-jg__itemtext">
-                    <span className="ww-jg__itemname">Drones, the next 24 hours</span>
-                    <span className="ww-jg__label">19 channels read · rated 23:52</span>
-                  </span>
-                  <span className="ww-jg__pill ww-jg__pill--time">Medium</span>
-                </div>
-              </Panel>
+              </Comment>
             </div>
+          )}
+          {withMap && (
+            <div className="ww-jg__arrive" key="ask">
+              <Comment who="@me" when={mapMoment >= 2 ? '2m ago' : 'now'} plain>
+                <p>How do I get from the service to the office after I drop the car?</p>
+              </Comment>
+            </div>
+          )}
+          {moment === 1 && <InFlight key="flight" lines={STREAM} since={PICKED_MS} t={t} />}
+          {moment === 2 && (
+            <div className="ww-jg__arrive" key="report">
+              <Comment who="Claude Code" tag="Session report" when="now">
+                <p>
+                  Booked: AutoHub Podil, Thursday 19 November, 9:40. I told them about the tyre-pressure
+                  light.
+                </p>
+                <span className="ww-jg__chips">
+                  <Chip>booking-confirmation.pdf</Chip>
+                  <Chip>car-service.ics</Chip>
+                </span>
+                <SessionFoot>Opus 5.5 · 310K tok · ~$0.84</SessionFoot>
+              </Comment>
+            </div>
+          )}
+          {moment >= 1 && (
+            <div className="ww-jg__arrive" key={`event${moment}`}>
+              <Event when="now">
+                {moment === 1
+                  ? 'Claude Code moved todo → in progress'
+                  : 'Claude Code moved in progress → paused'}
+              </Event>
+            </div>
+          )}
+          <Comment who="@me" when={moment === 0 ? 'now' : moment === 1 ? '1m ago' : '12m ago'} plain>
+            <p>Book a car service this week — a morning, in Podil. Tell them about this light:</p>
+            <Thumb src={dashLight} alt="A dashboard with the tyre-pressure light on" />
+          </Comment>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export const TaskBoardSlide: SlideDefinition = {
+  id: 'improve-board',
+  maxRevealStages: 3,
+  initialRevealStage: 1,
+  content: ({ revealStage }) => (
+    <>
+      <CornerRings corner="top-right" />
+      <div className="ww-imp ww-imp--claim">
+        {/* no title band: the headline is the session slide's verdict line, turned over */}
+        <div className="ww-asst__claim ww-asst__claim--great">
+          <span className="ww-asst__verdict">
+            <span aria-hidden="true">✓</span>
+            fixed
+          </span>
+          <span key={revealStage >= 3 ? 'ui' : 'web'} className="ww-jg__arrive">
+            {revealStage >= 3 ? 'the agent answers with an artifact' : 'a web UI for the tasks'}
+          </span>
+        </div>
+        <Browser url="myclaw.app">
+          <App active="Tasks" pages={['Tasks']}>
+            <TaskBar view="Inbox" switcher={false} />
+            {revealStage < 2 ? (
+              <div className="ww-jg__split ww-jg__split--inbox">
+                <div className="ww-jg__list">
+                  {INBOX.map((task) => (
+                    <TaskCard key={task.title} task={task} withStatus />
+                  ))}
+                </div>
+                <div className="ww-jg__empty ww-jg__label">Select a task</div>
+              </div>
+            ) : (
+              <TaskLife key="life" withMap={revealStage >= 3} />
+            )}
           </App>
         </Browser>
-        <Ledger fixed={['chat-only UX']} />
       </div>
     </>
   ),
   notes:
-    'Fourth — an artifact does not have to belong to one task. The same trick gives me STABLE '
-    + 'pages, each the best UX for one corner of my life, each written and kept up by the agents '
-    + 'working the queue. Obviously finances. The smart home. Movie recommendations. My own '
-    + 'ratings of the top books and songs. The nanny\'s hours and what to pay her on Friday. '
-    + 'Coffee — how many bags are left and when to reorder. Threat alerts for tonight. Sleep. And '
-    + 'a dozen more: pills, routes, shopping, a family tree. '
-    + 'None of them is a chat. Every one of them started as a task. '
-    + 'And that is the first problem ticked: chat is no longer the only UX — it is the one I use '
-    + 'when nothing better exists yet. '
-    + 'Honest about the picture: four of the pages, each cut down to one corner, drawn after the '
-    + 'real ones — with invented data, because the real ones hold my real life.',
+    'How do we improve it? Four problems on the table — we take them one by one. ' +
+    'First, the obvious one. Instead of creating tasks in a chat and asking the chat what is in ' +
+    'the queue, I write a web UI for the tasks: I can browse them like in Jira — what is in ' +
+    'progress, what is waiting, what is done, who has it. ' +
+    'What is on the screen is MY queue: the tasks assigned to me, plus the ones an agent is ' +
+    'blocked on — an agent quietly working is not my problem and is not here. ' +
+    'Click — and it plays by itself, three moments, talk over it: I create a task — one sentence ' +
+    'and a photo, assigned to the agent. The agent picks it up: in progress, a session in flight — ' +
+    'and its tool calls stream into the page as it works (honest: today the page only says the ' +
+    'session is running; the live stream is where it is going) — ' +
+    'and notice it is NOT in my list, it is not my problem yet. Then the agent answers: the report, ' +
+    'the files it made, and the task comes back to me, on top of my queue. ' +
+    'Click — the headline changes, and it plays again: I ask a follow-up right there, in a ' +
+    'comment — how do I get from the service to the office? The task goes back to the agent (it ' +
+    'leaves my list again), it works — the last line is Write(routes.html) — and it answers with ' +
+    'what it wrote: a map and the three routes, not a wall of text. And it is not a picture — ' +
+    'watch the pointer: I click «Taxi» and the map re-draws. An artifact is a small live UI. ' +
+    'Nobody designed a «directions» feature: the agent decided what the most convenient UX for ' +
+    'this answer is, and wrote it. Next task, a different UI: a table to tick, a chart, a form. ' +
+    '(In the product it is one tool call — set_task_artifact with the HTML in two versions, wide ' +
+    'and narrow — and the page pins it at the very top; here it is drawn inside the answer.) ' +
+    'A task is a page, not a paragraph in a scrollback: what I asked, what the agent ' +
+    'answered, the files it attached. And the session itself is attached back to the task — ' +
+    'every agent run, uploaded, so three weeks later I can open what it actually did. ' +
+    'Honest about the picture: a recreation of the real board, with illustrative tasks.',
 };
 
 /* ─── 5 · The runner: plain code, a pane per task ─────────────────────────── */

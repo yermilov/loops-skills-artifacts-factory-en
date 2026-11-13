@@ -49,7 +49,9 @@ src/
 │   ├── AssistantReadySlide.tsx   # «Our barebones AI assistant is ready» — the full-bleed announcement over a Phantom Menace still
 │   ├── AssistantSessionSlide.tsx # the session that tests it (no title band): one errand, eight beats, a prop beside it
 │   ├── RouteMap.tsx              # the maps app with three routes — the session's map reveal and the Artifacts slide share it
-│   ├── improve.tsx               # «How do we improve it?» — six slides sharing one problem LEDGER at the foot
+│   ├── improve.tsx               # «How do we improve it?» — the task page that plays a task's life (and answers with an artifact), the runner, any agent
+│   ├── MiniappsSlide.tsx         # «artifacts that stay: miniapps» — Coffee is BORN in a task, then one page a click; Supplies on a phone, a Silpo cart
+│   ├── ledgerApp.tsx             # the assistant's web app shell both of them draw in (sidebar, task cards, timeline)
 │   ├── factory.tsx               # SCHEMATIC placeholders (DRAFT pill) for the last arc — outlines, not slides
 │   ├── AgendaSlide.tsx           # template p.3 — exports AGENDA (the four words)
 │   ├── sectionSlide.tsx          # factory for section openers (template p.11/18)
@@ -242,12 +244,62 @@ that is not a command. npm keeps every version, so pick the one from the era the
 say in the composition's comment which version you read. The same trick works for any npm/PyPI
 tool, and for MCP servers it gives you the real tool names (`list-events`, `slack_get_channel_history`).
 
+## The miniapps slide, and what one evening of pairing on it taught (14.11.2026)
+
+`MiniappsSlide.tsx` is one slide of many frames. `MINIAPPS` lists the pages in reveal order (which is
+also the sidebar's order, so each click appends a row); `FRAMES` turns them into frames — Supplies
+owns three (the shelf, the phone that photographs an item, the Silpo cart). A page may carry a
+`tour` (Money walks its subpages by itself). To add a page: write its component from the `Page` / `L`
+/ `Buttons` / `Heat` parts, add one `MINIAPPS` row, add its note line. Frame numbers: `bunx vite-node
+scripts/frames.mts`.
+
+**Explore the real product BEFORE drawing it — never guess a flow.** Yarik stopped a guessed «order
+through Silpo» reveal mid-edit («explore how it's done in real juggernaut, don't guess»). The real
+flow was in three places and none was memory: the route's source (`~/src/juggernaut/apps/web/src/routes/`),
+the live page in the logged-in Chrome, and the skill that owns the routine (`errands:silpo`,
+`errands:silpo-restock`). It differed from the guess in every interesting way (chips from receipts;
+the cart is filled on request, never on a schedule; the connector cannot check out). Do those three
+reads first, and write what you found into the component's header comment.
+
+**A third-party app's screen: ask Yarik for a screenshot of his own phone before reconstructing it.**
+The first Silpo cart was drawn from the store listing and had an orange header the app does not
+have; his three screenshots replaced it in one round. Say on the slide's notes what is still a
+reconstruction (a filled cart was never seen — only an empty one and a placed order).
+
+**Real data is used at his word, per page, and it is read through the product's own tools** — the
+coffee bags and photos (`coffee_inventory`, `coffee_get_photo`), the shelf (`supplies_inventory`), the
+cart lines (the Silpo connector's read-only calls: order history, catalogue prices, pack sizes).
+Everything else on those pages stays invented. Keep private things out even when the tool returns
+them: the store's address and city, family members' names and medicines, real sums in Money. A
+third party's product pictures are not ours to download — ask first; the cart rows carry plain tiles.
+
+**A frame that plays by itself** uses `useClock` (from `BootstrapSlide`) for its phases and
+`useAnimating(...)` so the PDF export and the ready mark wait for the last phase; a clock that must
+restart on a reveal takes that reveal as its key. Where CSS moves something on the same schedule (the
+pointer on the map artifact), the two numbers live next to each other with a comment naming both.
+When a reveal would land on a state the previous frame animated towards, derive it (`withMap ? 2 :
+…`) so a direct link or the PDF shows the finished state, not a replay.
+
+**This repo has NO formatter — do not run prettier on a file.** It was run once on `improve.tsx`
+«to tidy up» and reflowed 600 unrelated lines (the repo's own style is 2-space, single quotes, long
+lines, leading `+` in note strings); undoing it meant rebuilding the file from HEAD. Hand-format the
+lines you add.
+
+**After removing slides, sweep the CSS they owned.** `slide-layouts.css` is 5 000 lines and nothing
+warns about a dead rule. The sweep that worked: drop every rule whose `ww-…` classes appear in no
+`.tsx` (treating `` `ww-x--${…}` `` as using every `ww-x--*`), then screenshot a dozen frames before
+and after and `cmp` the PNGs — byte-identical is the pass.
+
 ## Deployment
 
 Push to `main` → `.github/workflows/deploy.yml` builds and deploys to Pages (source: GitHub
 Actions). Solo project: commit straight to `main`, messages `Add/Update/Fix/Remove …`.
 
-**GitHub account switching (mandatory).** The repo is on the personal `yermilov` GitHub account,
+**GitHub account.** Run `gh auth status` first: on Yarik's own Mac only `yermilov` is logged in
+(checked 14.11.2026) and a plain `git push` is right. The switching dance below applies ONLY on a
+machine where the work EMU account is also logged in.
+
+**GitHub account switching (only where both accounts exist).** The repo is on the personal `yermilov` GitHub account,
 while the default active `gh` account is the work EMU account `yaroslav-yermilov`. Before **any**
 git operation, switch to `yermilov`; immediately after it, switch back — in the same command, so
 the switch-back runs even if the git step fails:

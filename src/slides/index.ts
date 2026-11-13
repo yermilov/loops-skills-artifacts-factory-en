@@ -48,13 +48,11 @@ import { AssistantReadySlide } from './AssistantReadySlide';
 import { AssistantSessionSlide } from './AssistantSessionSlide';
 import {
   TaskBoardSlide,
-  AttentionQueueSlide,
-  ArtifactsSlide,
-  ArtifactPagesSlide,
   RunnerSlide,
   AnyAgentSlide,
 } from './improve';
-import { ArchitectureSlide, HuntersSlide, CoolStuffSlide, FactoryRevealSlide, FactoryPhilosophySlide } from './factory';
+import { MiniappsSlide } from './MiniappsSlide';
+import { TalkPrepSlide, ArchitectureSlide, HuntersSlide, FactoryRevealSlide, FactoryPhilosophySlide } from './factory';
 
 /**
  * LAYOUT GALLERY — one example of every WAWTech layout, kept as reference code
@@ -118,15 +116,13 @@ export const slides = [
   AssistantReadySlide,
   AssistantSessionSlide,
   TaskBoardSlide,
-  AttentionQueueSlide,
-  ArtifactsSlide,
-  ArtifactPagesSlide,
+  MiniappsSlide,
   RunnerSlide,
   AnyAgentSlide,
   ArchitectureSlide,
   HuntersSlide,
-  CoolStuffSlide,
   FactoryRevealSlide,
   FactoryPhilosophySlide,
+  TalkPrepSlide,
   FinalSlide,
 ];

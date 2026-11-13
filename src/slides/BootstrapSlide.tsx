@@ -216,9 +216,7 @@ const STEPS: Line[][] = [
       ms: 900,
     },
     { kind: 'say', text: `Created task ${TASK_ID}.` },
-  ],
-  [
-    // The tick: /loop re-enters its own prompt into the same session — the
+    // Same beat, no click: the tick. /loop re-enters its own prompt into the same session — the
     // harness writes the «user» turn (the previous slide). The CLI shows only
     // its own dim wakeup line; the time is in its format, illustrative.
     { kind: 'you', text: LOOP_PROMPT, fired: 'Jun 6 9:52pm' },
@@ -317,9 +315,7 @@ const STEPS: Line[][] = [
     // …and straight into the same task, by the process: one line per step, the
     // steps' own tools. Rebuilt for the stage, like the rest of this replay — ids,
     // counts and the two review findings are illustrative.
-  ],
-  [
-    // The plan is where the human catches what the code would have missed:
+    // Same beat, no click: the plan. It is where the human catches what the code would have missed:
     // here, the plan forgets the default, so every existing task would be left
     // with no priority at all.
     {
@@ -703,12 +699,13 @@ export const BootstrapRestSlide: SlideDefinition = {
 /** After the loop explainer: back in the same session, the first real task —
  *  created by hand, then picked up and done by the loop on its next tick. */
 export const BootstrapTaskSlide: SlideDefinition = {
-  ...sessionSlide('bootstrap-task', 3, 2),
+  ...sessionSlide('bootstrap-task', 3, 1),
   notes:
     'Back in the session, where we left it: the loop is ticking, the queue is empty. '
-    + 'Beat 1 — I ask for the first real task, and the agent creates it through the API it built an '
+    + 'One beat, it plays through by itself — talk over it. '
+    + 'I ask for the first real task, and the agent creates it through the API it built an '
     + 'hour ago. Nobody does it yet: the loop is waiting. '
-    + 'Beat 2 — ten minutes later the tick fires. Point at the dim line: «Claude resuming /loop '
+    + 'Then — ten minutes later in real life — the tick fires. Point at the dim line: «Claude resuming /loop '
     + 'wakeup». Nobody typed anything — the harness submitted the loop\'s prompt itself, the very '
     + '«User:» turn from the sheet on the previous slide; Claude Code does not even draw it as a '
     + 'prompt, only that line (read off the CLI, 2.1.322). '
@@ -722,13 +719,14 @@ export const BootstrapTaskSlide: SlideDefinition = {
 /** After the loop picked up the first task: he stops it — that is not how the work is
  *  done here — hands over his development process, and the same task is redone by it. */
 export const BootstrapProcessSlide: SlideDefinition = {
-  ...sessionSlide('bootstrap-process', 5, 10),
+  ...sessionSlide('bootstrap-process', 4, 9),
   notes:
     'Same session, a minute later. Beat 1 — I stop it: it shipped, but that is not how work is done '
     + 'here. I paste my development process — the nine steps of my own development-process skill, there '
     + 'on the screen. It says thank you, reverts its own commit, and goes straight back to work. '
-    + 'Beats 2–10 — one click per step, so I can stop on each: '
-    + 'the same task, by the process: a plan — and it forgot the default, so every existing task '
+    + 'The plan arrives in that same beat, no click — and from there one click per step (beats 2–9), '
+    + 'so I can stop on each. '
+    + 'The same task, by the process: a plan — and it forgot the default, so every existing task '
     + 'would have had no priority; I correct it in one sentence. That is the whole point of a plan: '
     + 'it is the cheapest place to be wrong — then the change; then it looks back at what it wrote '
     + 'and simplifies it, now that it knows how it is done (from my earlier talk); then undeniable '
