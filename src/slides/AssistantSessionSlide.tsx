@@ -66,21 +66,23 @@ type Step = { great: boolean; claim: string; prop: Prop; lines: Beat[] };
 /** The queue poll the loop makes on every tick — the one line the session repeats. */
 const curl = `Bash(curl -s '${API}/api/tasks?status=todo')`;
 
-const tick = (when: string, cost: number): Beat[] => [
+const tick = (when: string, cost: number, ms = 700): Beat[] => [
   { kind: 'you', text: '', fired: when },
   {
     kind: 'tool',
     text: curl,
     result: '[]',
-    ms: 700,
-    fx: { cost, at: 'done', over: 500 },
+    ms,
+    fx: { cost, at: 'done', over: Math.min(500, ms) },
   },
 ];
 
 /** The cost beat does not end: /loop keeps waking up, every tick on an empty queue,
  *  until the speaker moves on. One tick every TICK_EVERY ms of slide time, ten minutes
  *  apart on the clock; the PDF keeps the beat's three fixed ticks. */
-const TICK_EVERY = 2800;
+const TICK_EVERY = 1400;
+/** The empty-queue curl, sped up to match. */
+const TICK_CURL_MS = 300;
 const ENDLESS_FROM = 14 * 60 + 10; // 2:10pm, in minutes
 const clockAt = (minutes: number) => {
   const h = Math.floor(minutes / 60) % 24;
@@ -89,7 +91,7 @@ const clockAt = (minutes: number) => {
 };
 /** One tick plays as: wakeup (0) · gap · curl (700) · gap · silence · gap — the silence
  *  is whatever makes the whole thing exactly TICK_EVERY long. */
-const TICK_PAUSE = TICK_EVERY - (3 * GAP_MS + 700);
+const TICK_PAUSE = TICK_EVERY - (3 * GAP_MS + TICK_CURL_MS);
 /** Only the last few ticks are generated (and the newest rows drawn): however long the
  *  speaker talks, the work per frame stays the same. */
 const ENDLESS_KEEP = 14;
@@ -100,7 +102,7 @@ function endlessTicks(t: number, from: number): { lines: Beat[]; first: number; 
   const n = Math.floor(t / TICK_EVERY) + 2;
   const lines: Beat[] = [];
   for (let i = first; i < n; i++) {
-    lines.push(...tick(clockAt(ENDLESS_FROM + 10 * i), from + (i + 1) * TICK_COST));
+    lines.push(...tick(clockAt(ENDLESS_FROM + 10 * i), from + (i + 1) * TICK_COST, TICK_CURL_MS));
     // the wait until the next wakeup: nothing printed
     lines.push({ kind: 'note', text: '', ms: TICK_PAUSE, silent: true });
   }
@@ -233,7 +235,7 @@ const STEPS: Step[] = [
   { great: false, claim: CHAT_CLAIM, prop: 'map', lines: [] },
   {
     great: false,
-    claim: 'One model — Opus even for a calendar entry',
+    claim: 'One model for all tasks — no switching',
     prop: 'model',
     lines: [
       // the loop wakes up and takes the smallest task there is: one connector call. The
@@ -263,7 +265,7 @@ const STEPS: Step[] = [
   },
   {
     great: false,
-    claim: 'The context fills up — and compaction forgets',
+    claim: 'One context for all tasks — mid-task compaction',
     prop: 'ctx',
     lines: [
       // three hours of the same errand, fast-forwarded: four ticks, four tasks, and the
