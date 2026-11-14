@@ -10,9 +10,14 @@
  *  Right of the clock sits the READY mark (▸): it lights up once everything
  *  the current frame plays — reveals, clips, typed sessions — is over, so the
  *  next click won't cut an animation short (see frameSettled.ts).
+ *  Right of that sits the OFFLINE mark: «⇣ 42%» while the service worker is
+ *  still downloading the deck, a dim ✓ once every file is cached and the talk
+ *  no longer needs the network (see utils/offline.ts).
  *  The terminal is not here any more: Esc calls it over the slide (see
  *  Presentation.tsx), and the clock is the tap target for a phone with no Esc.
  */
+
+import { useOfflineStatus } from '../utils/offline';
 
 // WAWTech slot: 45 minutes, no Q&A (organiser email, 07.09.2026).
 const TOTAL_TIME = 45 * 60;
@@ -38,6 +43,7 @@ function formatClock(seconds: number): string {
 }
 
 export function TalkTrack({ elapsedSeconds, progress, ready, onOpenCommand }: TalkTrackProps) {
+  const offline = useOfflineStatus();
   const flown = Math.min(1, elapsedSeconds / TOTAL_TIME);
   const covered = Math.min(1, Math.max(0, progress));
   const remaining = Math.max(0, TOTAL_TIME - elapsedSeconds);
@@ -77,6 +83,19 @@ export function TalkTrack({ elapsedSeconds, progress, ready, onOpenCommand }: Ta
       >
         ▸
       </span>
+      {offline && offline.total > 0 && (
+        offline.done >= offline.total ? (
+          <span className="talk-track__offline talk-track__offline--ready" role="status"
+            aria-label="Available offline" title="cached: works without internet">
+            ✓
+          </span>
+        ) : (
+          <span className="talk-track__offline" role="status"
+            aria-label="Downloading the deck for offline use" title="caching the deck for offline use">
+            ⇣ {Math.floor((offline.done / offline.total) * 100)}%
+          </span>
+        )
+      )}
     </div>
   );
 }

@@ -75,6 +75,19 @@
   transform: scale(1.25);
 }
 
+/* Offline mark: «⇣ 42%» while the deck is being cached, a dim ✓ once it all is. */
+.talk-track__offline {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--ww-purple);
+}
+.talk-track__offline--ready {
+  color: color-mix(in srgb, var(--ww-purple) 30%, transparent);
+}
+
 .talk-track--warn .talk-track__clock { color: var(--terminal-yellow); }
 .talk-track--late .talk-track__clock { color: var(--terminal-red); }
 .talk-track--late .talk-track__tick { background: var(--terminal-red); }
