@@ -51,7 +51,7 @@ src/
 │   ├── AssistantSessionSlide.tsx # the session that tests it (no title band): one errand, eight beats, a prop beside it
 │   ├── RouteMap.tsx              # the maps app with three routes — the session's map reveal and the Artifacts slide share it
 │   ├── improve.tsx               # «How do we improve it?» — the task page that plays a task's life (and answers with an artifact), the runner, any agent
-│   ├── MiniappsSlide.tsx         # «artifacts that stay: miniapps» — Coffee is BORN in a task, then one page a click; Supplies on a phone, a Silpo cart
+│   ├── MiniappsSlide.tsx         # «artifacts that stay: miniapps» — Coffee is BORN in a task, then one page a click; Supplies on a phone, a Silpo cart; Home replays its real task, then walks its cards
 │   ├── ledgerApp.tsx             # the assistant's web app shell both of them draw in (sidebar, task cards, timeline)
 │   ├── factory.tsx               # SCHEMATIC placeholders (DRAFT pill) for the last arc — outlines, not slides
 │   ├── AgendaSlide.tsx           # template p.3 — exports AGENDA (the four words)
@@ -268,12 +268,46 @@ The first Silpo cart was drawn from the store listing and had an orange header t
 have; his three screenshots replaced it in one round. Say on the slide's notes what is still a
 reconstruction (a filled cart was never seen — only an empty one and a placed order).
 
-**Real data is used at his word, per page, and it is read through the product's own tools** — the
-coffee bags and photos (`coffee_inventory`, `coffee_get_photo`), the shelf (`supplies_inventory`), the
-cart lines (the Silpo connector's read-only calls: order history, catalogue prices, pack sizes).
-Everything else on those pages stays invented. Keep private things out even when the tool returns
-them: the store's address and city, family members' names and medicines, real sums in Money. A
-third party's product pictures are not ours to download — ask first; the cart rows carry plain tiles.
+**Real data is used at his word, per page, and it is read through the product's own tools** — and
+since the pairing of 14.11.2026 (evening) most of the tour is real: Coffee and Supplies (above), the
+Silpo cart's lines and catalogue photos (`src/assets/silpo/`), Books (`books_list` + the live page),
+Health (`pills_list`, `water_today`), the Threat forecast for Kyiv (`attack_list` + the live page, the
+map is his own screenshot), Home (his Kyiv flat's plan, cards and the panels each card opens). Movies
+is the product's recommendation card with HIS two picks and pitches written for the slide; the pages
+after Home are still invented. Each component's header comment says what is real, what is translated
+or cut, and what was left out — keep that comment true when you edit, and keep the notes' closing
+«Honest about the picture» paragraph in step with it.
+
+**Never on a slide, even when the tool or the page returns it:** the children's profiles (names,
+ages, medicines, doctors), family members' names (the «Who is home?» panel), any address, rent or
+utility sum, where he is right now (the Threat page's «where you are now» card), real sums in Money,
+his as-needed medicines, the Wi-Fi network's name, device MAC addresses and serial numbers. Images
+are saved into the repo (`src/assets/{silpo,books,movies,threat}/`), never hot-linked — offline mode.
+A third party's pictures are still «ask first»; he asked for the ones that are there.
+
+**Reading the live page (the logged-in Chrome) — four traps from that evening.**
+- **Read a ranking twice.** The Books order depends on his duels, which load after the list: the
+  first read showed every duel score 0.00 and a different order; a few seconds later the real one.
+  `books_list` does not carry the duel order at all — only the page does.
+- **The page opens on the house / city he is IN.** /home and /attack defaulted to where he was that
+  night, not Kyiv; switch the tab before reading, and say which one you copied.
+- **A chart is data you can read.** The panels' 24-hour charts are SVG paths (viewBox 100 × 56); pull
+  the points from the DOM and keep the change points, rather than quoting a range and inventing a
+  curve — or leaving the chart out, which is what he asked about («а чому жодного графіку?»).
+- **A detail panel may open BELOW the fold of the same page**, not in a dialog: after clicking a Home
+  card the text appears under the plan. Compare the page text after the plan, per card.
+
+**Before adding a `ww-…` class, grep `slide-layouts.css` for it.** `ww-ma__cover` already existed
+1 500 lines further down (the Music duel) and silently resized the new book covers.
+
+**`bunx vite-node scripts/frames.mts` can fail under bunx** (`Cannot find package … fdir`, 14.11.2026).
+The fallback that worked: step `#slide-N` in Playwright until the page's own text shows up.
+
+**A page can have a BIRTH of its own.** Coffee's is frame 1; Home's is inside the Home frame
+(`HomeBirth`, `HOME_BIRTH_MS`): the frame replays the real task the page grew out of, then opens the
+page, and the page's own clock starts at the birth's end (`t = tStage - HOME_BORN_MS`). In export
+mode the clock is at its maximum, so the PDF shows the finished page. A replayed real task carries
+its real title, id and dates; say in the notes what was compressed.
 
 **A frame that plays by itself** uses `useClock` (from `BootstrapSlide`) for its phases and
 `useAnimating(...)` so the PDF export and the ready mark wait for the last phase; a clock that must

@@ -12,6 +12,28 @@ import decaf from '../assets/coffee/decaf.jpg';
 import waterPhoto from '../assets/supplies/water.jpg';
 import granolaPhoto from '../assets/supplies/granola.jpg';
 import tabletsPhoto from '../assets/supplies/dishwasher-tablets.jpg';
+import eggsPhoto from '../assets/silpo/eggs.webp';
+import goudaPhoto from '../assets/silpo/gouda.webp';
+import stellaPhoto from '../assets/silpo/stella.webp';
+import yogurtPhoto from '../assets/silpo/yogurt.webp';
+import elegantPuzzleCover from '../assets/books/elegant-puzzle.jpg';
+import archModernizationCover from '../assets/books/architecture-modernization.jpg';
+import selfishGeneCover from '../assets/books/selfish-gene.jpg';
+import platformEngineeringCover from '../assets/books/platform-engineering.png';
+import seAtGoogleCover from '../assets/books/software-engineering-at-google.jpg';
+import chaosMonkeysCover from '../assets/books/chaos-monkeys.jpg';
+import ddiaCover from '../assets/books/ddia.jpg';
+import staffEngineersPathCover from '../assets/books/staff-engineers-path.jpg';
+import howNotToBeWrongCover from '../assets/books/how-not-to-be-wrong.jpg';
+import goodStrategyCover from '../assets/books/good-strategy-bad-strategy.jpg';
+import thinkingFastAndSlowCover from '../assets/books/thinking-fast-and-slow.jpg';
+import releaseItCover from '../assets/books/release-it.jpg';
+import teamTopologiesCover from '../assets/books/team-topologies.jpg';
+import makingThingsHappenCover from '../assets/books/making-things-happen.jpg';
+import superPumpedCover from '../assets/books/super-pumped.jpg';
+import rehearsalPoster from '../assets/movies/the-rehearsal.jpg';
+import seeEverythingPoster from '../assets/movies/you-can-see-everything.jpg';
+import droneMap from '../assets/threat/drone-map-kyiv.jpg';
 
 /**
  * «Artifacts that stay: miniapps» — the pages of the assistant's web app.
@@ -31,10 +53,10 @@ import tabletsPhoto from '../assets/supplies/dishwasher-tablets.jpg';
  * photos of them (src/assets/coffee/, src/assets/supplies/, taken off the product). Its verdicts and the «your taste»
  * summary are sharpened for the stage: on the real page all he has said so far is
  * «OK». In the order shown:
- *   Coffee · Money · Supplies · Books · Movies · Health · Nanny ·
+ *   Coffee · Money · Supplies · Books · Movies · Health ·
  *   Threat forecast · Home · Routes · Sleep · Sport · Music · Family tree.
- * (The app has more — work hours, important dates, his sole-proprietor books, a
- * wall display; the notes say so.)
+ * (The app has more — the nanny's hours, work hours, important dates, his
+ * sole-proprietor books, a wall display; the notes say so.)
  */
 
 /* ─── Parts every page is made of ─────────────────────────────────────────── */
@@ -610,12 +632,14 @@ const NO_SHOP = ['Red pencil / pen', 'Small bags', 'Mop cloth'];
  *  sizes (`displayRatio`) are the catalogue's own (names shortened to fit a phone),
  *  the quantities his — only the
  *  Gouda is 2 here where he took 4. A self-pickup cart carries a flat 9 ₴ service
- *  fee. No product pictures: they are the chain's, so the rows carry a plain tile. */
-const CART: { list: string; name: string; qty: number; pack: string; price: number; tile: string }[] = [
-  { list: 'Eggs', name: 'Eggs «Yasensvit»', qty: 1, pack: '15 pcs', price: 114.45, tile: 'eggs' },
-  { list: 'Sliced Gouda', name: 'Gouda Veldhuyzen Kaas, sliced', qty: 2, pack: '150 g', price: 119, tile: 'cheese' },
-  { list: 'Non-alcoholic beer', name: 'Stella Artois, non-alcoholic', qty: 8, pack: 'can', price: 61.99, tile: 'beer' },
-  { list: REBUY[0].name, name: 'Yogurt «Halychyna», no sugar', qty: 4, pack: '300 g', price: 35.99, tile: 'yogurt' },
+ *  fee. The pictures are the catalogue's own (the order's `image` URLs, saved to
+ *  src/assets/silpo/ at Yarik's word on 14.11.2026 — the deck must not load them
+ *  from images.silpo.ua, it has to work offline). */
+const CART: { list: string; name: string; qty: number; pack: string; price: number; photo: string }[] = [
+  { list: 'Eggs', name: 'Eggs «Yasensvit»', qty: 1, pack: '15 pcs', price: 114.45, photo: eggsPhoto },
+  { list: 'Sliced Gouda', name: 'Gouda Veldhuyzen Kaas, sliced', qty: 2, pack: '150 g', price: 119, photo: goudaPhoto },
+  { list: 'Non-alcoholic beer', name: 'Stella Artois, non-alcoholic', qty: 8, pack: 'can', price: 61.99, photo: stellaPhoto },
+  { list: REBUY[0].name, name: 'Yogurt «Halychyna», no sugar', qty: 4, pack: '300 g', price: 35.99, photo: yogurtPhoto },
 ];
 const SERVICE_FEE = 9;
 const money = (n: number) => n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
@@ -755,7 +779,7 @@ function SilpoPhone({ phase }: { phase: number }) {
               </span>
               {CART.map((line) => (
                 <span key={line.name} className="ww-sp__line">
-                  <span className={`ww-sp__tile ww-sp__tile--${line.tile}`} aria-hidden="true" />
+                  <img className="ww-sp__tile" src={line.photo} alt="" />
                   <span className="ww-sp__name">
                     {line.name}
                     <span>
@@ -897,58 +921,87 @@ function Phone({ phase }: { phase: number }) {
 
 /* ─── Books ───────────────────────────────────────────────────────────────── */
 
+/** His real shelf, read on 14.11.2026 off the live page (/books) and `books_list`:
+ *  the two books open now with their progress lines as the page prints them, and
+ *  the top 13 of «Read · 32» — all nine of his five-star books and the first four
+ *  four-star ones, in the page's own order: stars first, then the duel strength
+ *  inside a star bucket (the page prints it as a mono number beside the stars —
+ *  left out here at Yarik's word), then the finish date. The
+ *  list is longer than the card, so it scrolls by itself, slowly, down and back
+ *  (CSS, `ww-ma__scroll`; export mode stops it at the top). Subtitles are cut to
+ *  fit; the covers are the ones the page shows, saved to src/assets/books/ (never
+ *  hot-linked — offline mode). The page's heatmap, queue and duel are left out at
+ *  Yarik's word. */
 const READING = [
-  { title: 'The Phoenix Project', author: 'Gene Kim, Kevin Behr', done: 65, note: '4:16 / 6:36 · 65% · 2:20 left' },
-  { title: 'Designing Data-Intensive Applications', author: 'Martin Kleppmann', done: 9, note: 'page 52 / 590 · 9%' },
+  { title: 'An Elegant Puzzle', author: 'Will Larson · audio', cover: elegantPuzzleCover, done: 69, note: '4:34 / 6:36 · 69% · 2:02 left' },
+  {
+    title: 'Architecture Modernization',
+    author: 'Nick Tune, Jean-Georges Perrin',
+    cover: archModernizationCover,
+    done: 9,
+    note: 'page 42 / 488 · 9%',
+  },
 ];
-const WANT = ['Accelerate', 'Team Topologies', "The Staff Engineer's Path"];
-const READ_HEAT = '2 3 2 0 0 1 3  0 2 0 1 3 1 3  3 1 2 0 2 0 0'.split(/\s+/).map(Number);
+const READ_TOTAL = 32;
+const TOP_BOOKS: { title: string; author: string; when: string; cover: string; stars?: number }[] = [
+  { title: 'The Selfish Gene', author: 'Richard Dawkins · audio', when: '24d ago', cover: selfishGeneCover },
+  { title: 'Platform Engineering', author: 'Camille Fournier, Ian Nowland', when: '13mo ago', cover: platformEngineeringCover },
+  { title: 'Software Engineering at Google', author: 'Titus Winters, Tom Manshreck, Hyrum Wright', when: '35mo ago', cover: seAtGoogleCover },
+  { title: 'Chaos Monkeys', author: 'Antonio García Martínez', when: '35mo ago', cover: chaosMonkeysCover },
+  { title: 'Designing Data-Intensive Applications', author: 'Martin Kleppmann, Chris Riccomini', when: '3mo ago', cover: ddiaCover },
+  { title: "Staff Engineer's Path", author: 'Tanya Reilly', when: '26d ago', cover: staffEngineersPathCover },
+  { title: 'How Not to Be Wrong', author: 'Jordan Ellenberg', when: '35mo ago', cover: howNotToBeWrongCover },
+  { title: 'Good Strategy/Bad Strategy', author: 'Richard Rumelt', when: '35mo ago', cover: goodStrategyCover },
+  { title: 'Thinking, Fast and Slow', author: 'Daniel Kahneman', when: '35mo ago', cover: thinkingFastAndSlowCover },
+  { title: 'Release It!', author: 'Michael T. Nygard', when: '35mo ago', cover: releaseItCover, stars: 4 },
+  { title: 'Team Topologies', author: 'Matthew Skelton, Manuel Pais · audio', when: '27d ago', cover: teamTopologiesCover, stars: 4 },
+  { title: 'Making Things Happen', author: 'Scott Berkun', when: '35mo ago', cover: makingThingsHappenCover, stars: 4 },
+  { title: 'Super Pumped', author: 'Mike Isaac', when: '35mo ago', cover: superPumpedCover, stars: 4 },
+];
 
 const Books = () => (
   <Page icon="books" name="Books" aside={<span className="ww-jg__new">+ Book</span>}>
-    <div className="ww-ma__cols">
+    <div className="ww-ma__cols ww-ma__cols--books">
       <div className="ww-ma__col">
         <L>Reading now</L>
         {READING.map((book) => (
-          <div key={book.title} className="ww-ma__card">
+          <div key={book.title} className="ww-ma__card ww-ma__card--slim">
             <div className="ww-jg__item">
-              <span className="ww-jg__swatch ww-jg__swatch--poster ww-ma__poster" aria-hidden="true" />
+              <img className="ww-ma__bookcover" src={book.cover} alt="" />
               <span className="ww-jg__itemtext ww-ma__grow">
-                <span className="ww-jg__itemname">{book.title}</span>
+                <span className="ww-ma__row">
+                  <span className="ww-jg__itemname ww-ma__clip">{book.title}</span>
+                  <span className="ww-ma__button">▶ Read</span>
+                </span>
                 <L>{book.author}</L>
+                <L tone="ink">{book.note}</L>
+                <span className="ww-ma__bar" aria-hidden="true">
+                  <span style={{ width: `${book.done}%` }} />
+                </span>
               </span>
-              <span className="ww-ma__button">▶ Read</span>
             </div>
-            <span className="ww-ma__bar" aria-hidden="true">
-              <span style={{ width: `${book.done}%` }} />
-            </span>
-            <L>{book.note}</L>
           </div>
         ))}
-        <L>Want to read · {WANT.length}</L>
-        <div className="ww-ma__card ww-ma__card--list">
-          {WANT.map((title) => (
-            <span key={title} className="ww-ma__row">
-              <span>{title}</span>
-              <span className="ww-ma__button">▶ Read</span>
-            </span>
-          ))}
-        </div>
       </div>
       <div className="ww-ma__col">
-        <L>Read · 3 weeks</L>
-        <div className="ww-ma__card">
-          <span className="ww-ma__big">
-            4 h 59 min <L>137 pages · 26 Oct – 14 Nov</L>
-          </span>
-          <Heat levels={READ_HEAT} first={26} today={19} />
-        </div>
-        <div className="ww-ma__card ww-ma__card--warn">
-          <L tone="time">Duel of the day</L>
-          <span className="ww-jg__itemname">Which of these is better?</span>
-          <span className="ww-ma__duel">
-            <span>The First 90 Days</span>
-            <span>Software Engineering at Google</span>
+        <L>Read · {READ_TOTAL}</L>
+        <div className="ww-ma__card ww-ma__card--list ww-ma__scroll">
+          <span className="ww-ma__scrollbody">
+          {TOP_BOOKS.map((book, i) => (
+            <span key={book.title} className="ww-ma__row ww-ma__rank">
+              <L>{i + 1}</L>
+              <img className="ww-ma__bookcover ww-ma__bookcover--sm" src={book.cover} alt="" />
+              <span className="ww-jg__itemtext">
+                <span className="ww-ma__clip">{book.title}</span>
+                <L>
+                  {book.author} · {book.when}
+                </L>
+              </span>
+              <span className="ww-ma__rankstars" aria-hidden="true">
+                {'★★★★★☆☆☆☆☆'.slice(5 - (book.stars ?? 5), 10 - (book.stars ?? 5))}
+              </span>
+            </span>
+          ))}
           </span>
         </div>
       </div>
@@ -958,56 +1011,63 @@ const Books = () => (
 
 /* ─── Movies ──────────────────────────────────────────────────────────────── */
 
-const WATCHING = [
+/** Only the recommendations — the page's «Порада» card (apps/web/src/components/
+ *  suggestion-card.tsx, seen live on /movies on 14.11.2026: a ✦ label, the poster,
+ *  title, kind · year, the agent's pitch, where it streams, the scores, «Add» / «Not
+ *  this»). The FORM is the product's; the two titles are Yarik's own picks for the
+ *  room — both by Nathan Fielder, both on his real list — not the two cards that
+ *  were pending that day (Everything Everywhere All at Once, Fleabag). So this is
+ *  a reconstruction and the notes say so. What is real on them: the posters (saved
+ *  to src/assets/movies/), years, where-to-watch and scores as his page shows them,
+ *  his 5★ for The Rehearsal and 4★ for the book Bad Blood, the film's premise and
+ *  running time (TMDB). The pitches are written for this slide in the agent's
+ *  manner: argue from his ratings, name the risk. */
+const ADVICE = [
   {
-    title: 'Severance',
-    year: '2022',
-    episode: 'S02E03',
-    name: 'Who Is Alive?',
-    where: 'Where: Apple TV+ · subscription',
-    scores: 'IMDb 8.7 · RT 97% · watched 65%',
-    left: '13 / 20 · left: 7',
-    verdict: 'Good, would watch again',
-    stars: '★★★★☆',
+    title: 'The Rehearsal',
+    kind: 'Series · 2022',
+    poster: rehearsalPoster,
+    pitch:
+      'Nathan Fielder builds full-size replicas of real places and hires actors, so that ordinary people can ' +
+      'rehearse the hardest conversations of their lives — and then it stops being about them. Season two turns ' +
+      'the method on airline pilots. You gave it 5★, «would watch again», and Nathan for You is on your list. ' +
+      'Two seasons, twelve episodes. The risk: the awkwardness is the point.',
+    where: 'Watch: HBO Max',
+    scores: 'IMDb 8.5 · 38K · RT 96% · audience 89%',
   },
   {
-    title: 'Slow Horses',
-    year: '2022',
-    episode: 'S04E01',
-    name: 'Identity Theft',
-    where: 'Where: Apple TV+ · subscription',
-    scores: 'IMDb 8.3 · RT 98% · watched 75%',
-    left: '18 / 24 · left: 6',
-    verdict: 'Great, would recommend',
-    stars: '★★★★★',
+    title: 'You Can See Everything',
+    kind: 'Film · 2026',
+    poster: seeEverythingPoster,
+    pitch:
+      'From Nathan Fielder (The Rehearsal, 5★) and Lance Oppenheim: thirty-four days before prison, Elizabeth ' +
+      'Holmes of Theranos invites a sceptical film crew to document her every step. You gave the book Bad Blood ' +
+      '4★ — this is the same story with her in the room. The risk: 2 h 55 min, and it is not streaming in ' +
+      'Ukraine yet.',
+    where: 'Not in Ukraine yet',
+    scores: 'RT 100% · Metacritic 95%',
   },
 ];
 
 const Movies = () => (
   <Page icon="movies" name="Movies" aside={<span className="ww-jg__new">+ Add</span>}>
-    <L>Watching now · series</L>
-    <div className="ww-ma__cols">
-      {WATCHING.map((show) => (
-        <div key={show.title} className="ww-ma__card">
+    <div className="ww-ma__cols ww-ma__cols--even">
+      {ADVICE.map((item) => (
+        <div key={item.title} className="ww-ma__card ww-ma__card--warn ww-ma__advice">
           <div className="ww-jg__item">
-            <span className="ww-jg__swatch ww-jg__swatch--poster ww-ma__poster" aria-hidden="true" />
+            <img className="ww-ma__bookcover" src={item.poster} alt="" />
             <span className="ww-jg__itemtext">
-              <span className="ww-jg__itemname">{show.title}</span>
-              <L>{show.year}</L>
+              <L tone="time">✦ Recommendation</L>
+              <span className="ww-ma__advicetitle">{item.title}</span>
+              <L>{item.kind}</L>
             </span>
           </div>
-          <span className="ww-jg__episode">
-            <span className="ww-jg__box" aria-hidden="true" />
-            <L>{show.episode}</L>
-            <span className="ww-ma__grow">{show.name}</span>
-            <L>Watched</L>
-          </span>
-          <L>{show.where}</L>
-          <L>{show.scores}</L>
-          <L>⌄ {show.left}</L>
-          <span className="ww-jg__stars">
-            <L>{show.verdict}</L>
-            <span aria-hidden="true">{show.stars}</span>
+          <span className="ww-ma__pitch">{item.pitch}</span>
+          <L>{item.where}</L>
+          <L>{item.scores}</L>
+          <span className="ww-ma__actions">
+            <span className="ww-ma__button ww-ma__button--wide ww-ma__button--yes ww-ma__grow">✓ Add</span>
+            <span className="ww-ma__button">✕ Not this</span>
           </span>
         </div>
       ))}
@@ -1017,161 +1077,90 @@ const Movies = () => (
 
 /* ─── Health ──────────────────────────────────────────────────────────────── */
 
-type Med = { name: string; how: string; last: string; doses: boolean[] };
-const PROFILES: { who: string; age?: string; visit?: string; meds: Med[] }[] = [
-  {
-    who: 'Me',
-    meds: [
-      { name: 'Vitamin D', how: '2000 IU', last: 'not taken since Tuesday, 3 Nov', doses: [false] },
-      { name: 'Magnesium', how: '2 tablets', last: 'last one 9 h 40 min ago', doses: [true, false, false] },
-    ],
-  },
-  {
-    who: 'Mom',
-    age: '67',
-    visit: 'Next visit: cardiologist, 16 Nov at 10:30',
-    meds: [
-      { name: 'Blood pressure pill', how: '5 mg · in the morning', last: 'taken today, 08:10', doses: [true] },
-      { name: 'Eye drops', how: 'right eye · 4 a day', last: '3 h ago', doses: [true, true, false, false] },
-    ],
-  },
+/** Only his own card and the water — read on 14.11.2026 off the live page (/medical)
+ *  with `pills_list` and `water_today`, at Yarik's word («show only my pills and
+ *  water»). Real: his two scheduled pills, their doses, the «last one … ago» lines
+ *  and the dose circles as the page drew them that evening; the water card's
+ *  numbers (sips done / due by now, litres, the split by drink, the goal) and its
+ *  wording. Left out on purpose: the children's profiles (names, ages, medicines,
+ *  doctors) — never to be shown — and his as-needed medicines. */
+type Med = { name: string; how?: string; last: string; doses: boolean[] };
+const MY_MEDS: Med[] = [
+  { name: 'Vitamin D', last: 'not taken since Tuesday, 3 Nov', doses: [false] },
+  { name: 'Valerian', how: '2 tablets', last: 'last one 4 h 27 min ago', doses: [true, false, false] },
 ];
+/** litres of the day's 2 L goal, in the order the bar stacks them */
+const DRUNK = [
+  { kind: 'water', label: 'Water', litres: 0.52 },
+  { kind: 'sweet', label: 'Sweet', litres: 0.66 },
+  { kind: 'coffee', label: 'Coffee', litres: 0.6 },
+];
+const WATER_GOAL = 2;
+const WATER_BY_NOW = 1.58;
 
 const Health = () => (
   <Page icon="health" name="Health">
     <div className="ww-ma__cols">
       <div className="ww-ma__col">
-        {PROFILES.map((profile) => (
-          <div key={profile.who} className="ww-ma__card ww-ma__card--flush">
-            <span className="ww-ma__profile">
-              <span className="ww-ma__who">
-                {profile.who} {profile.age && <L>{profile.age}</L>}
+        <div className="ww-ma__card ww-ma__card--flush">
+          <span className="ww-ma__profile">
+            <span className="ww-ma__who">Me</span>
+          </span>
+          {MY_MEDS.map((med) => (
+            <span key={med.name} className="ww-ma__row ww-ma__row--pad ww-ma__med">
+              <span className="ww-jg__itemtext">
+                <span>{med.name}</span>
+                {med.how && <L>{med.how}</L>}
+                <L>{med.last}</L>
               </span>
-              {profile.visit && <span className="ww-ma__sub">{profile.visit}</span>}
-              <span className="ww-ma__sub">Medicines stocked until 13 Nov</span>
+              <span className="ww-jg__doses" aria-hidden="true">
+                {med.doses.map((taken, i) => (
+                  <span key={i} className={taken ? 'ww-jg__dose ww-jg__dose--taken' : 'ww-jg__dose'}>
+                    {taken ? '✓' : ''}
+                  </span>
+                ))}
+              </span>
             </span>
-            {profile.meds.map((med) => (
-              <span key={med.name} className="ww-ma__row ww-ma__row--pad">
-                <span className="ww-jg__itemtext">
-                  <span>{med.name}</span>
-                  <L>
-                    {med.how} · {med.last}
-                  </L>
-                </span>
-                <span className="ww-jg__doses" aria-hidden="true">
-                  {med.doses.map((taken, i) => (
-                    <span key={i} className={taken ? 'ww-jg__dose ww-jg__dose--taken' : 'ww-jg__dose'} />
-                  ))}
-                </span>
-              </span>
-            ))}
-          </div>
-        ))}
-      </div>
-      <div className="ww-ma__col">
-        <div className="ww-ma__card">
-          <span className="ww-ma__row">
-            <L>Water today</L>
-            <L>goal 2 L</L>
-          </span>
-          <span className="ww-ma__big">
-            6 <L>/ 9 sips by now · ≈1.2 L</L>
-          </span>
-          <span className="ww-ma__bar" aria-hidden="true">
-            <span style={{ width: '60%' }} />
-          </span>
-          <span className="ww-ma__sub">A little behind the pace for 2 L a day</span>
-          <span className="ww-ma__actions">
-            <span className="ww-jg__new">Sip</span>
-            <span className="ww-ma__button">Coffee</span>
-            <span className="ww-ma__button">Sweet drink</span>
-          </span>
+          ))}
         </div>
         <L>A journal, not medical advice.</L>
       </div>
-    </div>
-  </Page>
-);
-
-/* ─── Nanny ───────────────────────────────────────────────────────────────── */
-
-const THIS_WEEK = [
-  { day: 'Mo', date: 9, sum: '2 400' },
-  { day: 'Tu', date: 10, sum: '2 400' },
-  { day: 'We', date: 11, sum: '2 400' },
-  { day: 'Th', date: 12, sum: '2 400' },
-  { day: 'Fr', date: 13, sum: '2 400' },
-  { day: 'Sa', date: 14, today: true },
-  { day: 'Su', date: 15, off: true },
-];
-const NEXT_WEEK = [16, 17, 18, 19, 20, 21, 22];
-const NANNY_ROWS = [
-  { what: 'Nanny', when: '13 Nov', sum: '−8 200 UAH' },
-  { what: "Nanny's expense", when: '13 Nov · balance 5 780 UAH', sum: '+75 UAH', back: true },
-  { what: "Nanny's expense", when: '12 Nov · balance 3 380 UAH', sum: '+950 UAH', back: true },
-];
-
-const Nanny = () => (
-  <Page icon="nanny" name="Nanny" aside={<L>240 UAH / hour</L>}>
-    <div className="ww-ma__cols ww-ma__cols--wide">
       <div className="ww-ma__col">
-        <span className="ww-ma__row">
-          <L>This week</L>
-          <L>12 000 UAH</L>
-        </span>
-        <span className="ww-ma__week">
-          {THIS_WEEK.map((cell) => (
-            <span
-              key={cell.date}
-              className={`ww-ma__weekday${cell.sum ? ' ww-ma__weekday--worked' : ''}${cell.today ? ' ww-ma__weekday--today' : ''}${
-                cell.off || cell.today ? ' ww-ma__weekday--off' : ''
-              }`}
-            >
-              <L>{cell.day}</L>
-              <span>{cell.date}</span>
-              <L>{cell.sum ?? '·'}</L>
-            </span>
-          ))}
-        </span>
-        <L>Next week</L>
-        <span className="ww-ma__week">
-          {NEXT_WEEK.map((date, i) => (
-            <span key={date} className={`ww-ma__weekday${i > 4 ? ' ww-ma__weekday--off' : ''}`}>
-              <L>{['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'][i]}</L>
-              <span>{date}</span>
-              <L>·</L>
-            </span>
-          ))}
-        </span>
-        <L>Payments</L>
-        <div className="ww-ma__card ww-ma__card--list">
-          {NANNY_ROWS.map((row, i) => (
-            <span key={i} className="ww-ma__row">
-              <span className="ww-jg__itemtext">
-                <span>{row.what}</span>
-                <L>{row.when}</L>
-              </span>
-              <span className={row.back ? 'ww-ma__sum ww-ma__sum--back' : 'ww-ma__sum'}>{row.sum}</span>
-            </span>
-          ))}
-        </div>
-      </div>
-      <div className="ww-ma__col">
-        <div className="ww-ma__card">
-          <L>Overpaid</L>
-          <span className="ww-ma__big ww-ma__big--good">−28 UAH</span>
-          <L>Settle up · + add an expense</L>
-          <L>— the nanny owes</L>
-        </div>
-        <div className="ww-ma__card">
-          <L>Planned (30 days)</L>
-          <span className="ww-ma__big">
-            48 000 UAH <L>200 h</L>
+        <div className="ww-ma__card ww-ma__water">
+          <span className="ww-ma__row">
+            <L>Water today</L>
+            <L>goal {WATER_GOAL} L</L>
           </span>
-        </div>
-        <div className="ww-ma__card">
-          <L>Cash (UAH)</L>
-          <span className="ww-ma__big">3 400 UAH</span>
+          <span className="ww-ma__row">
+            <span className="ww-ma__big">
+              89 <L>/ 79 sips by now</L>
+            </span>
+            <L tone="ink">≈1.78 L / {WATER_BY_NOW} L</L>
+          </span>
+          <span className="ww-ma__drunk" aria-hidden="true">
+            {DRUNK.map((part) => (
+              <span
+                key={part.kind}
+                className={`ww-ma__drunk--${part.kind}`}
+                style={{ width: `${(part.litres / WATER_GOAL) * 100}%` }}
+              />
+            ))}
+            <span className="ww-ma__drunktick" style={{ left: `${(WATER_BY_NOW / WATER_GOAL) * 100}%` }} />
+          </span>
+          <span className="ww-ma__sub">On pace · {WATER_GOAL} L a day</span>
+          <span className="ww-ma__actions">
+            {DRUNK.map((part) => (
+              <L key={part.kind}>
+                <span className={`ww-ma__dot ww-ma__drunk--${part.kind}`} aria-hidden="true" /> {part.label} {part.litres} L
+              </L>
+            ))}
+          </span>
+          <span className="ww-ma__actions">
+            <span className="ww-jg__new">Sip</span>
+            <span className="ww-ma__button">Coffee</span>
+            <span className="ww-ma__button">Sweet</span>
+            <L>− 1 sip</L>
+          </span>
         </div>
       </div>
     </div>
@@ -1180,23 +1169,31 @@ const Nanny = () => (
 
 /* ─── Threat forecast ─────────────────────────────────────────────────────── */
 
-/** The 21-day ribbon: one cell a slot, coloured by what happened in it. */
-const RIBBON = 'mmmmommmmmmmoomvmmmmmmmmommmoommmmmmvommmmmmmmommmmmoommmmvmmm'.split('');
+/** Kyiv as the real page (/attack, the «Київ» tab) showed it on the evening of
+ *  14.11.2026 — copied at Yarik's word, read off the live page and `attack_list`:
+ *  no alert for 10 h 35 min, the assessment prepared at 21:06, and the two classes
+ *  at the top of its list with their real levels (the page has twelve; ten more
+ *  were low or none). The rationales are the agent's own, translated from Ukrainian
+ *  and cut to their first argument. Left out: the «where you are now» card (it
+ *  names where he really is) and the city switch. The map is his own screenshot
+ *  of the page's embedded alert map that evening (src/assets/threat/): Chernihiv
+ *  region under alert, one drone marked in it, Kyiv below, clear.
+ *  The 21-day ribbon: the page draws alerts as a continuous strip; here it is
+ *  sampled into 63 cells — m calm, o an alert, v a strike-heavy stretch. */
+const RIBBON = 'vommmvmmmvmmmmmvmmomooommmovmmoommmommovommmmoommommmmmommmmmmm'.split('');
 const CLASSES = [
   {
-    name: 'Attack drones',
+    name: 'Ballistic (Iskander-M / KN-23 / S-400)',
     level: 2,
-    why: 'MID: a third wave in three hours — at 22:42 a group passed east of the city. The channels agree on the course; no hits confirmed.',
-    marks: 'not guessed 13 times of 63',
+    why: 'MID: the 21:00 register names up to 40 missiles, the city of Kyiv among the main targets; the US 48-hour warning still stands. Not HIGH: no launchers on the line, no target on the city.',
   },
   {
-    name: 'Cruise missiles',
-    level: 2,
-    why: 'MID: the 21:17 post names three carriers at sea, a first this week. No launches; the usual window is after 03:00.',
-    marks: 'not guessed 4 times of 63',
+    name: 'Jet Shahed / Geran-4/5',
+    level: 1,
+    why: 'LOW: no new target on the capital — the jets crossed Kyiv region in transit, no alert in the city.',
   },
 ];
-const LEVELS = ['Low', 'Medium', 'High', 'Very high'];
+const LEVELS = ['Low', 'Medium', 'High'];
 
 const Ribbon = ({ cells = RIBBON }: { cells?: string[] }) => (
   <>
@@ -1213,51 +1210,36 @@ const Ribbon = ({ cells = RIBBON }: { cells?: string[] }) => (
 );
 
 const Threat = () => (
-  <Page icon="alert" name="Threat forecast" aside={<L>air threat for the next 24 hours</L>}>
-    <div className="ww-ma__card ww-ma__card--warn ww-ma__card--slim">
-      <span className="ww-ma__row">
-        <span className="ww-jg__itemtext">
-          <L>Where you are now</L>
-          <span>Podilskyi district, Kyiv</span>
-        </span>
-        <L tone="danger">● Alert · 34 min</L>
-      </span>
-    </div>
+  <Page icon="alert" name="Threat forecast" aside={<L>air threat for Kyiv · the next 24 hours</L>}>
     <div className="ww-ma__cols ww-ma__cols--wide">
       <div className="ww-ma__col">
-        <div className="ww-ma__card ww-ma__card--warn">
+        <div className="ww-ma__card ww-ma__card--calm">
           <span className="ww-ma__row">
             <span className="ww-jg__itemname">Kyiv</span>
-            <L>assessment prepared 13 Nov at 23:21</L>
+            <L tone="ink">No alert · 10 h 35 min</L>
           </span>
           <Ribbon />
         </div>
+        <L>Assessment prepared 14 Nov at 21:06</L>
         {CLASSES.map((weapon) => (
           <div key={weapon.name} className="ww-ma__card">
             <span className="ww-ma__row">
               <span className="ww-jg__itemname">{weapon.name}</span>
-              <L tone="time">{LEVELS[weapon.level - 1]}</L>
+              <L tone={weapon.level > 1 ? 'time' : undefined}>{LEVELS[weapon.level - 1]}</L>
             </span>
-            <span className="ww-ma__level" aria-hidden="true">
+            <span className={`ww-ma__level${weapon.level === 1 ? ' ww-ma__level--low' : ''}`} aria-hidden="true">
               {LEVELS.map((level, i) => (
                 <span key={level} className={i < weapon.level ? 'ww-ma__level--on' : undefined} />
               ))}
             </span>
             <p>{weapon.why}</p>
-            <L>{weapon.marks}</L>
+            <L>Disagree with the level</L>
           </div>
         ))}
       </div>
       <div className="ww-ma__col">
         <L>Alert map</L>
-        <svg className="ww-ma__alertmap" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-          <rect width="100" height="100" className="ww-ma__mapnight" />
-          <path className="ww-ma__region" d="M-5 20 L30 12 L48 26 L40 48 L12 52 L-5 44Z" />
-          <path className="ww-ma__region" d="M48 26 L78 18 L105 30 L105 58 L70 60 L40 48Z" />
-          <path className="ww-ma__region ww-ma__region--alert" d="M12 52 L40 48 L70 60 L62 86 L30 92 L8 78Z" />
-          <path className="ww-ma__region" d="M70 60 L105 58 L105 100 L62 100 L62 86Z" />
-          <circle className="ww-ma__here" cx="42" cy="66" r="3" />
-        </svg>
+        <img className="ww-ma__alertmap" src={droneMap} alt="" />
       </div>
     </div>
   </Page>
@@ -1265,36 +1247,238 @@ const Threat = () => (
 
 /* ─── Home ────────────────────────────────────────────────────────────────── */
 
-/** The cards on the floor plan: where (in % of the plan), what, and its reading. */
-const DEVICES: { at: [number, number]; name: string; value: string; note?: string; bad?: boolean }[] = [
-  { at: [8, 8], name: 'Power', value: 'On · 5 h', note: 'outage schedule not updated' },
-  { at: [52, 6], name: 'Internet', value: '99.9% uptime' },
-  { at: [10, 40], name: 'Power station · hall', value: '100%' },
-  { at: [50, 36], name: 'Backup router', value: 'Poor · RSRP −104', note: 'restarted 1 day ago', bad: true },
-  { at: [10, 70], name: 'Power station · study', value: '99%' },
-  { at: [38, 72], name: 'Camera', value: 'Front door' },
-  { at: [66, 70], name: 'Who is home?', value: 'Nobody detected' },
+/** His Kyiv flat, as the real page (/home, its first house) drew it on the evening
+ *  of 14.11.2026 — at Yarik's word («use my Kyiv home — it's cooler»). Real: the
+ *  walls (the plan's own segments, viewBox 1304 × 932, read off the page's SVG and
+ *  chained into polylines), where each card sits on the plan (% of it), and every
+ *  reading. Left out on purpose: the house switch's street names, the address, the
+ *  rent and the utilities line. */
+const FLAT_WALLS = [
+  '351 368 351 727 480 727 480 671',
+  '442 280 442 80 1217 173 1217 351',
+  '1217 405 1217 514 884 514',
+  '480 599 480 514 808 514',
+  '480 554 565 554 565 712 480 712',
+  '758 514 758 637',
+  '758 695 758 779 758 818 1249 818 1217 514',
+  '758 554 623 554 623 697 623 718 758 718',
+  '775 311 714 311 714 377 755 377 775 377 775 311',
+  '1217 262 1278 262 1278 463 1217 463',
+  '30 223 30 54 63 53 332 53',
+  '30 223 30 256 135 256 135 367 351 368',
+  '442 280 442 380 421 380',
+  '332 53 332 124 366 124',
+  '383 368 366 124',
+  '379 283 442 280',
 ];
+/** The cards on the floor plan: where (in % of the plan), what, and its reading —
+ *  and what the page opens under the plan when the card is clicked (read by
+ *  clicking each one that evening; translated, the longest panels cut to their
+ *  first screen). Kept off the slide: the family's names in «Who is home?», the
+ *  Wi-Fi network's name and the access point's address, serial numbers — and the
+ *  «Who is home?» card altogether, at Yarik's word. */
+type Device = {
+  at: [number, number];
+  name: string;
+  value: string;
+  note?: string;
+  bad?: boolean;
+  /** what the click opens; a card without it stays on the plan but is not clicked
+   *  (the three room sensors open the same panel — one is enough, at Yarik's word) */
+  about?: string;
+  /** the panel's 24-hour charts: the reading now, its range over the day, and the
+   *  curve — the page's own line (viewBox 100 × 56, y down), kept as the points
+   *  where it changes level and drawn as steps */
+  charts?: { label: string; now: string; range: string; line: string }[];
+  rows?: [string, string][];
+  foot?: string;
+};
+const DEVICES: Device[] = [
+  {
+    at: [10, 7.1],
+    name: 'Study',
+    value: '20° · 49.3%',
+  },
+  {
+    at: [57.1, 15],
+    name: 'Living room',
+    value: '21.4° · 44.8%',
+    about: 'Online · the last 24 hours',
+    charts: [
+      { label: 'Temperature', now: '21.4°C', range: '21.1°C – 21.4°C', line: '0 51,39 36,48 20,56 5,100 5' },
+      { label: 'Humidity', now: '44.8%', range: '44.8% – 46.4%', line: '0 5,5 11,14 14,22 22,31 31,39 36,48 39,56 36,73 45,91 48,100 51' },
+    ],
+    rows: [
+      ['Humidity alert', 'below 40% · not active'],
+      ['Temperature alert', 'above 23.5°C · not active'],
+    ],
+  },
+  {
+    at: [73.4, 61.7],
+    name: 'Bedroom',
+    value: '21.4° · 44.4%',
+  },
+  {
+    at: [30.6, 16],
+    name: 'Fridge',
+    value: '9.1°',
+    about: 'Online · the last 24 hours',
+    charts: [
+      { label: 'Temperature', now: '9.1°C', range: '8.8°C – 9.4°C', line: '0 13,1 28,2 43,7 20,9 36,25 51,27 43,29 13,32 28,33 51,35 36,42 43,45 13,48 20,51 36,56 28,59 13,62 20,66 13,74 5,76 28,85 36,86 20,91 28,100 28' },
+    ],
+    rows: [
+      ['Temperature alert', 'above 15°C · not active'],
+    ],
+  },
+  {
+    at: [16.2, 29.2],
+    name: 'Vacuum',
+    value: 'At the dock',
+    about: 'Dreame L10 Ultra · checked 22:52',
+    rows: [
+      ['State', 'At the dock'],
+      ['Battery', '100%'],
+      ['Task', 'Finished'],
+      ['Error', 'No errors'],
+      ['Water level', 'No warnings'],
+    ],
+    foot: 'Start cleaning · Pause · To the dock · Clean one room',
+  },
+  {
+    at: [37.7, 47.5],
+    name: 'Washer',
+    value: 'Offline',
+    bad: true,
+    about: 'Electrolux · washing and drying',
+    rows: [
+      ['Now', 'Not connected · readings hidden'],
+      ['Last wash', 'Washed successfully'],
+      ['Programme', 'Cotton'],
+      ['Started', '7 Nov at 07:15'],
+      ['Finished', '7 Nov at 10:39'],
+      ['Took', '3 h 24 min'],
+    ],
+  },
+  {
+    at: [7.1, 82.3],
+    name: 'Internet',
+    value: '100% uptime',
+    about: 'Measured 1 min ago · the last 5 min',
+    rows: [
+      ['Signal', '−66 dBm'],
+      ['Link rate', '351 Mbit/s'],
+      ['To the router', '17 ms'],
+      ['To the internet', '17 ms'],
+      ['Loss', '0%'],
+      ['DNS · HTTPS', '2/2 · 2/2'],
+      ['Speed test, every 6 h', '↓ 18 · ↑ 114 Mbit/s'],
+    ],
+  },
+  {
+    at: [0, 63],
+    name: 'Power',
+    value: 'On · 7 h',
+    note: 'outage possible until 01:30',
+    about: 'Power is on · can be cut at any moment',
+    charts: [
+      { label: 'Voltage', now: '235 V', range: '0 – 247 V', line: '0 7,4 8,5 7,7 6,8 7,15 6,17 8,34 7,38 8,42 7,48 8,53 19,55 51,70 30,71 8,72 7,75 9,77 7,81 8,82 9,83 8,88 7,90 8,92 9,93 8,96 9,99 8,100 7' },
+    ],
+    rows: [
+      ['On for', '7 h'],
+      ['Outage window', 'lasts until 01:30'],
+      ['Tomorrow', '11:00 – 14:30'],
+      ['', '19:30 – 23:00'],
+    ],
+  },
+  {
+    at: [42.2, 28],
+    name: 'EcoFlow 2',
+    value: '98%',
+    about: 'DELTA 2 + extra battery · at 22:52',
+    rows: [
+      ['Charge', '98% · ≈ 2 019 Wh of 2 048'],
+      ['Grid', 'On · 234 V · 50 Hz'],
+      ['Without the grid', '~59 h at this load'],
+      ['In → out', '32 W → 32 W'],
+      ['Health', '99% · 80 cycles'],
+      ['Battery · inverter', '31 °C · 46 °C'],
+    ],
+  },
+];
+/** «x y,x y,…» change points → a stepped polyline: hold the level, then jump. */
+const stepLine = (line: string) =>
+  line
+    .split(',')
+    .map((point, i, all) => (i === 0 ? point : `${point.split(' ')[0]} ${all[i - 1].split(' ')[1]} ${point}`))
+    .join(' ');
+/** how long the frame rests on each card before it clicks the next one */
+const HOME_MS = 3000;
+/** the cards the frame clicks, in order */
+const HOME_WALK = DEVICES.filter((device) => device.about);
+/** the walk ends — and the PDF rests — on the last card */
+export const HOME_WALK_MS = (HOME_WALK.length - 1) * HOME_MS;
 
-const Home = () => (
-  <Page icon="home" name="Home">
-    <Buttons items={['Flat', 'Rental', 'Country house']} on="Country house" />
-    <span className="ww-ma__actions">
-      <L>Rent · 1 000 USD a month · on the 20th</L>
-      <L>Address for routes · 14 Sadova St ✎</L>
-    </span>
-    <div className="ww-ma__plan">
-      {DEVICES.map((device) => (
-        <div key={device.name} className="ww-ma__device" style={{ left: `${device.at[0]}%`, top: `${device.at[1]}%` }}>
-          <L>{device.name}</L>
-          <span className={device.bad ? 'ww-ma__reading ww-ma__reading--bad' : 'ww-ma__reading'}>{device.value}</span>
-          {device.note && <L>{device.note}</L>}
+const Home = ({ t = 0 }: { t?: number }) => {
+  const open = HOME_WALK[Math.min(Math.floor(t / HOME_MS), HOME_WALK.length - 1)];
+  return (
+    <Page icon="home" name="Home" aside={<Buttons items={['Flat', 'Rental', 'Country house']} on="Flat" />}>
+      <div className="ww-ma__cols ww-ma__cols--home">
+        <div className="ww-ma__plan">
+          <div className="ww-ma__flat">
+            <svg viewBox="0 0 1304 932" aria-hidden="true">
+              {FLAT_WALLS.map((wall) => (
+                <polyline key={wall} points={wall} />
+              ))}
+            </svg>
+            {DEVICES.map((device) => (
+              <div
+                key={device.name}
+                className={`ww-ma__device${device === open ? ' ww-ma__device--on' : ''}`}
+                style={{ left: `${device.at[0]}%`, top: `${device.at[1]}%` }}
+              >
+                <L>{device.name}</L>
+                <span className={device.bad ? 'ww-ma__reading ww-ma__reading--bad' : 'ww-ma__reading'}>{device.value}</span>
+                {device.note && <L>{device.note}</L>}
+              </div>
+            ))}
+          </div>
         </div>
-      ))}
-    </div>
-    <L>Drag a card with the cursor; on a touch screen press «Arrange the cards» first.</L>
-  </Page>
-);
+        <div key={open.name} className="ww-ma__card ww-ma__card--list ww-ma__detail ww-jg__arrive">
+          <span className="ww-jg__itemtext ww-ma__detailhead">
+            <span className="ww-ma__who">{open.name}</span>
+            <L>{open.about}</L>
+          </span>
+          {open.charts?.map((chart) => (
+            <span key={chart.label} className="ww-ma__chart24">
+              <span className="ww-ma__row">
+                <L>{chart.label}</L>
+                <span>{chart.now}</span>
+              </span>
+              <svg viewBox="0 -3 100 62" preserveAspectRatio="none" aria-hidden="true">
+                <polyline points={stepLine(chart.line)} />
+              </svg>
+              <span className="ww-ma__row">
+                <L>24 h</L>
+                <L>{chart.range}</L>
+              </span>
+            </span>
+          ))}
+          {open.rows?.map(([label, value]) => (
+            <span key={label + value} className="ww-ma__row">
+              <L>{label}</L>
+              <span className={open.bad && label === 'Now' ? 'ww-ma__reading--bad' : undefined}>{value}</span>
+            </span>
+          ))}
+          {open.foot && (
+            <span className="ww-ma__row">
+              <L>{open.foot}</L>
+            </span>
+          )}
+        </div>
+      </div>
+    </Page>
+  );
+};
 
 /* ─── Routes ──────────────────────────────────────────────────────────────── */
 
@@ -1669,6 +1853,106 @@ function CoffeeBirth({ moment, t }: { moment: number; t: number }) {
   );
 }
 
+/* ─── …and how Home was born: the real task ───────────────────────────────── */
+
+/** The Home page's device cards did not start as «build me a smart-home page». They
+ *  started as one question in the queue — task 6a0e0cfa, «Can you list all devices
+ *  connected to my home WiFi?», 31.08.2026 — and grew over two weeks of his replies
+ *  in that same thread (read on 14.11.2026 with `get_task_comments`). What is real
+ *  here: the title, the id, the dates, his replies (translated from Ukrainian, the
+ *  second shortened), the scan's method and count (three ping sweeps, the ARP
+ *  cache, 14 devices, 5 unidentified), Home Assistant private on Railway, the
+ *  Dreame integration and its version. Compressed for the stage: the thread has
+ *  50+ comments (router screenshots, cloud accounts, permissions asked and given)
+ *  and the page's cards were built across later tasks too — the last report here
+ *  stands for all of that, and the notes say so. The tool lines are the kind of
+ *  calls it made, not a transcript. */
+const HOME_SCAN_STREAM = ['Bash(ping sweep 192.168.0.1–254, three passes)', 'Bash(arp -a)', 'Write(home-network.html)'];
+const HOME_BUILD_STREAM = [
+  'Bash(railway up · home-assistant, private)',
+  'Bash(install dreame-vacuum v2.0.0b25)',
+  'Edit(miniapps/home/src/mcp.ts)',
+  'Write(apps/web/src/components/home-plan.tsx)',
+  'Bash(railway up --ci)',
+];
+/** asked · the agent scans · the inventory · «what can each one tell us?» · the
+ *  answer · «Home Assistant on Railway» · the agent builds · done, the row is in the
+ *  sidebar · the app opens the page */
+const HOME_BIRTH_MS = (() => {
+  const scanned = 1400 + (HOME_SCAN_STREAM.length + 1) * STREAM_MS;
+  const asked = scanned + 2800;
+  const answered = asked + 2200;
+  const decided = answered + 2400;
+  const building = decided + 1800;
+  const built = building + (HOME_BUILD_STREAM.length + 1) * STREAM_MS;
+  return [0, 1400, scanned, asked, answered, decided, building, built, built + 2600] as const;
+})();
+const HOME_BORN_MS = HOME_BIRTH_MS[HOME_BIRTH_MS.length - 1];
+
+function HomeBirth({ moment, t }: { moment: number; t: number }) {
+  const agentHasIt = moment <= 1 || moment === 3 || moment === 5 || moment === 6;
+  return (
+    <div className="ww-jg__page ww-ma__task">
+      <span className="ww-jg__title">Can you list all devices connected to my home WiFi?</span>
+      <span className="ww-jg__label">ID 6a0e0cfa</span>
+      <Fields
+        fields={[
+          agentHasIt
+            ? { label: 'Status', value: 'In progress', tone: 'time' }
+            : { label: 'Status', value: 'Paused', tone: 'hold' },
+          { label: 'Priority', value: 'Low' },
+          { label: 'Assignee', value: agentHasIt ? 'Claude Code' : '@me' },
+          { label: 'Created', value: 'Aug 31' },
+        ]}
+      />
+      <div className="ww-jg__timeline ww-jg__timeline--fade">
+        {moment === 7 && (
+          <div className="ww-jg__arrive" key="built">
+            <Comment who="Claude Code" tag="Session report" when="Sep 13">
+              <p>
+                Done: Home Assistant runs privately on Railway, the vacuum is connected — and every device is a card
+                on the plan of the flat: myclaw.app/home.
+              </p>
+            </Comment>
+          </div>
+        )}
+        {moment === 6 && <InFlight key="building" lines={HOME_BUILD_STREAM} since={HOME_BIRTH_MS[6]} t={t} />}
+        {moment >= 5 && (
+          <div className="ww-jg__arrive" key="decided">
+            <Comment who="@me" when="Sep 12" plain>
+              <p>
+                <strong>OK, let&apos;s set up Home Assistant on Railway.</strong>
+              </p>
+            </Comment>
+          </div>
+        )}
+        {moment >= 4 && (
+          <div className="ww-jg__arrive" key="answered">
+            <Comment who="Claude Code" tag="Session report" when="Sep 10">
+              <p>Researched what each device opens on the local network, beyond the Shelly ones — the table is in the artifact.</p>
+            </Comment>
+          </div>
+        )}
+        {moment >= 3 && (
+          <div className="ww-jg__arrive" key="asked">
+            <Comment who="@me" when="Sep 7" plain>
+              <p>And what information can we pull out of each device? Which APIs do they open on the local network?</p>
+            </Comment>
+          </div>
+        )}
+        {moment >= 2 && (
+          <div className="ww-jg__arrive" key="inventory">
+            <Comment who="Claude Code" tag="Session report" when="Sep 2">
+              <p>Scanned the home network and made an inventory: 14 devices. Five of them I could not identify.</p>
+            </Comment>
+          </div>
+        )}
+        {moment <= 1 && <InFlight key="scanning" lines={HOME_SCAN_STREAM} since={HOME_BIRTH_MS[1]} t={t} />}
+      </div>
+    </div>
+  );
+}
+
 /* ─── The slide ───────────────────────────────────────────────────────────── */
 
 type Miniapp = {
@@ -1689,7 +1973,6 @@ const MINIAPPS: Miniapp[] = [
   { name: 'Books', icon: 'books', path: 'books', section: 'Daily', page: Books },
   { name: 'Movies', icon: 'movies', path: 'movies', section: 'Daily', page: Movies },
   { name: 'Health', icon: 'health', path: 'health', section: 'Daily', page: Health },
-  { name: 'Nanny', icon: 'nanny', path: 'nanny', section: 'Daily', page: Nanny },
   { name: 'Threat forecast', icon: 'alert', path: 'threats', section: 'Miniapps', page: Threat },
   { name: 'Home', icon: 'home', path: 'home', section: 'Miniapps', page: Home },
   { name: 'Routes', icon: 'routes', path: 'routes', section: 'Miniapps', page: Routes },
@@ -1736,22 +2019,30 @@ function Scene({ stage }: { stage: number }) {
   // the mobile frame plays on the same per-frame clock
   const phone = frame.mobile ? PHONE_MS.reduce<number>((m, at, i) => (tStage >= at ? i : m), 0) : undefined;
   const silpo = frame.silpo ? SILPO_MS.reduce<number>((m, at, i) => (tStage >= at ? i : m), 0) : undefined;
+  // Home is the second page with a birth: its frame replays the real task it grew
+  // out of, on the per-frame clock, and only then opens the page and walks its cards
+  const homeBirth = current.name === 'Home';
+  const hMoment = HOME_BIRTH_MS.reduce<number>((m, at, i) => (tStage >= at ? i : m), 0);
+  const hBorn = !homeBirth || tStage >= HOME_BORN_MS;
   useAnimating(
     (stage === 1 && !born) ||
       (silpo !== undefined && silpo < SILPO_MS.length - 1) ||
       (!!current.tour && step <= current.tour.length) ||
+      (homeBirth && tStage < HOME_BORN_MS + HOME_WALK_MS) ||
       (phone !== undefined && phone < PHONE_MS.length - 1),
   );
   // the row exists from the moment the agent reports it built the page
-  const rows = stage === 1 && moment < 5 ? 0 : frame.app + 1;
-  const onPage = stage > 1 || born;
+  const rows = stage === 1 && moment < 5 ? 0 : homeBirth && hMoment < 7 ? frame.app : frame.app + 1;
+  const onPage = (stage > 1 || born) && hBorn;
   return (
     <>
       <Browser
         url={
           onPage
             ? `myclaw.app/${sub > 0 && current.tour ? current.tour[sub - 1].path : current.path}`
-            : 'myclaw.app/tasks/91c4e7a0'
+            : homeBirth
+              ? 'myclaw.app/tasks/6a0e0cfa'
+              : 'myclaw.app/tasks/91c4e7a0'
         }
       >
         <App
@@ -1762,7 +2053,15 @@ function Scene({ stage }: { stage: number }) {
           dense
         >
           {onPage ? (
-            <CurrentPage key={current.name} sub={sub} phone={phone} silpo={silpo} t={tStage} />
+            <CurrentPage
+              key={current.name}
+              sub={sub}
+              phone={phone}
+              silpo={silpo}
+              t={homeBirth ? Math.max(0, tStage - HOME_BORN_MS) : tStage}
+            />
+          ) : homeBirth ? (
+            <HomeBirth moment={hMoment} t={tStage} />
           ) : (
             <CoffeeBirth moment={moment} t={t} />
           )}
@@ -1831,24 +2130,44 @@ export const MiniappsSlide: SlideDefinition = {
     + 'shelf. The four lines are from my real order of 13 November — real names, prices and pack '
     + 'sizes; the app\'s screen is drawn after my own phone, translated into English — I had an '
     + 'empty cart and a placed order to go by, so a filled cart is those two combined. '
-    + '[4] Books — what I read, how far, three weeks as a heatmap, and a duel that ranks my shelf. '
-    + '[5] Movies — the next episode to tick, where it streams, my own stars. '
-    + '[6] Health — who takes what and whether they took it today, and water. '
-    + '[7] Nanny — her week, what I owe her, what she spent. '
-    + '[8] Threat forecast — is there an air alert now, 21 days of them, and the next 24 hours per '
-    + 'weapon class with the reasoning, from the channels the agent reads. '
-    + '[9] Home — the house on a floor plan: power, internet, the batteries. '
-    + '[10] Routes — the next 24 hours: when to leave, by what, in what weather. '
-    + '[11] Sleep — regularity and a score per night. '
-    + '[12] Sport — steps, three weeks, workouts (say it: one in eight weeks). '
-    + '[13] Music — what I listen to, and duels that rank my top hundred. '
-    + '[14] Family tree — what the agents dug up in the archives this month. '
-    + 'There are more: work hours, important dates, my sole-proprietor books, a wall display. '
+    + '[4] Books — the two I am reading now and how far, and my real '
+    + 'ranking: the five-star books first, ordered by the duels the page asks me («which of these '
+    + 'is better?»). Real titles, real progress, real order, as of 14 November. '
+    + '[5] Movies — just one corner of the page: what to watch next. The agent argues from my own '
+    + 'ratings, names the risk, and I answer with one button — Add or Not this. Honest: the card is '
+    + 'the product\'s, but these two titles are MY recommendations to you — The Rehearsal and You Can '
+    + 'See Everything, both Nathan Fielder — and the pitches are written for this slide. '
+    + '[6] Health — only my own corner of it: the pills I take and whether I took them today, and '
+    + 'water — sips against the pace for 2 L a day, split into water, sweet and coffee. Real, as '
+    + 'of the evening of 14 November. (The family\'s profiles are on the real page and not here.) '
+    + '[7] Threat forecast — Kyiv exactly as my page showed it on the evening of 14 November: no '
+    + 'alert for ten hours, 21 days of alerts as a ribbon, and the next 24 hours per weapon class — '
+    + 'twelve of them, two shown — each with the agent\'s reasoning from the channels it reads, and '
+    + 'a button to disagree with the level. (Rationales translated and shortened.) The map is a '
+    + 'screenshot of that evening: Chernihiv region under alert with a drone in it, Kyiv clear. '
+    + '[8] Home — and this one shows where it came from, like Coffee did. The frame first replays '
+    + 'the real task, about twenty seconds: on 31 August I asked one question — «can you list all '
+    + 'devices connected to my home WiFi?». It scanned: 14 devices, five it could not name. I asked '
+    + 'what each of them can tell us; then «let\'s set up Home Assistant on Railway». Two weeks, one '
+    + 'thread — and then the page opens: my flat in Kyiv on its real floor plan, and the frame '
+    + 'clicks through the cards by itself, three seconds each: the living room\'s temperature and '
+    + 'humidity with their 24-hour curves, the fridge, the vacuum, the washer (offline since its last '
+    + 'wash), internet, power — the dip in the voltage chart is a real outage — and the battery: 59 '
+    + 'hours without the grid. Real readings, the evening of 14 November. Honest: the task is real '
+    + '— its title, dates and my replies (translated) — but compressed: the thread has fifty-odd '
+    + 'comments, and the cards were built over later tasks too. '
+    + '[9] Routes — the next 24 hours: when to leave, by what, in what weather. '
+    + '[10] Sleep — regularity and a score per night. '
+    + '[11] Sport — steps, three weeks, workouts (say it: one in eight weeks). '
+    + '[12] Music — what I listen to, and duels that rank my top hundred. '
+    + '[13] Family tree — what the agents dug up in the archives this month. '
+    + 'There are more: the nanny\'s hours, work hours, important dates, my sole-proprietor books, a wall display. '
     + 'None of them is a chat. Every one of them started as a task. So chat is no longer the only '
     + 'UX — it is the one I use when nothing better exists yet. '
     + 'Honest about the picture: recreations of the real pages — their sections and controls are the '
-    + 'real ones — with invented data, because the real ones hold my real life. The exception is '
-    + 'Coffee: those are my real bags and my own photos of them (the verdicts are sharpened — in '
-    + 'real life I have mostly said «OK»). The birth of Coffee is staged; the real page was built '
-    + 'the same way, over more than one task.',
+    + 'real ones. Coffee, Supplies, Books, Health, the Threat forecast and Home carry my real data (Coffee\'s verdicts are '
+    + 'sharpened — in real life I have mostly said «OK»; Health shows only my own card); Movies is '
+    + 'my two picks in the product\'s card; the rest have invented data, because the real ones hold '
+    + 'my real life. The birth of Coffee is staged; the real page was built the same way, over more '
+    + 'than one task.',
 };
