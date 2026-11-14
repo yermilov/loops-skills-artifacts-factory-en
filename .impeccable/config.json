@@ -11,6 +11,12 @@
         ],
         "createdAt": "2026-11-11T22:55:40.501Z",
         "reason": "agent decided: the mint left edge is this deck's documented code-panel pattern (design-system skill: 'code on the grey panel with a mint edge'; same rule at components.css:188 and slide-layouts.css:961)"
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-11-14T11:14:06.827Z",
+        "reason": "agent triage: Inter Tight is the small-print face embedded in the conference's WAWTECH_Template_white (src/index.css comment); fonts.css is a generated local mirror of the existing Google Fonts import"
       }
     ]
   }
