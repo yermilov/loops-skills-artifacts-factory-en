@@ -2,6 +2,7 @@ import { SlideDefinition } from '../types/slides';
 import { CornerRings } from '../components/wawtech';
 import { useAnimating } from '../components/frameSettled';
 import { useClock } from './BootstrapSlide';
+import herdrLogo from '../assets/herdr/logo.svg';
 
 /**
  * SCHEMATIC — the flow after «How do we improve it?», parked as three
@@ -62,7 +63,7 @@ export const TalkPrepSlide: SlideDefinition = {
  *  (Hono on Bun, Postgres + PowerSync on Railway, the MCP server at /api/mcp, the
  *  Capacitor app), 26 folders under miniapps/, routes/wall.tsx («on a tablet or a
  *  TV»), apps/cli/src/start.ts (the runner) and the hosts the server code calls
- *  (Monobank, Spotify, Google Maps, Open-Meteo, TMDB, Discogs, the air-raid feed,
+ *  (Monobank, Spotify, Google Maps, Open-Meteo, TMDB, Discogs, Open Library,
  *  Home Assistant). «280+» is a count of tool names in the MCP route files.
  *  Android Auto is on his word — it is not in that repository.
  *  The box is 1696 × 904 and everything in it is placed in px, so the paths below
@@ -91,7 +92,7 @@ const placeOf = (screen: { row: number; at?: [x: number, y: number] }) => {
 };
 
 /** `owner` is the laptop whose own clock lights the line (laptops need not move in step). */
-type Link = { id: string; d: string; steps: number[]; owner?: number; rail?: boolean; tip?: boolean; both?: boolean; token?: boolean | 'report' };
+type Link = { id: string; d: string; steps: number[]; owner?: number; fresh?: boolean; rail?: boolean; tip?: boolean; both?: boolean; token?: boolean | 'report' };
 type ScreenKind = 'web' | 'phone' | 'term' | 'claude' | 'car' | 'tablet' | 'tv';
 type Icon = readonly [name: string, d: string];
 
@@ -104,11 +105,17 @@ type Scene = {
   screens: { kind: ScreenKind; label: string; row: number; asks?: true; aside?: true; at?: [x: number, y: number]; flip?: true }[];
   /** connections that are simply there, not steps: the chat glyph into the laptop's chat
    *  column, the phone driving that chat. A `label` is written at `at` */
-  wires?: { d: string; label?: string; at?: [x: number, y: number] }[];
+  wires?: { d: string; label?: string; at?: [x: number, y: number]; one?: true; of?: string }[];
+  /** the devices at home a laptop reads by itself: a row of icons standing at `at` */
+  home?: { at: [x: number, y: number]; width: number; icons: Icon[] };
+  /** …and what the phone app reads on the phone itself, drawn the same way */
+  health?: { at: [x: number, y: number]; width: number; icons: Icon[] };
   /** which of ON_SERVER stand in the cloud beside the server */
   onServer: string[];
   /** the server's own integrations, under it */
   services: boolean;
+  /** where they stand when not under the server, and the line that leads to them */
+  servicesAt?: { left: number; top: number; width: number; rail: string };
   /** three lines of their own: `poll` and `report` run laptop → server, `task` server → laptop;
    *  `reach` goes to what the agent is connected to; `ask` is the chat on that laptop
    *  putting a new task into the queue */
@@ -138,8 +145,12 @@ type Scene = {
   hands: readonly Icon[];
   /** the name written beside the line that leads to them */
   handsBy?: { label: string; at: [x: number, y: number] };
+  /** what this scene ADDS to the one before it, lit a little so the eye finds it (Yarik,
+   *  16.11.2026): `screen:<kind>`, `laptop:<name>`, `daemon`, `miniapps`, `home` */
+  fresh?: string[];
   /** more words written on the picture */
-  notes?: { label: string; at: [x: number, y: number] }[];
+  /** `of` names the `fresh` key a note or a wire belongs to: it is lit with it */
+  notes?: { label: string; at: [x: number, y: number]; of?: string }[];
   /** `n` is the step that lights it; `shown` is the number written, when it differs */
   /** …and `owner` the laptop whose clock it follows, when not the first */
   badges: [n: number, x: number, y: number, shown?: number, owner?: number][];
@@ -147,25 +158,29 @@ type Scene = {
 
 /** A line is drawn in the direction its task travels; `steps` are the ones that light it. */
 function linksOf(scene: Scene): Link[] {
+  const fresh = (key?: string) => !!key && !!scene.fresh?.includes(key);
   return [
     // every screen → the server (only the asking one is walked, in step 1) …
     ...scene.screens.filter((screen) => !screen.aside).map((screen) => {
       const at = placeOf(screen);
-      return { id: `in-${screen.kind}`, d: curve(at.x + 118, at.y + 41, HUB[0], HUB[1]), steps: screen.asks ? [1] : [], rail: true, token: true };
+      return { id: `in-${screen.kind}`, d: curve(at.x + 118, at.y + 41, HUB[0], HUB[1]), steps: screen.asks ? [1] : [], rail: true, token: true, fresh: fresh(`screen:${screen.kind}`) };
     }),
     // … and the server → every screen, in step 6
     ...scene.screens.filter((screen) => !screen.aside).map((screen) => {
       const at = placeOf(screen);
-      return { id: `out-${screen.kind}`, d: curve(HUB[0], HUB[1], at.x + 126, at.y + 41), steps: [6], tip: true, token: true };
+      return { id: `out-${screen.kind}`, d: curve(HUB[0], HUB[1], at.x + 126, at.y + 41), steps: [6], tip: true, token: true, fresh: fresh(`screen:${screen.kind}`) };
     }),
-    ...(scene.wires ?? []).map((wire, i) => ({ id: `wire-${i}`, d: wire.d, steps: [], rail: true, tip: true, both: true })),
+    ...(scene.wires ?? []).map((wire, i) => ({ id: `wire-${i}`, d: wire.d, steps: [], rail: true, tip: true, both: !wire.one, fresh: fresh(wire.of) })),
     ...scene.laptops.flatMap((laptop, owner) => [
+      // every line of a laptop that is new is new with it
+      ...(([
       ...(laptop.ask ? [{ id: `ask-${laptop.name}`, d: laptop.ask, owner, steps: [1], rail: true, tip: true, token: true }] : []),
       // asking the queue and getting a task are ONE two-way line: `poll` is `task` walked backwards
       { id: `poll-${laptop.name}`, d: laptop.poll, owner, steps: [2], tip: true },
       { id: `task-${laptop.name}`, d: laptop.task, owner, steps: [3], rail: true, tip: true, both: true, token: true },
       { id: `report-${laptop.name}`, d: laptop.report, owner, steps: [5], rail: true, tip: true, token: 'report' as const },
       ...laptop.reach.map((d, i) => ({ id: `reach-${laptop.name}-${i}`, d, owner, steps: [], rail: true, tip: true })),
+      ] as Link[]).map((link) => ({ ...link, fresh: fresh(`laptop:${laptop.name}`) }))),
     ]),
   ];
 }
@@ -240,15 +255,20 @@ function Device({ kind }: { kind: ScreenKind }) {
   );
 }
 
+/** What the server calls by itself, with no agent in between — read off the real API's
+ *  source on 16.11.2026 (the hosts it fetches): api.spotify.com, api.monobank.ua,
+ *  maps/routes/places.googleapis.com, api.open-meteo.com (weather and air quality),
+ *  api.themoviedb.org (and api.tvmaze.com), api.discogs.com, openlibrary.org, and a
+ *  private Home Assistant. Not drawn: push (FCM), sign-in, logs, file storage. */
 const SERVICES = [
-  ['Monobank', 'M3 9l9-5 9 5 M5 10v8 M10 10v8 M14 10v8 M19 10v8 M3 20h18'],
   ['Spotify', 'M9 18V5l11-2v13 M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0 M20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0'],
+  ['Monobank', 'M3 9l9-5 9 5 M5 10v8 M10 10v8 M14 10v8 M19 10v8 M3 20h18'],
   ['Maps', 'M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z M12 11.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z'],
-  ['Home Assistant', 'M3 11l9-7 9 7 M5 10v10h14V10 M10 20v-6h4v6'],
   ['weather', 'M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18z'],
   ['TMDB', 'M4 5h16v14H4z M8 5v14 M16 5v14 M4 9.5h4 M4 14.5h4 M16 9.5h4 M16 14.5h4'],
   ['Discogs', 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z'],
-  ['air-raid alerts', 'M6 17v-6a6 6 0 0 1 12 0v6 M4 17h16 M10 20.5h4'],
+  ['Open Library', 'M4 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H4z M20 5h-5a2 2 0 0 0-2 2'],
+  ['Home Assistant', 'M3 11l9-7 9 7 M5 10v10h14V10 M10 20v-6h4v6'],
 ] as const;
 
 /** The queue inside the server, top first. */
@@ -303,16 +323,18 @@ const SCENE_FIRST: Scene = {
       // the report lands beside the database: that is where it is kept
       report: 'M 1270 410 C 1160 410, 1120 540, 990 540',
       // one trunk out of the laptop's base, then a branch to each tool under it
-      reach: [1306, 1417, 1529, 1640].map((x) => `M 1473 488 V 590 C 1473 680, ${x} 650, ${x} 738`),
+      reach: [1287, 1361, 1436, 1510, 1584, 1659].map((x) => `M 1473 488 V 590 C 1473 680, ${x} 650, ${x} 738`),
     },
   ],
   // «MCP» is the arrow's name; the icons are what it opens (Yarik, 16.11.2026)
   handsBy: { label: 'MCP', at: [1498, 520] },
   hands: [
-    ['mail', 'M3 6h18v12H3z M3 7l9 6 9-6'],
-    ['calendar', 'M4 5h16v15H4z M4 10h16 M8 3v4 M16 3v4'],
-    ['files', 'M3 6h6l2 2h10v11H3z'],
-    ['bank', 'M3 9l9-5 9 5 M5 10v8 M10 10v8 M14 10v8 M19 10v8 M3 20h18'],
+    ['Gmail', 'M3 6h18v12H3z M3 7l9 6 9-6'],
+    ['GCal', 'M4 5h16v15H4z M4 10h16 M8 3v4 M16 3v4'],
+    ['GDrive', 'M3 6h6l2 2h10v11H3z'],
+    ['IBKR', 'M3 20h18 M4 15l5-5 4 3 7-8 M15 5h5v5'],
+    ['Silpo', 'M2 4h3l3 11h10l2-8H6.5 M9 20h.01 M17 20h.01'],
+    ['Audible', 'M4 15v-3a8 8 0 0 1 16 0v3 M4 14h3v6H4z M17 14h3v6h-3z'],
   ],
   badges: [
     [1, 1182, 287],
@@ -327,6 +349,7 @@ const SCENE_FIRST: Scene = {
  *  «після 92 треба поставити оновлений архітектурний слайд на основі 90»). */
 const SCENE_DAEMON: Scene = {
   ...SCENE_FIRST,
+  fresh: ['daemon'],
   // the chat is no longer Claude Code's alone: either agent can be the way in
   screens: SCENE_FIRST.screens.map((screen) =>
     screen.kind === 'term' ? { ...screen, label: 'Claude Code / Codex chat' } : screen,
@@ -349,6 +372,7 @@ const SCENE_DAEMON: Scene = {
  *  runs down the right edge and joins the second one's trunk. */
 const SCENE_TWO: Scene = {
   ...SCENE_DAEMON,
+  fresh: ['laptop:second laptop'],
   screens: SCENE_DAEMON.screens.map((screen) => ({ ...screen, at: [screen.at![0], 5] as [number, number] })),
   wires: [
     { d: 'M 1320 96 V 141' },
@@ -396,7 +420,7 @@ const SCENE_TWO: Scene = {
   handsBy: undefined,
   notes: [
     { label: 'MCP', at: [1496, 376] },
-    { label: 'MCP', at: [1496, 726] },
+    { label: 'MCP', at: [1496, 726], of: 'laptop:second laptop' },
   ],
   badges: [
     [1, 1150, 222],
@@ -405,6 +429,98 @@ const SCENE_TWO: Scene = {
     [2, 1150, 528, undefined, 1],
     [5, 1130, 596, 3, 1],
   ],
+};
+
+/** And then the web page: once the tasks have a UI of their own, that is where I ask and
+ *  where the answer comes back — step 1 starts in the browser and the report ends there
+ *  (Yarik, 16.11.2026: «оновлений слайд з архітектурою де додається веб сторінка з якою
+ *  взаємодіє користувач»). The chat is still wired into the laptop; it just is not the
+ *  way in any more. */
+const SCENE_WEB: Scene = {
+  ...SCENE_TWO,
+  fresh: ['screen:web'],
+  // off the arc, level with the hub: one straight line in and back
+  screens: [{ kind: 'web', label: 'myclaw web', row: 3, at: [190, 369], asks: true }, ...SCENE_TWO.screens],
+  laptops: SCENE_TWO.laptops.map((laptop) => ({ ...laptop, ask: undefined })),
+  badges: [
+    // the answer coming back is not numbered: it is not a step worth a badge (Yarik, 16.11.2026)
+    [1, 412, 386],
+    ...SCENE_TWO.badges.filter(([n]) => n !== 1),
+  ],
+};
+
+/** And once an artifact is kept — «make it a miniapp» — its code lives on the server too:
+ *  the pages are deployed there and run there, beside the queue and the database (Yarik,
+ *  16.11.2026: «додаємо на сервер код мініапок який там крутиться тепер»). */
+const SCENE_APPS: Scene = {
+  ...SCENE_WEB,
+  fresh: ['miniapps'],
+  onServer: ['miniapps'],
+};
+
+/** And the same pages on a phone: the mobile app is one more screen of mine on the same
+ *  server (Yarik, 16.11.2026: «новий архітектурний слайд де додається myclaw mobile app»). */
+const SCENE_MOBILE: Scene = {
+  ...SCENE_APPS,
+  fresh: ['screen:phone'],
+  screens: [...SCENE_APPS.screens, { kind: 'phone', label: 'myclaw app', row: 4, at: [190, 510] }],
+};
+
+/** And the daemon is not only a task runner: being a program on a machine that is AT HOME,
+ *  it also reads the house on a timer — the router, the camera, which devices are on the
+ *  Wi-Fi — and posts what it reads to the server (Yarik, 16.11.2026: «один з лептопів
+ *  періодично збирає інформацію з моїх домашніх девайсів і відправляє на сервер»). The real
+ *  runner does exactly these three: internet every 30 s, camera every 15 s, presence
+ *  every 2 min. Plain code, no model. */
+const SCENE_HOME: Scene = {
+  ...SCENE_MOBILE,
+  fresh: ['home'],
+  wires: [
+    ...(SCENE_MOBILE.wires ?? []),
+    // the devices → the second laptop, then that laptop → the server
+    { d: 'M 1060 792 C 1060 740, 1180 702, 1262 702', one: true, label: 'on a timer', at: [870, 722], of: 'home' },
+    { d: 'M 1270 678 C 1190 678, 1130 652, 1016 634', one: true, of: 'home' },
+  ],
+  home: {
+    at: [890, 800],
+    width: 330,
+    icons: [
+      ['router', 'M4 14h16v5H4z M8 16.5h.1 M12 16.5h.1 M16 14V8 M12.5 5.5a5 5 0 0 1 7 0'],
+      ['camera', 'M3 7h13v10H3z M16 10l5-3v10l-5-3'],
+      ['Wi-Fi devices', 'M8 3h8v18H8z M11 18h2'],
+    ],
+  },
+};
+
+/** And the phone is a collector too: the mobile app reads Google Health on the phone —
+ *  steps, sleep, workouts — and posts it to the same server, which is where the Health and
+ *  Sport pages get their numbers (Yarik, 16.11.2026: «мобільний мініапп збирає дані і
+ *  відправляє також на сервер з google health»). No agent in this either. */
+const SCENE_HEALTH: Scene = {
+  ...SCENE_HOME,
+  fresh: ['health'],
+  wires: [
+    ...(SCENE_HOME.wires ?? []),
+    // Google Health → the phone, then the phone → the server (along its own line)
+    { d: 'M 250 712 V 610', one: true, of: 'health' },
+    { d: curve(308, 551, HUB[0], HUB[1]), one: true, of: 'health', label: 'steps · sleep · workouts', at: [40, 812] },
+  ],
+  health: {
+    at: [130, 720],
+    width: 240,
+    icons: [['Google Health', 'M12 20s-7-4.4-7-9.5A4 4 0 0 1 12 8a4 4 0 0 1 7 2.5C19 15.6 12 20 12 20z']],
+  },
+};
+
+/** And the server reaches out by itself too: Spotify for the Music page, and the other
+ *  services it already calls on its own timer or on a page's request (Yarik, 16.11.2026:
+ *  «додається інтеграція сервера з spotify (і досліди з ким сервер ще інтегрується)»). */
+const SCENE_SERVICES: Scene = {
+  ...SCENE_HEALTH,
+  fresh: ['services'],
+  services: true,
+  // up and to the left of the cloud: under it the phone's label and the home devices stand
+  servicesAt: { left: -40, top: 96, width: 530, rail: 'M 590 300 L 512 250' },
 };
 
 /** Where it stands today: every screen, the server's own integrations, two laptops with
@@ -489,6 +605,7 @@ function Architecture({ scene }: { scene: Scene }) {
     return tasks[(round + ahead) % tasks.length];
   };
   const someone = (...ns: number[]) => scene.laptops.some((_, owner) => onFor(owner, ...ns));
+  const fresh = (key: string) => (scene.fresh?.includes(key) ? ' ww-arch--new' : '');
   return (
     <div className="ww-arch">
       <svg className="ww-arch__beams" viewBox="0 0 1696 904" aria-hidden="true">
@@ -500,12 +617,19 @@ function Architecture({ scene }: { scene: Scene }) {
             <path className="ww-arch__tip ww-arch__tip--on" d="M0 0l10 5-10 5z" />
           </marker>
         </defs>
+        {/* what the scene adds: a mint halo under the line */}
+        {links.filter((link) => link.fresh && (link.rail || link.id.startsWith('out-'))).map((link) => (
+          <path key={`new-${link.id}`} className="ww-arch__halo" d={link.d} />
+        ))}
         {links.filter((link) => link.rail).map((link) => (
           <path key={link.id} className="ww-arch__rail" d={link.d} markerStart={link.both ? 'url(#ww-arch-tip)' : undefined} markerEnd={link.tip ? 'url(#ww-arch-tip)' : undefined} />
         ))}
         {/* the server's own integrations never stop: both ways, on a timer */}
         {scene.services && (
-          <path className="ww-arch__rail" d="M 790 652 V 728" markerStart="url(#ww-arch-tip)" markerEnd="url(#ww-arch-tip)" />
+          <>
+            {scene.fresh?.includes('services') && <path className="ww-arch__halo" d={scene.servicesAt?.rail ?? 'M 790 652 V 728'} />}
+            <path className="ww-arch__rail" d={scene.servicesAt?.rail ?? 'M 790 652 V 728'} markerStart="url(#ww-arch-tip)" markerEnd="url(#ww-arch-tip)" />
+          </>
         )}
         {links.filter((link) => onFor(link.owner, ...link.steps)).map((link) => (
           <path key={`${link.id}-${stepOf(link.owner)}`} className="ww-arch__beam" d={link.d} pathLength={1} markerEnd={link.tip ? 'url(#ww-arch-tip-on)' : undefined} />
@@ -521,7 +645,7 @@ function Architecture({ scene }: { scene: Scene }) {
         return (
           <span
             key={screen.kind}
-            className={`ww-arch__dev${screen.flip ? ' ww-arch__dev--flip' : ''}${(screen.aside ? step === 1 || step === 6 : step === 6 || (step === 1 && screen.asks)) ? ' ww-arch--hot' : ''}`}
+            className={`ww-arch__dev${fresh(`screen:${screen.kind}`)}${screen.flip ? ' ww-arch__dev--flip' : ''}${(screen.aside ? step === 1 || step === 6 : step === 6 || (step === 1 && screen.asks)) ? ' ww-arch--hot' : ''}`}
             style={{ left: at.x, top: at.y }}
           >
             <i>{screen.label}</i>
@@ -533,7 +657,7 @@ function Architecture({ scene }: { scene: Scene }) {
       {(scene.wires ?? []).map(
         (wire) =>
           wire.label && wire.at && (
-            <span key={wire.label} className="ww-arch__note" style={{ left: wire.at[0], top: wire.at[1] }}>
+            <span key={wire.label} className={`ww-arch__note${wire.of ? fresh(wire.of) : ''}`} style={{ left: wire.at[0], top: wire.at[1] }}>
               {wire.label}
             </span>
           ),
@@ -603,7 +727,7 @@ function Architecture({ scene }: { scene: Scene }) {
         {scene.onServer.length > 0 && (
           <div className="ww-arch__icons" style={{ gridTemplateColumns: `repeat(${scene.onServer.length}, 1fr)` }}>
             {ON_SERVER.filter(([name]) => scene.onServer.includes(name)).map(([name, d]) => (
-              <span key={name}>
+              <span key={name} className={fresh(name).trim() || undefined}>
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d={d} />
                 </svg>
@@ -616,7 +740,10 @@ function Architecture({ scene }: { scene: Scene }) {
 
       {/* what the server talks to by itself */}
       {scene.services && (
-        <div className="ww-arch__ext">
+        <div
+          className={`ww-arch__ext${fresh('services')}`}
+          style={scene.servicesAt && { left: scene.servicesAt.left, top: scene.servicesAt.top, width: scene.servicesAt.width }}
+        >
           <div className="ww-arch__icons">
             {SERVICES.map(([name, d]) => (
               <span key={name}>
@@ -638,7 +765,7 @@ function Architecture({ scene }: { scene: Scene }) {
         const job = jobOf(owner);
         const doing = job ? job[1] : laptop.doing;
         return (
-        <div key={laptop.name} className={`ww-arch__mac${(lit(2, 3, 4, 5) || (laptop.chat && lit(1, 6))) && !all ? ' ww-arch--glow' : ''}`} style={{ top: laptop.top }}>
+        <div key={laptop.name} className={`ww-arch__mac${fresh(`laptop:${laptop.name}`)}${(lit(2, 3, 4, 5) || (laptop.chat && lit(1, 6))) && !all ? ' ww-arch--glow' : ''}`} style={{ top: laptop.top }}>
           <div className="ww-arch__screen">
             <div className="ww-arch__mini">
               <div className={`ww-arch__panes${laptop.chat ? ' ww-arch__panes--cols' : ''}`}>
@@ -662,8 +789,12 @@ function Architecture({ scene }: { scene: Scene }) {
                   });
                   if (!laptop.via) return panes;
                   return (
-                    <span className="ww-arch__stack">
-                      <em>{laptop.via}</em>
+                    <span className={`ww-arch__stack${fresh('daemon')}`}>
+                      <em>
+                        {/* the daemon drives herdr: its mark sits on the strip (Yarik, 16.11.2026) */}
+                        <img src={herdrLogo} alt="herdr" />
+                        {laptop.via}
+                      </em>
                       {panes}
                     </span>
                   );
@@ -677,15 +808,32 @@ function Architecture({ scene }: { scene: Scene }) {
       })}
 
       {(scene.notes ?? []).map((note, i) => (
-        <span key={i} className="ww-arch__note" style={{ left: note.at[0], top: note.at[1] }}>
+        <span key={i} className={`ww-arch__note${note.of ? fresh(note.of) : ''}`} style={{ left: note.at[0], top: note.at[1] }}>
           {note.label}
         </span>
       ))}
+      {([['home', scene.home], ['health', scene.health]] as const).map(
+        ([key, group]) =>
+          group && (
+            <div key={key} className={`ww-arch__reach${fresh(key)}`} style={{ left: group.at[0], top: group.at[1], width: group.width }}>
+              <div className="ww-arch__icons" style={{ gridTemplateColumns: `repeat(${group.icons.length}, 1fr)` }}>
+                {group.icons.map(([name, d]) => (
+                  <span key={name}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d={d} />
+                    </svg>
+                    {name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ),
+      )}
       {/* a laptop's own tools, in a row under it */}
       {scene.laptops.map(
         (laptop) =>
           laptop.tools !== undefined && (
-            <div key={laptop.name} className="ww-arch__reach" style={{ top: laptop.tools }}>
+            <div key={laptop.name} className={`ww-arch__reach${fresh(`laptop:${laptop.name}`)}`} style={{ top: laptop.tools }}>
               <div className="ww-arch__icons" style={{ gridTemplateColumns: `repeat(${scene.hands.length}, 1fr)` }}>
                 {scene.hands.map(([name, d]) => (
                   <span key={name}>
@@ -753,7 +901,7 @@ export const ArchitectureSlide: SlideDefinition = {
     + 'and the TV at home are dashboards. Everything lands on ONE server, on Railway. That part is '
     + 'deliberately boring and deterministic: a task queue, a database, 26 miniapps, cron jobs, '
     + 'and one MCP server that exposes all of it as tools. There is NO AI inside it. It also talks '
-    + 'to the outside by itself, on a timer: the bank, Spotify, maps, weather, the air-raid feed, '
+    + 'to the outside by itself, on a timer: the bank, Spotify, maps, weather, '
     + 'the house. [2] I have two laptops, and on each a runner — a plain loop — asks the queue '
     + '«what\'s next?». [3] Each takes a task and opens an agent on it: Claude Code or Codex, both '
     + 'on both machines, reading the same skills. [4] The agent does the work with its own hands: '
@@ -795,6 +943,109 @@ export const ArchitectureTwoSlide: SlideDefinition = {
     + 'daemon. But it polls the same queue on the same server, takes its own tasks, reports into '
     + 'the same database, and has MCP tools of its own. Two machines, one queue: each works a '
     + 'different task, at its own pace — whichever asks first gets the next one.',
+};
+
+/** …and with the web page as the way in. */
+export const ArchitectureWebSlide: SlideDefinition = {
+  id: 'factory-architecture-web',
+  content: () => (
+    <>
+      <CornerRings corner="top-right" />
+      <Architecture scene={SCENE_WEB} />
+    </>
+  ),
+  notes:
+    'So the picture gets one more piece, and it is on my side of it. The web page talks to the '
+    + 'same server and the same database as everything else. I create a task there — step one — '
+    + 'it lands in the queue, a daemon on one of the laptops takes it, an agent works it and '
+    + 'reports, and the answer comes back to the page I am looking at. The chat is still there, '
+    + 'but I no longer have to open a terminal to ask for something.',
+};
+
+/** …and with the miniapps' code running on the server. */
+export const ArchitectureAppsSlide: SlideDefinition = {
+  id: 'factory-architecture-apps',
+  content: () => (
+    <>
+      <CornerRings corner="top-right" />
+      <Architecture scene={SCENE_APPS} />
+    </>
+  ),
+  notes:
+    'And that changes the picture once more. Until now the server held a queue and a database. '
+    + 'A miniapp is code — a table, an API, a page — and the agent deploys it to that same server, '
+    + 'where it keeps running after the task that made it is closed. So the server is no longer '
+    + 'just the place the tasks wait: it is where my apps live, and the web page I open shows them.',
+};
+
+/** …and with the mobile app as a second screen. */
+export const ArchitectureMobileSlide: SlideDefinition = {
+  id: 'factory-architecture-mobile',
+  content: () => (
+    <>
+      <CornerRings corner="top-right" />
+      <Architecture scene={SCENE_MOBILE} />
+    </>
+  ),
+  notes:
+    'One more screen on my side. The mobile app is not a second system: it talks to the same '
+    + 'server, reads the same database and shows the same miniapps — it just has a camera and is '
+    + 'in my pocket. Whatever I add on the phone is on the web page a second later, and the '
+    + 'agents see it too.',
+};
+
+/** …and with a laptop that reads the house. */
+export const ArchitectureHomeSlide: SlideDefinition = {
+  id: 'factory-architecture-home',
+  content: () => (
+    <>
+      <CornerRings corner="top-right" />
+      <Architecture scene={SCENE_HOME} />
+    </>
+  ),
+  notes:
+    'Where does the Home page get its data? From the same daemon. It is a program on a laptop '
+    + 'that stands at home, on the home network — so besides running tasks it reads the house on '
+    + 'a timer: the router, the camera, which devices are on the Wi-Fi. Every few seconds to '
+    + 'every couple of minutes, and each reading goes to the server. No agent and no tokens in '
+    + 'this — plain code again. The server cannot see my home network; the laptop can.',
+};
+
+/** …and with the phone app sending health data. */
+export const ArchitectureHealthSlide: SlideDefinition = {
+  id: 'factory-architecture-health',
+  content: () => (
+    <>
+      <CornerRings corner="top-right" />
+      <Architecture scene={SCENE_HEALTH} />
+    </>
+  ),
+  notes:
+    'And where do Sleep, Health and Sport get their numbers? From the phone. The mobile app is '
+    + 'not only a screen: it reads Google Health on the phone — steps, sleep, workouts — and '
+    + 'sends it to the same server. Same idea as the laptop reading the house: a device that is '
+    + 'already where the data is, plain code, no agent. The agents come later, when they read '
+    + 'that data and tell me something about it.',
+};
+
+/** …and with the server's own integrations. */
+export const ArchitectureServicesSlide: SlideDefinition = {
+  id: 'factory-architecture-services',
+  content: () => (
+    <>
+      <CornerRings corner="top-right" />
+      <Architecture scene={SCENE_SERVICES} />
+    </>
+  ),
+  notes:
+    'One more kind of connection, and this one is the server\'s own. To build that playlist it '
+    + 'talks to Spotify directly — reads my liked songs, creates the playlist, sets the cover. '
+    + 'No agent, no laptop: the server calls the API. And Spotify is not the only one. The same '
+    + 'server reads my bank through Monobank, asks Google Maps for travel times, Open-Meteo for '
+    + 'the weather and air quality, TMDB for films, Discogs for records, Open Library for book '
+    + 'covers, and a private Home Assistant for the devices at home. '
+    + 'So there are three ways data gets in now: an agent brings it through MCP, a device of '
+    + 'mine sends it, or the server fetches it itself.',
 };
 
 export const HuntersSlide: SlideDefinition = {

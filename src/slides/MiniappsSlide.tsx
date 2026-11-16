@@ -2695,11 +2695,10 @@ function Scene({ stage }: { stage: number }) {
   );
 }
 
-export const MiniappsSlide: SlideDefinition = {
-  id: 'improve-miniapps',
-  maxRevealStages: FRAMES.length,
-  initialRevealStage: 1,
-  content: ({ revealStage }) => {
+/** The frames are two slides, with an architecture slide between them (Yarik, 16.11.2026):
+ *  the first frame — Coffee being born out of a task — and then every other page. Both
+ *  draw the same thing; `revealStage` is the frame's number in FRAMES, from 1. */
+function MiniappsFrame({ revealStage }: { revealStage: number }) {
     const stage = Math.min(Math.max(revealStage, 1), FRAMES.length);
     const mobile = !!FRAMES[stage - 1].mobile || !!FRAMES[stage - 1].silpo;
     return (
@@ -2719,15 +2718,33 @@ export const MiniappsSlide: SlideDefinition = {
         </div>
       </>
     );
-  },
+}
+
+export const MiniappBirthSlide: SlideDefinition = {
+  id: 'improve-miniapp-birth',
+  content: () => <MiniappsFrame revealStage={1} />,
   notes:
     'An artifact does not have to die with its task. The first frame plays by itself — talk over it: '
     + 'I tell the agent about a new bag of coffee and ask it to keep track; it answers with an '
     + 'artifact — the bag as a card I can rate. And then the sentence that matters: «make this '
     + 'artifact permanent — create a miniapp». The agent writes the table and the page, tests, '
     + 'deploys — watch the sidebar — and Coffee is a page of the app. That is how every one of '
-    + 'them was born: a task, an artifact, «keep it». '
-    + 'Then one more on every click, and each is the best UX for one corner of my life, written '
+    + 'them was born: a task, an artifact, «keep it». ',
+};
+
+/** The first frame that belongs to the second run of pages: the Silpo cart. The frames
+ *  before it — Money, Supplies, Supplies on a phone — are followed by an architecture
+ *  slide that adds the mobile app (Yarik, 16.11.2026). */
+const SILPO_FRAME = FRAMES.findIndex((frame) => frame.silpo) + 1;
+
+export const MiniappsSlide: SlideDefinition = {
+  id: 'improve-miniapps',
+  maxRevealStages: SILPO_FRAME - 2,
+  initialRevealStage: 1,
+  // frame 1 is MiniappBirthSlide's
+  content: ({ revealStage }) => <MiniappsFrame revealStage={revealStage + 1} />,
+  notes:
+    'One more page on every click, and each is the best UX for one corner of my life, written '
     + 'and kept up by the agents working the queue: '
     + '[2] Money — net worth, this month in and out against the budget, the last transactions. It '
     + 'then walks its own subpages by itself, about three seconds each — budget, income, accounts '
@@ -2737,8 +2754,21 @@ export const MiniappsSlide: SlideDefinition = {
     + '[click] And the headline changes: it is also a mobile app. Watch the phone — it plays by '
     + 'itself: I open Supplies, photograph a bag of dishwasher tablets, the agent reads the name off '
     + 'the photo, I press Add — and it is on the shelf, on the phone and on the big screen. That is '
-    + 'how everything on this page got there: I have never typed a product name. '
-    + '[click] And ordering — it plays by itself, on both screens. This is my shopping list, by '
+    + 'how everything on this page got there: I have never typed a product name. ',
+};
+
+/** The first frame of the last run: Sleep. The run before it ends on Home, and an
+ *  architecture slide follows — a laptop collecting from the devices at home
+ *  (Yarik, 16.11.2026). */
+const SLEEP_FRAME = FRAMES.findIndex((frame) => MINIAPPS[frame.app].name === 'Sleep') + 1;
+
+export const MiniappsMoreSlide: SlideDefinition = {
+  id: 'improve-miniapps-more',
+  maxRevealStages: SLEEP_FRAME - SILPO_FRAME,
+  initialRevealStage: 1,
+  content: ({ revealStage }) => <MiniappsFrame revealStage={revealStage + SILPO_FRAME - 1} />,
+  notes:
+    'And ordering — it plays by itself, on both screens. This is my shopping list, by '
     + 'shop: eggs, sliced Gouda, non-alcoholic beer. Below it, dashed, are the agent\'s proposals: '
     + 'every three days it reads my supermarket RECEIPTS through the chain\'s own MCP connector and '
     + 'notices what I usually buy and have not bought — «yogurt: last 35 days ago, usually every 4 '
@@ -2774,8 +2804,20 @@ export const MiniappsSlide: SlideDefinition = {
     + 'wash), internet, power — the dip in the voltage chart is a real outage — and the battery: 59 '
     + 'hours without the grid. Real readings, the evening of 14 November. Honest: the task is real '
     + '— its title, dates and my replies (translated) — but compressed: the thread has fifty-odd '
-    + 'comments, and the cards were built over later tasks too. '
-    + 'And these two show where they came from too. [8] Sleep — the frame first replays the real '
+    + 'comments, and the cards were built over later tasks too. ',
+};
+
+/** The first frame of the closing run: Music. The run before it ends on Sport, and an
+ *  architecture slide follows — the phone app sending health data (Yarik, 16.11.2026). */
+const MUSIC_FRAME = FRAMES.findIndex((frame) => MINIAPPS[frame.app].name === 'Music') + 1;
+
+export const MiniappsLastSlide: SlideDefinition = {
+  id: 'improve-miniapps-last',
+  maxRevealStages: MUSIC_FRAME - SLEEP_FRAME,
+  initialRevealStage: 1,
+  content: ({ revealStage }) => <MiniappsFrame revealStage={revealStage + SLEEP_FRAME - 1} />,
+  notes:
+    'And these two show where they came from too. [8] Sleep — the frame first replays the real '
     + 'task, about thirty seconds: in October Pavlyna\'s next-sleep forecast went blank, and I '
     + 'asked the agent to research how infants sleep by age and design our own. It came back with '
     + 'the science — wake windows are not research, an infant\'s sleep cycle is 50–60 minutes — and '
@@ -2794,8 +2836,20 @@ export const MiniappsSlide: SlideDefinition = {
     + '(The family\'s profiles are on the real page and not here.) Honest: both tasks are real — '
     + 'titles, dates, my replies (translated, shortened) — but compressed to a line a report, and the '
     + 'five rejections are one comment on the slide. '
-    + '[10] Sport — steps, three weeks, workouts (say it: one in eight weeks). '
-    + '[11] Music — 2,680 liked songs, and no way to say which I like most — so the page asks me, '
+    + '[10] Sport — steps, three weeks, workouts (say it: one in eight weeks). ',
+};
+
+/** The last frame stands alone: Family tree. Music and its Spotify phone come before an
+ *  architecture slide about the server's own integrations (Yarik, 16.11.2026). */
+const TREE_FRAME = FRAMES.findIndex((frame) => MINIAPPS[frame.app].name === 'Family tree') + 1;
+
+export const MiniappsEndSlide: SlideDefinition = {
+  id: 'improve-miniapps-end',
+  maxRevealStages: TREE_FRAME - MUSIC_FRAME,
+  initialRevealStage: 1,
+  content: ({ revealStage }) => <MiniappsFrame revealStage={revealStage + MUSIC_FRAME - 1} />,
+  notes:
+    '[11] Music — 2,680 liked songs, and no way to say which I like most — so the page asks me, '
     + 'one duel at a time: which of these two is better? It plays three by itself, and every '
     + 'answer moves the ranking on the right — watch Prisoner climb from ninth to fourth. The '
     + 'starting ranking is my real one, with each song\'s strength. Honest: the pairs and the picks '
@@ -2803,8 +2857,16 @@ export const MiniappsSlide: SlideDefinition = {
     + 'Every day the agent writes the ranking into two playlists — my top 100, and the top 30 of '
     + 'songs out in the last twelve months — with covers it makes itself. Watch the phone: my '
     + 'library, the top 100, back, the new 30. Real playlists, real order, as of 15 November; the '
-    + 'Spotify screen is redrawn after the app. '
-    + '[12] Family tree — and the last one is not a page at all: it is a research task that runs '
+    + 'Spotify screen is redrawn after the app. ',
+};
+
+export const MiniappsTreeSlide: SlideDefinition = {
+  id: 'improve-miniapps-tree',
+  maxRevealStages: FRAMES.length - TREE_FRAME + 1,
+  initialRevealStage: 1,
+  content: ({ revealStage }) => <MiniappsFrame revealStage={revealStage + TREE_FRAME - 1} />,
+  notes:
+    '[12] Family tree — and the last one is not a page at all: it is a research task that runs '
     + 'for a month. My great-great-grandparents, the Husaks, came from a hamlet called Arsenivka, '
     + 'and nobody knew which parish kept its books. The agent reads century-old archives for me: a '
     + '1901 church directory — the hamlet did not exist yet; ninety-two death acts of 1925 — the '

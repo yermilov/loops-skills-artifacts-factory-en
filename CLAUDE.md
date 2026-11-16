@@ -50,7 +50,7 @@ src/
 │   ├── AssistantReadySlide.tsx   # «Our barebones AI assistant is ready» — the full-bleed announcement over a Phantom Menace still
 │   ├── AssistantSessionSlide.tsx # the session that tests it (no title band): one errand, eight beats, a prop beside it
 │   ├── RouteMap.tsx              # the maps app with three routes — the session's map reveal and the Artifacts slide share it
-│   ├── improve.tsx               # «How do we improve it?» — the task board (✓ fixed: a web UI), the runner walk-through, agents arguing over a review, the pace card; `Herdr` + `CodexPane`
+│   ├── improve.tsx               # «How do we improve it?» — the task board and the artifact (two slides, one `BoardFrame`), the runner walk-through, agents arguing over a review, the empty queue, the self-playing pace week, free OpenRouter models on Codex; `Herdr` + `CodexPane`
 │   ├── MiniappsSlide.tsx         # «artifacts that stay: miniapps» — Coffee is BORN in a task, then one page a click; Supplies on a phone, a Silpo cart; Home replays its real task, then walks its cards
 │   ├── ledgerApp.tsx             # the assistant's web app shell both of them draw in (sidebar, task cards, timeline)
 │   ├── factory.tsx               # the ARCHITECTURE drawing (three slides, one `Scene` each) + SCHEMATIC placeholders (DRAFT pill) for the last arc
@@ -333,9 +333,38 @@ and after and `cmp` the PNGs — byte-identical is the pass.
 
 ## The architecture and runner arc, and what a day of pairing on it taught (16.11.2026)
 
-After the assistant-session slide the deck now runs: architecture as it started (`ArchitectureSlide`)
-→ `RunnerSlide` → `AnyAgentSlide` → the architecture again with the daemon (`ArchitectureDaemonSlide`)
-→ with two laptops (`ArchitectureTwoSlide`) → `PaceSlide` → `TaskBoardSlide` → `MiniappsSlide`.
+After the assistant-session slide the deck now runs (order as of the evening of 16.11.2026):
+architecture as it started (`ArchitectureSlide`) → `RunnerSlide` → `AnyAgentSlide` → the
+architecture with the daemon (`ArchitectureDaemonSlide`) → with two laptops (`ArchitectureTwoSlide`)
+→ `IdleSlide` (an empty queue costs nothing) → `PaceSlide` (a self-playing week) → `FreeModelsSlide`
+→ `TaskBoardSlide` → `ArchitectureWebSlide` → `ArtifactSlide` → `MiniappBirthSlide` →
+`ArchitectureAppsSlide` → `MiniappsSlide` (Money, Supplies, Supplies on a phone) →
+`ArchitectureMobileSlide` → `MiniappsMoreSlide` (Silpo … Home) → `ArchitectureHomeSlide` →
+`MiniappsLastSlide` (Sleep, Health, Sport) → `ArchitectureHealthSlide` → `MiniappsEndSlide` (Music,
+Spotify) → `ArchitectureServicesSlide` → `MiniappsTreeSlide`.
+
+**The architecture is retold in pieces, each right after the slide that motivates it** (Yarik,
+16.11.2026 — every request was «after slide N add an architecture slide where X is added»). Two
+consequences that are easy to undo by accident:
+
+- **A staged slide gets CUT to make room, not reordered.** «After frame N» often lands in the
+  middle of a slide's reveal stages. The board and the miniapps were split into several
+  `SlideDefinition`s that share one frame component (`BoardFrame`, `MiniappsFrame`) and differ only
+  in which stages they own (`SILPO_FRAME`, `SLEEP_FRAME`, `MUSIC_FRAME`, `TREE_FRAME` are looked up
+  by name, so reordering `MINIAPPS` moves the cuts with it). The speaker notes were cut at the same
+  places. Every insertion shifts every later frame number — a link he sent an hour ago is stale.
+- **Each scene names what it ADDS (`fresh`), and that is lit in mint — the element, its lines and
+  its labels, all three** (his correction: «ну треба всі і стрілки і елементи і підписи»). Keys:
+  `screen:<kind>`, `laptop:<name>`, `daemon`, `miniapps`, `home`, `health`, `services`; a wire or a
+  note joins a key with `of`. `fresh` is NOT inherited usefully — every scene sets its own, or the
+  previous scene's highlight would carry over.
+
+What the scenes claim is read off the real system, and he checks: the MCP row is the six connectors
+actually configured (`claude mcp list`), the home devices are the three the runner itself reads
+(router, camera, Wi-Fi presence), the server's integrations are the hosts its code fetches (no
+air-raid feed — an agent brings that). When a claim is a guess (the Google Health label and its
+three data kinds were), say so in the hand-over.
+
 `bunx vite-node scripts/frames.mts` prints the frame map (plain `bun` fails on `import.meta.glob`).
 
 - **The architecture is ONE drawing fed by a `Scene`** (`factory.tsx`): a 1696×904 box, everything

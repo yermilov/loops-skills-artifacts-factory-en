@@ -2866,6 +2866,188 @@
   white-space: nowrap;
   transform: scale(0.72);
 }
+/* the browser the agent drives (beat 3). A real page is dense, so it is drawn at the
+   deck's code size and scaled as one object, like the other app recreations */
+.ww-asst__side--web {
+  width: 800px;
+}
+/* this beat's text wraps before the browser, which is wider than the usual gutter */
+.ww-asst__term.ww-asst__term--web .ww-boot__body,
+.ww-asst__term.ww-asst__term--web .ww-boot__prompt {
+  padding-right: 600px;
+}
+.ww-web {
+  zoom: 0.6;
+  width: 1333px;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--ww-white);
+  box-shadow: 0 40px 90px color-mix(in srgb, var(--ww-ink) 45%, transparent);
+  color: var(--ww-ink);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-code);
+  line-height: var(--line-height-tight);
+  text-align: left;
+}
+.ww-web__tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 16px 22px 0;
+  background: var(--ww-lavender);
+}
+.ww-web__tabs .ww-dot {
+  align-self: center;
+  margin-bottom: 14px;
+}
+.ww-web__tab {
+  margin-left: 18px;
+  padding: 12px 28px;
+  border-radius: 14px 14px 0 0;
+  background: var(--ww-white);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.ww-web__bar {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 12px 22px;
+  color: var(--ww-text-muted);
+}
+.ww-web__url {
+  flex: 1;
+  min-height: 1.9em;
+  padding: 8px 26px;
+  border-radius: 999px;
+  background: var(--ww-card);
+  color: var(--ww-ink);
+}
+.ww-web__notice {
+  padding: 10px 22px;
+  background: var(--cc-claude);
+  color: var(--ww-white);
+  font-weight: 600;
+}
+.ww-web__page {
+  display: flex;
+  flex-direction: column;
+  /* Claude in Chrome frames the page it is driving */
+  box-shadow: inset 0 0 0 6px var(--cc-claude);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+.ww-web__page[data-on] {
+  opacity: 1;
+}
+.ww-web__head {
+  display: flex;
+  align-items: center;
+  gap: 44px;
+  padding: 22px 44px;
+  background: var(--ww-ink);
+  color: var(--ww-white);
+}
+.ww-web__head strong {
+  margin-right: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ww-mint);
+}
+.ww-web__me {
+  margin-left: auto;
+  padding: 8px 24px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ww-white) 16%, transparent);
+}
+.ww-web__cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: 40px;
+  padding: 36px 44px 44px;
+}
+.ww-web__form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.ww-web__h1 {
+  font-size: var(--font-size-body);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.ww-web__label {
+  margin-top: 10px;
+  font-weight: 600;
+  color: var(--ww-text-muted);
+}
+.ww-web__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.ww-web__chip {
+  padding: 10px 24px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 2px var(--ww-lavender);
+  transition: background var(--transition-normal), color var(--transition-normal);
+}
+.ww-web__chip--on {
+  background: var(--ww-purple);
+  box-shadow: none;
+  color: var(--ww-white);
+}
+.ww-web__area {
+  min-height: 3.6em;
+  padding: 14px 20px;
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 2px var(--ww-lavender);
+}
+.ww-web__button,
+.ww-web__sent {
+  align-self: flex-start;
+  margin-top: 12px;
+  padding: 14px 32px;
+  border-radius: 14px;
+  font-weight: 700;
+}
+.ww-web__button {
+  background: var(--ww-purple);
+  color: var(--ww-white);
+}
+.ww-web__sent {
+  align-self: stretch;
+  background: color-mix(in srgb, var(--ww-mint) 35%, var(--ww-white));
+}
+.ww-web__card {
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 28px;
+  border-radius: 18px;
+  background: var(--ww-card);
+}
+.ww-web__row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ww-web__row i {
+  font-style: normal;
+  color: var(--ww-text-muted);
+}
+.ww-web__row b {
+  font-weight: 600;
+}
+.ww-web__fine {
+  padding-top: 16px;
+  border-top: 2px solid var(--ww-lavender);
+  color: var(--ww-text-muted);
+}
 .ww-asst__strip {
   align-self: stretch;
   display: flex;
@@ -5532,6 +5714,37 @@
   letter-spacing: 0.06em;
   color: var(--jg-vermilion);
 }
+/* the pace slide: herdr in one column, the usage card filling the other */
+.ww-imp__runner.ww-imp__runner--pace { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.ww-jg--pacecol {
+  display: block;
+  padding: 32px 40px;
+  border-radius: var(--radius-card);
+}
+.ww-jg--pacecol .ww-jg__pace {
+  height: 100%;
+}
+.ww-jg--pacecol .ww-jg__pacechart {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+.ww-jg--pacecol .ww-jg__pacechart path {
+  vector-effect: non-scaling-stroke;
+}
+.ww-jg--pacecol .ww-jg__paceline {
+  stroke-width: 6;
+}
+.ww-jg--pacecol .ww-jg__paceeven {
+  stroke-width: 4;
+  stroke-dasharray: 4 10;
+}
+.ww-jg--pacecol {
+  box-shadow: 0 0 0 2px var(--jg-paper-200);
+}
+.ww-jg__paceverdict--ok {
+  color: var(--jg-moss);
+}
 
 /* ─── herdr, the terminal workspace manager the daemon drives ─────────────
    After the running app: «spaces» and «agents» down the left, the focused
@@ -5900,6 +6113,41 @@
   flex: 1;
   min-height: 0;
 }
+/* the free-models slide: the Codex setup on the left, the graded models on the right */
+.ww-imp__runner.ww-imp__runner--free { grid-template-columns: 840px minmax(0, 1fr); }
+.ww-imp__grades {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  color: var(--ww-purple);
+}
+.ww-imp__grade {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-sm);
+  white-space: nowrap;
+}
+.ww-imp__grademark {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 0;
+  border-radius: 999px;
+  font-weight: 600;
+  background: var(--ww-mint);
+}
+.ww-imp__grade--ok .ww-imp__grademark {
+  background: var(--ww-lavender);
+}
+.ww-imp__grade--bad .ww-imp__grademark {
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+}
 /* 6 · the model need not come from a subscription */
 .ww-imp__free {
   font-size: var(--font-size-code);
@@ -6066,6 +6314,30 @@
 }
 .ww-arch--glow {
   filter: drop-shadow(0 0 22px var(--ww-magenta));
+}
+/* what a scene adds to the one before it: a soft mint pad under it, so the eye finds it.
+   Not `filter` — that is the step glow's, and the two must be able to stand together */
+.ww-arch--new {
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--ww-mint) 30%, transparent);
+  box-shadow: 0 0 0 14px color-mix(in srgb, var(--ww-mint) 30%, transparent);
+}
+/* …and under a new line, the same mint as a wide soft stroke */
+.ww-arch__halo {
+  fill: none;
+  stroke: color-mix(in srgb, var(--ww-mint) 45%, transparent);
+  stroke-width: 26;
+  stroke-linecap: round;
+}
+.ww-arch__note.ww-arch--new {
+  border-radius: 10px;
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--ww-mint) 30%, transparent);
+}
+/* inside the dark screen a pad would not show: a mint frame instead */
+.ww-arch__stack.ww-arch--new {
+  border-radius: 0;
+  background: none;
+  box-shadow: 0 0 0 5px var(--ww-mint);
 }
 .ww-arch__note {
   position: absolute;
@@ -6301,6 +6573,19 @@
   width: 64px;
   height: 64px;
 }
+/* what runs on the server beside the queue and the database: read from the room, so it
+   is drawn at the size of the database line, not of the outside icons */
+.ww-arch__api .ww-arch__icons span {
+  zoom: 1;
+  flex-direction: row;
+  justify-content: center;
+  gap: 14px;
+  font-weight: 600;
+}
+.ww-arch__api .ww-arch__icons svg {
+  width: 44px;
+  height: 44px;
+}
 /* the factory — two laptops, both agents on each */
 .ww-arch__mac {
   left: 1270px;
@@ -6357,11 +6642,19 @@
   gap: 3px;
 }
 .ww-arch__stack em {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding: 6px 22px;
   background: var(--ww-mint);
   font-style: normal;
   font-weight: 600;
   color: var(--ww-purple);
+}
+.ww-arch__stack em img {
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 0.3em;
 }
 .ww-arch__panes--cols .ww-arch__stack .ww-arch__pane { gap: 4px; }
 .ww-arch__pane b {

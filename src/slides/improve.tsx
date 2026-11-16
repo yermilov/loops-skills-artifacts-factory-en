@@ -290,11 +290,10 @@ function TaskLife({ withMap }: { withMap: boolean }) {
   );
 }
 
-export const TaskBoardSlide: SlideDefinition = {
-  id: 'improve-board',
-  maxRevealStages: 3,
-  initialRevealStage: 1,
-  content: ({ revealStage }) => (
+/** The board and the artifact are two slides now, with the architecture between them
+ *  (Yarik, 16.11.2026): `stage` 1–2 is the web UI for the tasks, 3 the agent's artifact. */
+function BoardFrame({ revealStage }: { revealStage: number }) {
+  return (
     <>
       <CornerRings corner="top-right" />
       <div className="ww-imp ww-imp--claim">
@@ -327,7 +326,14 @@ export const TaskBoardSlide: SlideDefinition = {
         </Browser>
       </div>
     </>
-  ),
+  );
+}
+
+export const TaskBoardSlide: SlideDefinition = {
+  id: 'improve-board',
+  maxRevealStages: 2,
+  initialRevealStage: 1,
+  content: ({ revealStage }) => <BoardFrame revealStage={revealStage} />,
   notes:
     'How do we improve it? Four problems on the table — we take them one by one. ' +
     'First, the obvious one. Instead of creating tasks in a chat and asking the chat what is in ' +
@@ -340,7 +346,13 @@ export const TaskBoardSlide: SlideDefinition = {
     'and its tool calls stream into the page as it works (honest: today the page only says the ' +
     'session is running; the live stream is where it is going) — ' +
     'and notice it is NOT in my list, it is not my problem yet. Then the agent answers: the report, ' +
-    'the files it made, and the task comes back to me, on top of my queue. ' +
+    'the files it made, and the task comes back to me, on top of my queue. ',
+};
+
+export const ArtifactSlide: SlideDefinition = {
+  id: 'improve-artifact',
+  content: () => <BoardFrame revealStage={3} />,
+  notes:
     'Click — the headline changes, and it plays again: I ask a follow-up right there, in a ' +
     'comment — how do I get from the service to the office? The task goes back to the agent (it ' +
     'leaves my list again), it works — the last line is Write(routes.html) — and it answers with ' +
@@ -492,23 +504,6 @@ function HPane({ lines }: { lines: PaneLine[] }) {
     </div>
   );
 }
-
-const CAR_PANE: PaneLine[] = [
-  { kind: 'you', text: 'Work the task «Book the car service»' },
-  { kind: 'tool', text: 'Skill(do-task)' },
-  { kind: 'tool', text: 'Read(car/history.md)' },
-  { kind: 'say', text: 'Three quotes against six years of history…' },
-];
-const RUN_SPACES: Space[] = [
-  { name: 'Book the car service', state: 'working', focused: true },
-  { name: 'Put the service in the calendar', state: 'working' },
-  { name: 'Summarise the building chat', state: 'done' },
-];
-const RUN_AGENTS: Agent[] = [
-  { title: 'Book the car service', role: 'autonomous · Claude Code', state: 'in progress', run: 'working', focused: true },
-  { title: 'Put the service in the calendar', role: 'autonomous · Claude Code', state: 'in progress', run: 'working' },
-  { title: 'Summarise the building chat', role: 'autonomous · Claude Code', state: 'finished', run: 'done' },
-];
 
 /** The loop, as code. `run` is not
  *  awaited — every task works in its own pane while the loop keeps polling. The whole
@@ -715,6 +710,19 @@ function RunnerWalk() {
   };
   const state = { idle: 'idle', working: 'working', done: 'finished' };
   return (
+    <>
+      {/* no title band: the same «✓ fixed» verdict line as the board slide. It names what
+          the walk is showing: first a task gets a pane and a context of its own, then —
+          from the second task on — a model of its own (Yarik, 16.11.2026) */}
+      <div className="ww-asst__claim ww-asst__claim--great">
+        <span className="ww-asst__verdict">
+          <span aria-hidden="true">✓</span>
+          fixed
+        </span>
+        <span key={step >= 10 ? 'models' : 'context'}>
+          {step >= 10 ? 'different models/agents for different types of tasks' : 'fresh context for each task'}
+        </span>
+      </div>
     <div className="ww-imp__runner ww-imp__runner--full">
       <div className="ww-imp__runnerleft">
         <RunnerCode hot={(i) => WALK[step].includes(i)} />
@@ -741,6 +749,7 @@ function RunnerWalk() {
         </Herdr>
       </div>
     </div>
+    </>
   );
 }
 
@@ -769,36 +778,280 @@ function RunnerCode({
  *  more than 3 points above → only high is served. The two figures are illustrative;
  *  the card is the app's own, off its Agents page: the week's usage as a line against
  *  the dotted diagonal of an even pace. */
-const PACE = { used: 62, elapsed: 58 };
-/** Usage over the week so far, as (share of the week, share of the limit). */
-const USAGE: [number, number][] = [
-  [0, 0], [6, 3], [10, 3], [14, 11], [20, 14], [24, 22], [31, 26], [36, 37], [43, 41], [47, 50], [52, 54], [58, 62],
+/** One week of the subscription, played tick by tick (Yarik, 16.11.2026: «після кожної
+ *  задачі додається витрата, якщо ми понад норму то видача задач зупиняється»). Every
+ *  tick is a poll: under the even pace the server hands out a task and its cost lands on
+ *  the chart; above it the poll comes back empty until the week catches up. The numbers
+ *  are illustrative. */
+const PACE_MS = 900;
+/** how much of the week one tick is, in % */
+const PACE_TICK = 4;
+// eight tasks that add up to exactly the week's limit: the walk ends at the reset with
+// all of it used and none of it early
+const PACE_TASKS: [string, number][] = [
+  ['Book the car service', 12], ['Sort the photo archive', 17], ['Put the service in the calendar', 9],
+  ['Plan the weekend trip', 15], ['Draw a cover for the playlist', 13], ['Renew the insurance', 18],
+  ['Summarise the building chat', 8], ['Compare the internet plans', 8],
 ];
+type PaceTick = { elapsed: number; before: number; used: number; task?: [string, number]; left: number; end?: boolean };
+const PACE_TICKS: PaceTick[] = (() => {
+  const ticks: PaceTick[] = [];
+  let used = 0;
+  let next = 0;
+  // a task costs three or four ticks of the week, so every one is followed by a run of
+  // empty polls until the week catches up
+  for (let i = 1; i <= 25; i += 1) {
+    const elapsed = i * PACE_TICK;
+    const before = used;
+    // the rule: a task goes out only while the usage is not ahead of the week
+    const task = used <= elapsed ? PACE_TASKS[next] : undefined;
+    if (task) {
+      used += task[1];
+      next += 1;
+    }
+    ticks.push({ elapsed, before, used, task, left: PACE_TASKS.length - next, end: elapsed >= 100 });
+  }
+  return ticks;
+})();
 
-function PaceCard() {
+function PaceWalk() {
+  const t = useClock(0);
+  const all = t >= Number.MAX_SAFE_INTEGER;
+  const last = PACE_TICKS.length - 1;
+  const step = all ? last : Math.min(Math.floor(t / PACE_MS) % (PACE_TICKS.length + 4), last);
+  useAnimating(!all && t < PACE_TICKS.length * PACE_MS);
+
+  const seen = PACE_TICKS.slice(0, step + 1);
+  const now = PACE_TICKS[step];
+  const hold = !now.task;
+  const over = now.used - now.elapsed;
   const x = (v: number) => 20 + v * 5.6;
   const y = (v: number) => 150 - v * 1.3;
+  // a stair: flat while the week goes by, a jump where a task's cost lands
+  const line = seen.map((tick) => `H${x(tick.elapsed)} V${y(tick.used)}`).join(' ');
+  const log = seen.slice(-5).flatMap((tick): PaneLine[] => [
+    { kind: 'dim', text: 'GET /api/tasks/next' },
+    tick.task
+      ? { kind: 'plain', text: `  «${tick.task[0]}» · +${tick.task[1]}%` }
+      : { kind: 'plain', text: tick.end ? '  week over · the limit resets' : '  204 · no task · above pace' },
+  ]);
+  // no code on this one: the loop is known by now. herdr in one column, the chart in the other (Yarik, 16.11.2026)
   return (
-    <div className="ww-jg ww-jg--card">
-      <div className="ww-jg__pace">
-        <span className="ww-jg__pacehead">
-          <span className="ww-jg__panelname">Anthropic personal</span>
-          <span className="ww-jg__label">used {PACE.used}%</span>
-          <span className="ww-jg__label ww-jg__label--danger">
-            +{PACE.used - PACE.elapsed}% above pace
-          </span>
-          <span className="ww-jg__label">resets in 3d</span>
-        </span>
-        <svg className="ww-jg__pacechart" viewBox="0 0 600 160" preserveAspectRatio="none" aria-hidden="true">
-          <path className="ww-jg__paceeven" d={`M${x(0)} ${y(0)} L${x(100)} ${y(100)}`} />
-          <path className="ww-jg__paceline" d={`M${USAGE.map(([a, b]) => `${x(a)} ${y(b)}`).join(' L')}`} />
-          <path className="ww-jg__pacenow" d={`M${x(PACE.elapsed)} ${y(0)} L${x(PACE.elapsed)} ${y(PACE.used)}`} />
-        </svg>
-        <span className="ww-jg__paceverdict">above pace → only high priority</span>
+    <div className="ww-imp__runner ww-imp__runner--full ww-imp__runner--pace">
+      <div className="ww-imp__runnerright">
+        <Herdr
+          status={[`queue: ${now.left}`, now.end ? 'week over · reset' : hold ? 'on hold · above pace' : 'in work: 1', `Claude 7d ${now.used}%`]}
+          spaces={now.task ? [{ name: now.task[0], state: 'working' }] : []}
+          agents={
+            now.task
+              ? [{ title: now.task[0], role: 'autonomous · Claude Code', state: 'in progress', run: 'working' }]
+              : []
+          }
+          home
+        >
+          <HPane lines={log} />
+        </Herdr>
+      </div>
+      {/* the web app's own usage card, in a column of its own: what the server looks at */}
+      <div className="ww-imp__runnerright">
+        <div className="ww-jg ww-jg--pacecol">
+          <div className="ww-jg__pace">
+            <span className="ww-jg__pacehead">
+              <span className="ww-jg__panelname">Anthropic personal</span>
+              <span className="ww-jg__label">used {now.used}%</span>
+              <span className={over > 0 ? 'ww-jg__label ww-jg__label--danger' : 'ww-jg__label'}>
+                {over > 0 ? `+${over}% above pace` : over < 0 ? `${-over}% under pace` : 'on pace'}
+              </span>
+              <span className="ww-jg__label">week {now.elapsed}% gone</span>
+            </span>
+            <svg className="ww-jg__pacechart" viewBox="0 0 600 160" preserveAspectRatio="none" aria-hidden="true">
+              <path className="ww-jg__paceeven" d={`M${x(0)} ${y(0)} L${x(100)} ${y(100)}`} />
+              <path className="ww-jg__paceline" d={`M${x(0)} ${y(0)} ${line}`} />
+              <path className="ww-jg__pacenow" d={`M${x(now.elapsed)} ${y(0)} L${x(now.elapsed)} ${y(now.used)}`} />
+            </svg>
+            <span className={hold && !now.end ? 'ww-jg__paceverdict' : 'ww-jg__paceverdict ww-jg__paceverdict--ok'}>
+              {/* a served tick shows the usage AFTER the task, so it says what was just added */}
+              {now.end ? 'the week is over → all of it used, none early' : hold ? 'above pace → the queue holds' : `task served → +${now.task?.[1]}% used`}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
+
+/** The empty queue, on the same code and the same herdr window as the runner walk:
+ *  the loop asks, gets nothing, sleeps — and no model is involved in any of it. Only the
+ *  poll that returns a task opens an agent (Yarik, 16.11.2026: «слайд на основі 91 який
+ *  покаже що пофіксили проблему з тим що пуста черга витрачає гроші»). It answers the
+ *  session slide's claim «Every tick costs tokens — empty queue or not». */
+const IDLE_MS = 1100;
+/** how many polls come back empty before one brings a task */
+const IDLE_POLLS = 5;
+/** the lines of RUNNER_CODE one round of the loop stands on: ask, check, sleep */
+const IDLE_ROUND = [1, 2, 3];
+
+function IdleWalk() {
+  const t = useClock(0);
+  const all = t >= Number.MAX_SAFE_INTEGER;
+  // the empty rounds, then: the poll that finds a task, run(task), the agent starts
+  const last = IDLE_POLLS * IDLE_ROUND.length + 2;
+  const step = all ? last : Math.min(Math.floor(t / IDLE_MS) % (last + 5), last);
+  useAnimating(!all && t < (last + 1) * IDLE_MS);
+
+  const round = Math.min(Math.floor(step / IDLE_ROUND.length), IDLE_POLLS);
+  const found = round === IDLE_POLLS;
+  const started = step >= last;
+  const hot = found ? (started ? [7, 8, 9, 10, 11] : [step === last - 2 ? 1 : 2]) : [IDLE_ROUND[step % IDLE_ROUND.length]];
+  const task = WALK_TASKS[0];
+  const at = (n: number) => `03:0${n}`;
+  const polls = Array.from({ length: Math.min(round + 1, IDLE_POLLS) }, (_, n): PaneLine[] => [
+    { kind: 'dim', text: `${at(n)}  GET /api/tasks/next` },
+    { kind: 'plain', text: '       204 · no task · 0 tokens' },
+  ]).flat();
+  const got: PaneLine[] = found
+    ? [
+        { kind: 'dim', text: `${at(IDLE_POLLS)}  GET /api/tasks/next` },
+        { kind: 'plain', text: `       «${task.title}»` },
+        { kind: 'dim', text: `       ${task.pick}` },
+      ]
+    : [];
+  const daemon: PaneLine[] = [{ kind: 'plain' as const, text: '$ myclaw start' }, ...polls, ...got].slice(-11);
+  return (
+    <>
+      <div className="ww-asst__claim ww-asst__claim--great">
+        <span className="ww-asst__verdict">
+          <span aria-hidden="true">✓</span>
+          fixed
+        </span>
+        <span>an empty queue costs nothing</span>
+      </div>
+      <div className="ww-imp__runner ww-imp__runner--full">
+        <div className="ww-imp__runnerleft">
+          <RunnerCode hot={(i) => hot.includes(i)} />
+        </div>
+        <div className="ww-imp__runnerright">
+          <Herdr
+            status={[found ? 'queue: 1' : 'queue: 0', started ? 'agents: 1' : 'agents: 0 · tokens: 0']}
+            spaces={started ? [{ name: task.title, state: 'working', focused: false }] : []}
+            agents={
+              started
+                ? [{ title: task.title, role: `${task.tool} · working`, state: '', run: 'working', focused: false, model: task.model }]
+                : []
+            }
+            big
+            home
+          >
+            <HPane lines={daemon} />
+          </Herdr>
+        </div>
+      </div>
+    </>
+  );
+}
+
+export const IdleSlide: SlideDefinition = {
+  id: 'improve-idle',
+  content: () => (
+    <>
+      <CornerRings corner="top-right" />
+      <div className="ww-imp ww-imp--claim">
+        <IdleWalk />
+      </div>
+    </>
+  ),
+  notes:
+    'And the last of the three: the empty queue. With /loop every tick was a model turn — it '
+    + 'woke up, read the context, asked «is there work?», and I paid for that whether or not '
+    + 'there was any. Now look at the same code. The poll is an HTTP call. It comes back empty, '
+    + 'the if does nothing, the loop sleeps a minute. No pane, no agent, no tokens — all night if '
+    + 'need be. Only when a task does come back does the daemon open a pane and start a model, '
+    + 'and that is the first token spent.',
+};
+
+/** Free models, with no code walk and no terminal (Yarik, 16.11.2026: «давай без кода і
+ *  панелі, просто як налаштувати кодекс і твій вердикт по моделям які ми тестували»).
+ *  Left: what it takes to point Codex at OpenRouter — one provider block and three flags
+ *  (the real runner passes the same settings as `-c` overrides and reads the key through a
+ *  command; `web_search="disabled"` is needed because OpenRouter rejects Codex's built-in
+ *  web-search tool). Right: every free model trialled on Codex, 16.10–14.11.2026, with
+ *  the grade it got — off the free-model-trial skill's ledger, one small agentic task
+ *  each (locate / fix / table). */
+const FREE_SETUP: { text: string }[] = [
+  { text: '# ~/.codex/config.toml' },
+  { text: '[model_providers.openrouter]' },
+  { text: 'name = "OpenRouter"' },
+  { text: 'base_url = "https://openrouter.ai/api/v1"' },
+  { text: 'wire_api = "responses"' },
+  { text: 'env_key = "OPENROUTER_API_KEY"' },
+  { text: '' },
+  { text: '# any vendor/model:free' },
+  { text: '$ codex -c model_provider="openrouter" \\' },
+  { text: '    -c web_search="disabled" \\' },
+  { text: '    -m nvidia/nemotron-3.5-super-vl:free' },
+];
+type Grade = 'good' | 'ok' | 'bad';
+const FREE_GRADES: [string, Grade][] = [
+  ['nemotron-3.5-super-vl', 'good'],
+  ['minimax-m3.1-flash', 'good'],
+  ['crouton-alpha', 'good'],
+  ['nemotron-3-nano-omni', 'good'],
+  ['inkling-2-small', 'good'],
+  ['ernie-5.5-flash-preview', 'good'],
+  ['ling-3.2-flash', 'good'],
+  ['nemotron-3.5-lightning', 'ok'],
+  ['dots-3-note-preview', 'bad'],
+  ['particle-1', 'bad'],
+  ['north-mini-code', 'bad'],
+];
+const GRADE_MARK: Record<Grade, string> = { good: '✓', ok: '~', bad: '✕' };
+
+export const FreeModelsSlide: SlideDefinition = {
+  id: 'improve-free',
+  content: () => (
+    <>
+      <CornerRings corner="top-right" />
+      <div className="ww-imp ww-imp--claim">
+        <div className="ww-asst__claim ww-asst__claim--great">
+          <span className="ww-asst__verdict">
+            <span aria-hidden="true">✓</span>
+            bonus
+          </span>
+          <span>free OpenRouter models, on the same Codex</span>
+        </div>
+        <div className="ww-imp__runner ww-imp__runner--full ww-imp__runner--free">
+          <div className="ww-imp__runnerleft">
+            <RunnerCode code={FREE_SETUP} hot={() => false} />
+          </div>
+          <div className="ww-imp__grades">
+            {FREE_GRADES.map(([model, grade]) => (
+              <div key={model} className={`ww-imp__grade ww-imp__grade--${grade}`}>
+                <span className="ww-imp__grademark">
+                  <span aria-hidden="true">{GRADE_MARK[grade]}</span>
+                  {grade}
+                </span>
+                <span>{model}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  ),
+  notes:
+    'And when the subscription is above pace, or the task is not worth it, there are models that '
+    + 'cost nothing. OpenRouter lists free variants of new models, and Codex can talk to any '
+    + 'provider. On the left is all the setup: one provider block in the config, and three flags '
+    + 'on launch — the provider, web search off, because OpenRouter rejects that tool, and the '
+    + 'model. My daemon passes the same thing per task, so the other panes stay on the '
+    + 'subscription. '
+    + 'On the right is what I found. Every new free model gets one small task with a known '
+    + 'answer — find a function, fix one bug, build a table. Eleven models on Codex in a month: '
+    + 'seven did it cleanly, most in under a minute. One was right but sloppy. Three failed — and '
+    + 'look why: not wrong answers, broken rules. They wrote outside their folder, or tried to '
+    + 'commit. So my verdict: good for small chores where I can check the result, not for real '
+    + 'tickets — the one time I gave a free model a real one, it did not converge.',
+};
 
 export const RunnerSlide: SlideDefinition = {
   id: 'improve-runner',
@@ -806,14 +1059,6 @@ export const RunnerSlide: SlideDefinition = {
     <>
       <CornerRings corner="top-right" />
       <div className="ww-imp ww-imp--claim">
-        {/* no title band: the same «✓ fixed» verdict line as the board slide */}
-        <div className="ww-asst__claim ww-asst__claim--great">
-          <span className="ww-asst__verdict">
-            <span aria-hidden="true">✓</span>
-            fixed
-          </span>
-          <span>different models/agents for different types of tasks</span>
-        </div>
         <RunnerWalk />
       </div>
     </>
@@ -1073,26 +1318,18 @@ export const PaceSlide: SlideDefinition = {
           </span>
           <span>the queue paces the work to the subscription</span>
         </div>
-        <div className="ww-imp__runner ww-imp__runner--full">
-          <div className="ww-imp__runnerleft">
-            <RunnerCode hot={(i) => i === 1} />
-          </div>
-          <div className="ww-imp__runnerright">
-            <Herdr status={['inbox: 3', 'in work: 2', 'Claude 7d 62%']} spaces={RUN_SPACES} agents={RUN_AGENTS}>
-              <HPane lines={CAR_PANE} />
-            </Herdr>
-            {/* the web app's own card, held over the terminal: what the server looks at */}
-            <PaceCard />
-          </div>
-        </div>
+        <PaceWalk />
       </div>
     </>
   ),
   notes:
     'One more thing the queue can do once it, and not the agent, decides what runs next: it '
-    + 'paces the work to my subscription. The server knows how much of the weekly limit is used '
-    + 'and how much of the week is gone. Ahead of pace — low-priority tasks wait; more than a few '
-    + 'points ahead — only high priority is served. So the limit lasts the week and none of it is '
-    + 'left unused at the reset: the best utilization of a subscription I am paying for anyway. '
-    + 'Honest about the picture: the usage card is the app\'s own, with illustrative numbers.',
+    + 'paces the work to my subscription. Watch the chart: the dotted line is an even week, the '
+    + 'red one is what I have used. Every task that finishes adds its cost. While the red line '
+    + 'is not above the dotted one, the next poll gets a task. The moment it is above — the poll '
+    + 'comes back empty, same as an empty queue, and the daemon just sleeps until the week '
+    + 'catches up. So the limit lasts the week and none of it is left unused at the reset: the '
+    + 'best utilization of a subscription I am paying for anyway. '
+    + 'Honest about the picture: the usage card is the app\'s own, with illustrative numbers, and '
+    + 'the real rule is softer — above pace it still serves high-priority tasks.',
 };

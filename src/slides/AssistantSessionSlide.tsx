@@ -60,7 +60,7 @@ type Beat = Line & {
   silent?: boolean;
 };
 
-type Prop = 'talk' | 'photo' | 'phone' | 'ctx' | 'cost' | 'model' | 'map';
+type Prop = 'talk' | 'photo' | 'browser' | 'phone' | 'ctx' | 'cost' | 'model' | 'map';
 type Step = { great: boolean; claim: string; prop: Prop; lines: Beat[] };
 
 /** The queue poll the loop makes on every tick — the one line the session repeats. */
@@ -141,7 +141,7 @@ const LATER: Beat[] = [
   { kind: 'say', text: 'Noted on the booking: own tyres, fitting only. f1c3a8d0 is closed.', ms: FF },
 ];
 
-/** ONE errand, eight beats: the car is due, the dashboard is photographed, the
+/** ONE errand, nine beats: the car is due, the dashboard is photographed, the
  *  slot is taken from the phone, the way back is a paragraph and then a map, the
  *  calendar entry runs on the biggest model there is, three hours of
  *  small print fill the context — and compaction loses the photo from beat 2. */
@@ -188,6 +188,47 @@ const STEPS: Step[] = [
         kind: 'say',
         text: 'No — that is tyre pressure, not the service light. Different problem, same visit: say it when you book.',
         fx: { ctx: 6, cost: 0.14, at: 'done' },
+      },
+    ],
+  },
+  // the browser and the desktop apps (Yarik, 16.11.2026: «have access to my browser and apps
+  // out of the box»): the Claude in Chrome and computer-use tools Claude Code ships with.
+  // The lines keep the CLI's own shape — «<server> - <tool>(args) (MCP)» — with the results
+  // shortened to a phrase; the service and its site are made up (`.example`).
+  {
+    great: true,
+    claim: 'It uses my browser and my apps, out of the box',
+    prop: 'browser',
+    lines: [
+      { kind: 'you', text: 'ok, book it — ask them for a morning this week' },
+      {
+        kind: 'tool',
+        text: 'claude-in-chrome - navigate(url: "https://autohub.example/booking") (MCP)',
+        result: 'Book a service · AutoHub — signed in as you',
+        ms: 800,
+      },
+      {
+        kind: 'tool',
+        text: 'claude-in-chrome - form_input(field: "Notes", value: "yearly service; tyre-pressure light is on") (MCP)',
+        result: 'Form filled: the notes and three choices',
+        ms: 800,
+      },
+      {
+        kind: 'tool',
+        text: 'claude-in-chrome - computer(action: "left_click", ref: "Request a callback") (MCP)',
+        result: 'Request sent — «we will call you back»',
+        ms: 700,
+      },
+      {
+        kind: 'tool',
+        text: 'computer-use - open_application(app: "Calendar") (MCP)',
+        result: 'This week: Thursday and Friday mornings are free',
+        ms: 700,
+      },
+      {
+        kind: 'say',
+        text: 'Sent from your own browser — you were already signed in. I gave them Thursday or Friday morning; they will call back.',
+        fx: { ctx: 7, cost: 0.17, at: 'done' },
       },
     ],
   },
@@ -299,6 +340,8 @@ const STEPS: Step[] = [
 ];
 
 const COST_BEAT = STEPS.findIndex((s) => s.prop === 'cost');
+/** The beat the phone takes over on; it shows the conversation from there. */
+const PHONE_BEAT = STEPS.findIndex((s) => s.prop === 'phone');
 const shiftClock = (label: string, minutes: number) => {
   const m = /^(\d+):(\d+)(am|pm)$/.exec(label);
   if (!m) return label;
@@ -393,6 +436,85 @@ const money = (value: number) => `$${value.toFixed(2)}`;
  */
 function Photo() {
   return <img className="ww-asst__photo" src={dashLight} alt="" />;
+}
+
+/** The browser the agent drives: my own Chrome, already signed in to the service. The page
+ *  is a made-up workshop's booking form, drawn the way such a page looks — a header with my
+ *  account in it, the form, a summary of the visit — and it fills as the tool calls land.
+ *  Claude in Chrome's own marks are on it: the notice under the toolbar and the orange
+ *  frame round the page. A recreation; no real site. */
+function BrowserWin({ rows }: { rows: Played[] }) {
+  const tools = rows.filter((row) => row.line.kind === 'tool');
+  const opened = !!tools[0]?.done;
+  const filled = !!tools[1]?.done;
+  const sent = !!tools[2]?.done;
+  const chip = (label: string, on: boolean) => (
+    <span className={on ? 'ww-web__chip ww-web__chip--on' : 'ww-web__chip'}>{label}</span>
+  );
+  return (
+    <div className="ww-web">
+      <div className="ww-web__tabs">
+        <span className="ww-dot ww-dot--red" />
+        <span className="ww-dot ww-dot--amber" />
+        <span className="ww-dot ww-dot--green" />
+        <span className="ww-web__tab">{opened ? 'Book a service — AutoHub' : 'New Tab'}</span>
+      </div>
+      <div className="ww-web__bar">
+        <span className="ww-web__nav" aria-hidden="true">←&nbsp;&nbsp;→&nbsp;&nbsp;↻</span>
+        <span className="ww-web__url">{opened ? 'autohub.example/booking' : ''}</span>
+      </div>
+      <div className="ww-web__notice">Claude is working in this tab</div>
+      <div className="ww-web__page" data-on={opened || undefined}>
+        <div className="ww-web__head">
+          <strong>AutoHub</strong>
+          <span>Services</span>
+          <span>Prices</span>
+          <span>Workshops</span>
+          <span className="ww-web__me">My garage</span>
+        </div>
+        <div className="ww-web__cols">
+          <div className="ww-web__form">
+            <strong className="ww-web__h1">Book a service</strong>
+            <span className="ww-web__label">What do you need?</span>
+            <span className="ww-web__chips">
+              {chip('Yearly service', filled)}
+              {chip('Diagnostics', false)}
+              {chip('Tyres', false)}
+            </span>
+            <span className="ww-web__label">When suits you?</span>
+            <span className="ww-web__chips">
+              {chip('This week', filled)}
+              {chip('Morning', filled)}
+              {chip('Afternoon', false)}
+            </span>
+            <span className="ww-web__label">Anything we should know?</span>
+            <span className="ww-web__area">{filled ? 'Yearly service; tyre-pressure light is on.' : ''}</span>
+            {sent ? (
+              <span className="ww-web__sent">✓ Request sent — we will call you back</span>
+            ) : (
+              <span className="ww-web__button">Request a callback</span>
+            )}
+          </div>
+          <div className="ww-web__card">
+            <strong>Your visit</strong>
+            <span className="ww-web__row">
+              <i>Workshop</i>
+              <b>Kyrylivska St</b>
+            </span>
+            <span className="ww-web__row">
+              <i>Last visit</i>
+              <b>September 2025</b>
+            </span>
+            <span className="ww-web__row">
+              <i>We call</i>
+              <b>the number on file</b>
+            </span>
+            <span className="ww-web__fine">No payment now. You confirm the slot on the phone.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 /** Where the photo comes from: a Finder window in gallery view — the selected
@@ -528,12 +650,12 @@ function Scene({ stage }: { stage: number }) {
   const ctx = useTween(status.ctx, status.ctxOver, before.ctx);
   const cost = useTween(status.cost, status.costOver, before.cost);
 
-  // The phone shows the conversation since it took over (beat 3 onward).
+  // The phone shows the conversation since it took over.
   const phoneRows: Played[] = [
-    ...STEPS.slice(2, Math.max(2, beat))
+    ...STEPS.slice(PHONE_BEAT, Math.max(PHONE_BEAT, beat))
       .flatMap((s) => s.lines)
       .map((line) => ({ line, shown: line.text, started: true, done: true, typing: false })),
-    ...(beat >= 2 ? live : []),
+    ...(beat >= PHONE_BEAT ? live : []),
   ];
 
   return (
@@ -547,7 +669,7 @@ function Scene({ stage }: { stage: number }) {
       </div>
 
       <div className="ww-asst__scene">
-        <div className={`ww-boot__term ww-asst__term${LOUPE.includes(step.prop) ? ' ww-asst__term--loupe' : ''}`}>
+        <div className={`ww-boot__term ww-asst__term${LOUPE.includes(step.prop) ? ' ww-asst__term--loupe' : ''}${step.prop === 'browser' ? ' ww-asst__term--web' : ''}`}>
           <div className="ww-boot__chrome">
             <span className="ww-dot ww-dot--red" />
             <span className="ww-dot ww-dot--amber" />
@@ -607,8 +729,9 @@ function Scene({ stage }: { stage: number }) {
         )}
         {/* only real interfaces here — Finder, the phone, a map; the rest is narrated,
             and the figures that matter are already in the status line */}
-        <div className={`ww-asst__side${step.prop === 'map' ? ' ww-asst__side--wide' : ''}`} key={step.prop}>
+        <div className={`ww-asst__side${step.prop === 'map' ? ' ww-asst__side--wide' : step.prop === 'browser' ? ' ww-asst__side--web' : ''}`} key={step.prop}>
           {step.prop === 'photo' && <Finder />}
+          {step.prop === 'browser' && <BrowserWin rows={live} />}
           {step.prop === 'phone' && <Phone rows={phoneRows} />}
           {step.prop === 'map' && <MapsWindow />}
         </div>
@@ -632,7 +755,7 @@ export const AssistantSessionSlide: SlideDefinition = {
   notes:
     'The assistant is done, and it is barely any code: Claude Code, a loop, a task queue. Seven '
     + 'ONE session, and one errand running through all of it — my car is due for a service. '
-    + 'Eight clicks: three things about it are great, four are not (the first of the four takes '
+    + 'Nine clicks: four things about it are great, four are not (the first of the four takes '
     + 'two clicks). '
     + '1 — I open Claude Code and just talk to it: when was the car last serviced? First it loads '
     + 'my user-information skill — what I drive, that I service it yearly — then asks the only API '
@@ -641,28 +764,33 @@ export const AssistantSessionSlide: SlideDefinition = {
     + '2 — it supports everything Claude Code supports out of the box. I drag the photo of the '
     + 'dashboard onto the prompt and it reads it: that lamp is tyre pressure, not the service '
     + 'light. New models the day they land, the same way. '
-    + '3 — remote control: I leave the laptop, the service calls back, and I take the slot from '
+    + '3 — and it is not locked in the terminal. I say «book it» and it opens the service\'s site '
+    + 'in MY browser — the one where I am already signed in — fills the form and presses the button; then '
+    + 'it looks at the Calendar app on my Mac to see which mornings are free. I connected '
+    + 'nothing and wrote nothing: the browser and the desktop come with Claude Code. (The '
+    + 'service and its site are made up; the tool lines are shortened.) '
+    + '4 — remote control: I leave the laptop, the service calls back, and I take the slot from '
     + 'the phone — in the SAME session. Even greater — and I wrote not a line of it. Every feature '
     + 'Claude Code ever ships, this assistant gets for free. '
     + 'Now the other four — keep them, because the rest of the talk is these four. '
-    + '4 — chat is the most generic UX, not the most convenient. I ask how to get from the '
+    + '5 — chat is the most generic UX, not the most convenient. I ask how to get from the '
     + 'service to the office, and the answer is correct, complete — and a paragraph: three routes, '
     + 'street by street. Let them start reading it. Click — THIS is what I wanted: the same three '
     + 'routes on a map, one glance. Claude Code cannot show me that; a terminal has only words. '
     + '(The routes and times are illustrative; the map is a sketch of Kyiv, not a real app.) '
-    + '5 — the model in the status line is fixed. The loop wakes up and takes the smallest task '
+    + '6 — the model in the status line is fixed. The loop wakes up and takes the smallest task '
     + 'there is: «put the service in the calendar» — one call to the Google Calendar connector. '
     + 'And it is done by Opus, at Opus prices, with the whole conversation sent along. Look at '
     + 'the status line: the biggest model, and the bill moved for one calendar entry. A model ten '
     + 'times cheaper would have done it; the hard tasks do need the big one — and the loop '
     + 'cannot pick per task, it runs whatever the session was started with. (Sums illustrative.) '
-    + '6 — and then three hours of the small print of that ONE errand: what the insurance covers, '
+    + '7 — and then three hours of the small print of that ONE errand: what the insurance covers, '
     + 'comparing the quotes, clearing Thursday morning, the winter tyres. Four ticks, and every '
     + 'word of it stays in the context. I cannot clear it automatically between tasks. It '
     + 'compacts — and what it knew becomes a summary: it still «knows» the tyre-pressure light was '
     + 'on, because that was SAID; ask anything else about the photo from beat 2 and it has to ask '
     + 'for the photo again. '
-    + '7 — the loop ticks every ten minutes and every tick costs tokens, even when the queue is '
+    + '8 — the loop ticks every ten minutes and every tick costs tokens, even when the queue is '
     + 'empty. Watch the cost in the status line. And it gets worse as the session goes on: a tick '
     + 'sends the whole conversation again, so the bigger the context, the more an EMPTY tick '
     + 'costs. (The sum on screen is illustrative — say so if asked; I did not measure a tick.) '
