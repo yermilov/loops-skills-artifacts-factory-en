@@ -1,4 +1,4 @@
-import { QRCodeSVG } from 'qrcode.react';
+import { QrLink } from '../components/QrLink';
 import { SlideDefinition } from '../types/slides';
 import { CornerRings } from '../components/wawtech';
 import { ThankStickers } from '../components/HelloStickers';
@@ -29,7 +29,7 @@ export const FinalSlide: SlideDefinition = {
                 <span>yarik-yermilov</span>
               </div>
             </div>
-            <QRCodeSVG
+            <QrLink
               className="ww-final__qr"
               value={LINKEDIN_URL}
               size={420}
@@ -46,7 +46,7 @@ export const FinalSlide: SlideDefinition = {
             <div className="ww-final__head ww-final__head--slides">
               <div className="ww-final__label">these slides</div>
             </div>
-            <QRCodeSVG
+            <QrLink
               className="ww-final__qr"
               value={SLIDES_URL}
               size={420}

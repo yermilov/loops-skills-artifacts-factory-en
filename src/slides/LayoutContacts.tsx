@@ -1,4 +1,4 @@
-import { QRCodeSVG } from 'qrcode.react';
+import { QrLink } from '../components/QrLink';
 import { SlideDefinition } from '../types/slides';
 import { CornerRings } from '../components/wawtech';
 
@@ -21,7 +21,7 @@ export const LayoutContacts: SlideDefinition = {
           </div>
         </div>
         <div className="ww-contacts__qr">
-          <QRCodeSVG value={DECK_URL} size={480} fgColor="var(--ww-purple)" bgColor="var(--ww-white)" />
+          <QrLink value={DECK_URL} size={480} fgColor="var(--ww-purple)" bgColor="var(--ww-white)" />
         </div>
       </div>
     </>

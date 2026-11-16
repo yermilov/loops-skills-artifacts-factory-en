@@ -50,10 +50,10 @@ src/
 │   ├── AssistantReadySlide.tsx   # «Our barebones AI assistant is ready» — the full-bleed announcement over a Phantom Menace still
 │   ├── AssistantSessionSlide.tsx # the session that tests it (no title band): one errand, eight beats, a prop beside it
 │   ├── RouteMap.tsx              # the maps app with three routes — the session's map reveal and the Artifacts slide share it
-│   ├── improve.tsx               # «How do we improve it?» — the task page that plays a task's life (and answers with an artifact), the runner, any agent
+│   ├── improve.tsx               # «How do we improve it?» — the task board (✓ fixed: a web UI), the runner walk-through, agents arguing over a review, the pace card; `Herdr` + `CodexPane`
 │   ├── MiniappsSlide.tsx         # «artifacts that stay: miniapps» — Coffee is BORN in a task, then one page a click; Supplies on a phone, a Silpo cart; Home replays its real task, then walks its cards
 │   ├── ledgerApp.tsx             # the assistant's web app shell both of them draw in (sidebar, task cards, timeline)
-│   ├── factory.tsx               # SCHEMATIC placeholders (DRAFT pill) for the last arc — outlines, not slides
+│   ├── factory.tsx               # the ARCHITECTURE drawing (three slides, one `Scene` each) + SCHEMATIC placeholders (DRAFT pill) for the last arc
 │   ├── AgendaSlide.tsx           # template p.3 — exports AGENDA (the four words)
 │   ├── sectionSlide.tsx          # factory for section openers (template p.11/18)
 │   ├── sections.tsx              # one opener per AGENDA word
@@ -285,6 +285,11 @@ his as-needed medicines, the Wi-Fi network's name, device MAC addresses and seri
 are saved into the repo (`src/assets/{silpo,books,movies,threat}/`), never hot-linked — offline mode.
 A third party's pictures are still «ask first»; he asked for the ones that are there.
 
+**One exception, by Yarik's own decision (16.11.2026):** the Sleep miniapp page shows the children's
+first names in its tabs with their sleep charts. He was asked before the commit — the review had
+flagged it against the rule above — and chose to keep the real names. It covers that page only; the
+rest of the rule stands (no ages, medicines, doctors, and nothing of theirs on any other slide).
+
 **Reading the live page (the logged-in Chrome) — four traps from that evening.**
 - **Read a ranking twice.** The Books order depends on his duels, which load after the list: the
   first read showed every duel score 0.00 and a different order; a few seconds later the real one.
@@ -325,6 +330,39 @@ lines you add.
 warns about a dead rule. The sweep that worked: drop every rule whose `ww-…` classes appear in no
 `.tsx` (treating `` `ww-x--${…}` `` as using every `ww-x--*`), then screenshot a dozen frames before
 and after and `cmp` the PNGs — byte-identical is the pass.
+
+## The architecture and runner arc, and what a day of pairing on it taught (16.11.2026)
+
+After the assistant-session slide the deck now runs: architecture as it started (`ArchitectureSlide`)
+→ `RunnerSlide` → `AnyAgentSlide` → the architecture again with the daemon (`ArchitectureDaemonSlide`)
+→ with two laptops (`ArchitectureTwoSlide`) → `PaceSlide` → `TaskBoardSlide` → `MiniappsSlide`.
+`bunx vite-node scripts/frames.mts` prints the frame map (plain `bun` fails on `import.meta.glob`).
+
+- **The architecture is ONE drawing fed by a `Scene`** (`factory.tsx`): a 1696×904 box, everything
+  placed in px, every line a hand-written SVG path. A new state of the system is a new `Scene`
+  spread from the previous one, not new drawing code. `SCENE_NOW` (every screen, external services)
+  is parked, still unused. Laptops may keep their own time (`shift`), their own task list (`tasks`)
+  and their own row of MCP tools (`tools`) — the queue then shows what is really waiting.
+- **Yarik's rulings on that drawing:** no boxes or frames around things, no legend, no «excess»
+  titles; a server is a cloud, not a circle; MCP is a connected system, not a numbered step; the
+  queue is empty until something was asked; a report visibly lands in the database.
+- **A slide that «fixes» a problem carries the verdict line, not a title:** `ww-imp ww-imp--claim`
+  with `ww-asst__claim ww-asst__claim--great` / `ww-asst__verdict` («✓ fixed …», «✓ bonus …»), as
+  the board slide does. Do not invent a new badge — grep for the existing one first.
+- **The product is «myclaw» on every slide and in every speaker note.** Never «juggernaut» — not in
+  a prompt, a skill name or a tool call drawn in a terminal.
+- **A terminal on a slide is a shortened REAL session, not an invention.** Read one first:
+  `herdr agent list`, then `herdr pane read <pane> --source recent --lines 400` on a finished pane;
+  the runner's prompts and herdr calls are in `~/src/juggernaut/apps/cli/src`. Claude Code and Codex
+  have different TUIs — `HPane` draws the first, `CodexPane` the second. Which model a staged task
+  gets follows the routing table in the `juggernaut-tasks:create-task` skill (there is no haiku
+  and no «low» in it).
+- **`Herdr` has a `big` mode** (zoom .85, narrower sidebar) for the walk-throughs; at that size a
+  pane holds about 25 characters a line (44 with `cols`), so every staged line is written to fit.
+- **deck-lint rejects a literal `•` in copy**, terminal output included — use the pane's own bullet
+  kinds, or draw the dot in CSS.
+- **A self-playing frame is `useClock(0)` + `useAnimating`**, with every visible thing derived from
+  the step number, so the export (clock at its maximum) lands on the last step.
 
 ## Offline mode — the deck must survive a dead conference Wi-Fi
 

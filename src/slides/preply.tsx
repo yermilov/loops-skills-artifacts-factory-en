@@ -1,5 +1,5 @@
 import type React from 'react';
-import { QRCodeSVG } from 'qrcode.react';
+import { QrLink } from '../components/QrLink';
 import { SlideDefinition } from '../types/slides';
 import { CornerRings, Reveal } from '../components/wawtech';
 import preplyLogo from '../assets/preply/logo.svg';
@@ -219,7 +219,7 @@ export const PreplyHiringSlide: SlideDefinition = {
         <div className="ww-preply-hiring__cta">
           <h2>We are hiring</h2>
           <div className="ww-preply-hiring__qr">
-            <QRCodeSVG
+            <QrLink
               value={CAREERS_URL}
               size={460}
               fgColor="var(--pp-pink-dark)"

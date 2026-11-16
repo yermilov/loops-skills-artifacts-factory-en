@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
+import { QrLink } from '../components/QrLink';
 import { SlideDefinition } from '../types/slides';
 import { CornerRings } from '../components/wawtech';
 import { Code, Emphasis, SlideLink } from '../components/SlideElements';
@@ -193,7 +193,7 @@ const YYSTACK_STAGE = WAY_IN.length + WAY_OUT.length + 1;
 function Yystack() {
   return (
     <aside className="ww-labyrinth__yystack ww-overlay reveal-in">
-      <QRCodeSVG
+      <QrLink
         className="ww-labyrinth__yystack-qr"
         value={YYSTACK_URL}
         size={260}

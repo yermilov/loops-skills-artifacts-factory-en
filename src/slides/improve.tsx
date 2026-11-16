@@ -1,10 +1,11 @@
 import { ReactNode } from 'react';
 import { SlideDefinition } from '../types/slides';
-import { CornerRings, Reveal } from '../components/wawtech';
+import { CornerRings } from '../components/wawtech';
 import { ROUTES, RouteMap } from './RouteMap';
 import { useClock } from './BootstrapSlide';
 import { useAnimating } from '../components/frameSettled';
 import dashLight from '../assets/assistant/dash-light.jpg';
+import herdrLogo from '../assets/herdr/logo.svg';
 import {
   App,
   Chip,
@@ -20,10 +21,9 @@ import {
 
 /**
  * «How do we improve it?» — six slides that answer the four «not so great»
- * beats of the session slide before them, and say so: every slide carries the
- * same LEDGER at its foot — the four problems as pills, grey while open,
- * magenta while this slide is working on one, mint once it is fixed. By the
- * last slide all four are mint, which is the answer to «does it cover them?».
+ * beats of the session slide before them, and say so in their headline: the
+ * session slide's verdict line turned over, «✓ fixed …». (The LEDGER of problem
+ * pills that every slide carried at its foot was taken off on 16.11.2026.)
  *
  * Yarik's outline (12.11.2026), drawn from what juggernaut actually is — the
  * project is aliased «myclaw» throughout the deck. The interfaces are
@@ -53,27 +53,6 @@ import {
  *   - agents talking: `juggernaut review` / `consult` / `delegate`
  *     (apps/cli/src/review.ts, consult.ts, delegate.ts) — always the OTHER vendor.
  */
-
-/* ─── The ledger: the four problems, and which of them is settled ─────────── */
-
-const PROBLEMS = ['chat-only UX', 'ticks cost tokens', 'context fills up', 'one model'] as const;
-type Problem = (typeof PROBLEMS)[number];
-
-function Ledger({ fixed = [], now = [] }: { fixed?: Problem[]; now?: Problem[] }) {
-  return (
-    <div className="ww-imp__ledger">
-      {PROBLEMS.map((problem) => {
-        const state = fixed.includes(problem) ? 'fixed' : now.includes(problem) ? 'now' : 'open';
-        return (
-          <span key={problem} className={`ww-imp__problem ww-imp__problem--${state}`}>
-            {state === 'fixed' && <span aria-hidden="true">✓ </span>}
-            {problem}
-          </span>
-        );
-      })}
-    </div>
-  );
-}
 
 /** A browser window: the web app is the point of slides 1–4. */
 export function Browser({ url, children }: { url: string; children: ReactNode }) {
@@ -382,7 +361,10 @@ export const TaskBoardSlide: SlideDefinition = {
 type Run = 'working' | 'idle' | 'done';
 type Space = { name: string; state: Run; focused?: boolean };
 type Agent = { title: string; role: string; state: string; run: Run; focused?: boolean; model?: string };
-type PaneLine = { kind: 'you' | 'tool' | 'say' | 'dim'; text: string };
+/** `sub` is a tool's result line (⎿), `plain` unbulleted output, `banner` Claude
+ *  Code's start screen (text = the model line), `box` its empty composer, `ask` a
+ *  prompt as Codex prints it (›). */
+type PaneLine = { kind: 'you' | 'tool' | 'say' | 'dim' | 'sub' | 'plain' | 'banner' | 'box' | 'ask'; text: string };
 
 /**
  * herdr, drawn after the running app (13.11.2026): on the left «spaces» — the
@@ -398,19 +380,28 @@ function Herdr({
   spaces,
   agents,
   hotModel = false,
+  big = false,
+  home = false,
+  cols = false,
   children,
 }: {
   status: string[];
   spaces: Space[];
   agents: Agent[];
   hotModel?: boolean;
+  /** drawn larger, with a narrower sidebar: the walk-through, where it is read line by line */
+  big?: boolean;
+  /** the runner's own space is the focused one */
+  home?: boolean;
+  /** the panes stand side by side (a split to the right), not one above the other */
+  cols?: boolean;
   children: ReactNode;
 }) {
   return (
-    <div className="ww-hd">
+    <div className={big ? 'ww-hd ww-hd--big' : 'ww-hd'}>
       <div className="ww-hd__side">
         <span className="ww-hd__head">spaces</span>
-        <span className="ww-hd__space">
+        <span className={home ? 'ww-hd__space ww-hd__space--on' : 'ww-hd__space'}>
           <span className="ww-hd__dot ww-hd__dot--none" />
           myclaw
         </span>
@@ -439,18 +430,26 @@ function Herdr({
             <span className="ww-hd__status">
               {agent.state}
               {agent.model && (
-                <span className={hotModel ? 'ww-hd__model ww-hd__model--hot' : 'ww-hd__model'}> · {agent.model}</span>
+                <span className={hotModel ? 'ww-hd__model ww-hd__model--hot' : 'ww-hd__model'}>
+                  {agent.state ? ' · ' : ''}
+                  {agent.model}
+                </span>
               )}
             </span>
           </span>
         ))}
+        {/* herdr's own mark, from its repository (assets/logo.svg) — Yarik, 16.11.2026 */}
+        <span className="ww-hd__brand">
+          <img src={herdrLogo} alt="" />
+          herdr
+        </span>
       </div>
       <div className="ww-hd__main">
         <span className="ww-hd__tabs">
           <span className="ww-hd__tab">1</span>
           <span>+</span>
         </span>
-        <div className="ww-hd__panes">{children}</div>
+        <div className={cols ? 'ww-hd__panes ww-hd__panes--cols' : 'ww-hd__panes'}>{children}</div>
       </div>
     </div>
   );
@@ -459,23 +458,41 @@ function Herdr({
 function HPane({ lines }: { lines: PaneLine[] }) {
   return (
     <div className="ww-hd__pane">
-      {lines.map((line) => (
-        <span key={line.text} className={`ww-hd__line ww-hd__line--${line.kind}`}>
-          {line.kind === 'you' && <span className="ww-hd__caret">&gt; </span>}
-          {(line.kind === 'tool' || line.kind === 'say') && <span className="ww-hd__bullet">⏺ </span>}
-          {line.text}
-        </span>
-      ))}
+      {lines.map((line, i) => {
+        if (line.kind === 'banner')
+          return (
+            <span key={i} className="ww-hd__line ww-hd__banner">
+              <span className="ww-hd__mascot">{' ▐▛███▛█ \n▝▜██████▀\n ▝▝   ▝▝ '}</span>
+              <span>
+                Claude Code v2.1{'\n'}
+                <span className="ww-hd__line--dim">
+                  {line.text}
+                  {'\n'}~/src · /rc
+                </span>
+              </span>
+            </span>
+          );
+        if (line.kind === 'box')
+          return (
+            <span key={i} className="ww-hd__line ww-hd__box">
+              <span className="ww-hd__boxin">❯</span>
+              <span className="ww-hd__line--dim">  ⏵⏵ auto mode on</span>
+            </span>
+          );
+        return (
+          <span key={i} className={`ww-hd__line ww-hd__line--${line.kind}`}>
+            {line.kind === 'you' && <span className="ww-hd__caret">❯ </span>}
+            {line.kind === 'ask' && <span className="ww-hd__caret">› </span>}
+            {(line.kind === 'tool' || line.kind === 'say') && <span className="ww-hd__bullet">⏺ </span>}
+            {line.kind === 'sub' && ' ⎿ '}
+            {line.text}
+          </span>
+        );
+      })}
     </div>
   );
 }
 
-const DAEMON_PANE: PaneLine[] = [
-  { kind: 'dim', text: '$ myclaw start' },
-  { kind: 'dim', text: '23:41:07  GET /api/tasks/next → none' },
-  { kind: 'dim', text: '23:42:07  GET /api/tasks/next → none' },
-  { kind: 'dim', text: '23:43:07  GET /api/tasks/next → none' },
-];
 const CAR_PANE: PaneLine[] = [
   { kind: 'you', text: 'Work the task «Book the car service»' },
   { kind: 'tool', text: 'Skill(do-task)' },
@@ -488,37 +505,263 @@ const RUN_SPACES: Space[] = [
   { name: 'Summarise the building chat', state: 'done' },
 ];
 const RUN_AGENTS: Agent[] = [
-  { title: 'Book the car service', role: 'autonomous · Claude Code', state: 'in progress', run: 'working', focused: true, model: 'opus · high' },
-  { title: 'Put the service in the calendar', role: 'autonomous · Claude Code', state: 'in progress', run: 'working', model: 'haiku · low' },
-  { title: 'Summarise the building chat', role: 'autonomous · Claude Code', state: 'finished', run: 'done', model: 'sonnet · low' },
+  { title: 'Book the car service', role: 'autonomous · Claude Code', state: 'in progress', run: 'working', focused: true },
+  { title: 'Put the service in the calendar', role: 'autonomous · Claude Code', state: 'in progress', run: 'working' },
+  { title: 'Summarise the building chat', role: 'autonomous · Claude Code', state: 'finished', run: 'done' },
 ];
 
-/** The loop, as code: each line tagged with the beat that lights it. */
-const RUNNER_CODE: { text: string; at?: number; also?: number }[] = [
+/** The loop, as code. `run` is not
+ *  awaited — every task works in its own pane while the loop keeps polling. The whole
+ *  life of a task is here (Yarik, 16.11.2026): a pane, an agent, the prompt that starts
+ *  it, the wait for it to finish, the session log (Claude Code's own .jsonl transcript)
+ *  sent to the server. The herdr verbs are its real ones: workspace create · agent
+ *  start / prompt / wait. */
+const RUNNER_CODE: { text: string }[] = [
   { text: 'while (true) {' },
-  { text: "  task = await fetch('/api/tasks/next')", at: 1, also: 4 },
-  { text: '  if (task) {' },
-  { text: "    herdr('workspace create')", at: 2 },
-  { text: "    herdr('agent start', task.id," },
-  { text: "      '--model', task.model,", at: 3 },
-  { text: "      '--effort', task.effort)", at: 3 },
-  { text: '  }' },
-  { text: '  await sleep(60_000)', at: 1 },
+  { text: "  task = await fetch('/api/tasks/next')" },
+  { text: '  if (task) run(task)' },
+  { text: '  await sleep(60_000)' },
   { text: '}' },
+  { text: '' },
+  { text: 'async function run(task) {' },
+  { text: "  herdr('workspace create')" },
+  { text: "  herdr('agent start', task.agent," },
+  { text: "    '--model', task.model," },
+  { text: "    '--effort', task.effort)" },
+  { text: "  herdr('agent prompt', task.prompt)" },
+  { text: "  await herdr('agent wait')" },
+  { text: "  upload(task, 'session.jsonl')" },
+  { text: '} ' },
 ];
 
-const RUNNER_BEATS: { claim: string; fixed: Problem[] }[] = [
-  { claim: 'Plain code polls the queue — an empty tick costs nothing', fixed: ['ticks cost tokens'] },
-  { claim: 'Every task gets its own pane — a fresh context', fixed: ['ticks cost tokens', 'context fills up'] },
+/**
+ * Frame 1: the code runs, line by line, for one real task, and the terminal shows
+ * what each line did (Yarik, 16.11.2026: «покажемо анімацією покроково що робить
+ * кожен рядок коду для реальної задачі і відповідно що відбувається на ui»).
+ * Each step lights the line(s) of RUNNER_CODE it stands on; everything the terminal
+ * shows is derived from the step's number, so the export (the clock at its end)
+ * lands on the last step with the whole story on screen.
+ */
+const WALK_MS = 2400;
+/** The tasks the walk-through runs. The first is followed line by line; the next two
+ *  arrive faster and make the title's point — a model, an effort and an agent per task
+ *  (Yarik, 16.11.2026: «продовж анімацію ще декількома задачами, кожна з яких
+ *  використовує різні моделі, а деякі — codex»). Which model goes with which task
+ *  follows the routing table the real system files tasks by (its create-task skill):
+ *  complex agentic work → opus · medium; a trivial action → sonnet · medium; image
+ *  generation is Codex's lane, simple agentic work → gpt-6-luna · high. `open`/`start`/`prompt`/`done` are the
+ *  steps at which the space, the agent, its first prompt and its last word appear. */
+type WalkTask = {
+  title: string;
+  tool: 'Claude Code' | 'Codex';
+  /** as the queue names it in the runner's log */
+  pick: string;
+  model: string;
+  /** the shell line `agent start` types into the pane */
+  cmd: string;
+  /** the model line of the agent's start screen */
+  banner: string;
+  /** its closing message */
+  said: string;
+  open: number;
+  start: number;
+  prompt: number;
+  done: number;
+};
+const WALK_TASKS: WalkTask[] = [
   {
-    claim: 'Model and effort are picked per task',
-    fixed: ['ticks cost tokens', 'context fills up', 'one model'],
+    title: 'Book the car service',
+    tool: 'Claude Code',
+    pick: 'claude · opus · medium',
+    model: 'opus · medium',
+    cmd: '$ claude --remote-control --model opus --effort medium',
+    banner: 'Opus 5.5 · medium',
+    said: 'The car service is booked; the report is on the task.',
+    open: 2,
+    start: 3,
+    prompt: 4,
+    done: 8,
   },
   {
-    claim: 'And the queue paces the work to the subscription',
-    fixed: ['ticks cost tokens', 'context fills up', 'one model'],
+    title: 'Put the service in the calendar',
+    tool: 'Claude Code',
+    pick: 'claude · sonnet · medium',
+    model: 'sonnet · medium',
+    cmd: '$ claude --remote-control --model sonnet --effort medium',
+    banner: 'Sonnet 5.5 · medium',
+    said: 'It is in the calendar; the report is on the task.',
+    open: 11,
+    start: 11,
+    prompt: 11,
+    done: 13,
+  },
+  {
+    title: 'Draw a cover for the playlist',
+    tool: 'Codex',
+    pick: 'codex · gpt-6-luna · high',
+    model: 'gpt-6-luna · high',
+    cmd: '$ codex -m gpt-6-luna -c model_reasoning_effort="high"',
+    banner: 'gpt-6-luna',
+    said: 'The cover is on the playlist; the report is on the task.',
+    open: 13,
+    start: 13,
+    prompt: 13,
+    done: 14,
   },
 ];
+/** The lines of RUNNER_CODE each step stands on. The walk opens on a poll that
+ *  finds a task: the empty queue is another slide's subject (Yarik, 16.11.2026). */
+const WALK: number[][] = [
+  [1], // 0 · the poll: a task
+  [2], // 1 · run(task), not awaited
+  [7], // 2 · a space of its own
+  [8, 9, 10], // 3 · the agent, its model and effort
+  [11], // 4 · the prompt starts the work
+  [12], // 5 · wait: the agent works…
+  [12], // 6
+  [12], // 7
+  [12], // 8 · …and finishes
+  [13], // 9 · the session log goes to the server
+  [1, 2], // 10 · the next task: another model
+  [7, 8, 9, 10, 11], // 11
+  [1, 2], // 12 · and one for another agent
+  [7, 8, 9, 10, 11], // 13
+  [12, 13], // 14 · all three done
+];
+/** Which pane is focused at each step: -1 the runner's own, else a task's. */
+const WALK_FOCUS = [-1, -1, 0, 0, 0, 0, 0, 0, 0, -1, -1, 1, -1, 2, 2];
+
+function RunnerWalk() {
+  const t = useClock(0);
+  const all = t >= Number.MAX_SAFE_INTEGER;
+  const last = WALK.length - 1;
+  // one pass, a pause on the last step, then again
+  const step = all ? last : Math.min(Math.floor(t / WALK_MS) % (WALK.length + 2), last);
+  useAnimating(!all && t < WALK.length * WALK_MS);
+
+  const focus = WALK_FOCUS[step];
+  const runOf = (task: WalkTask): Run => (step >= task.done ? 'done' : step >= task.prompt ? 'working' : 'idle');
+  const open = WALK_TASKS.filter((task) => step >= task.open);
+  const working = open.filter((task) => runOf(task) === 'working').length;
+  const queued = step <= 1 || step === 10 || step === 12;
+  // Both panes are a real night session, shortened (Yarik, 16.11.2026: «має виглядати
+  // як спрощена версія реальної сесії» — Claude Code's UI, the commands herdr runs,
+  // the session log). Read off a finished pane with `herdr pane read`, 16.11.2026:
+  // the shell line `agent start` types, the agent's start screen, the runner's first
+  // prompt (firstPrompt in the real runner — its first sentence, without the id), the
+  // skill loading, the collapsed «Called … N times» lines, the closing message, the
+  // «✻ … for» line and the empty composer. The runner's log names its real herdr calls
+  // and the transcript it uploads. The product is «myclaw» on every slide.
+  const at = (from: number, ...lines: PaneLine[]): PaneLine[] => (step >= from ? lines : []);
+  const picked = (from: number, task: WalkTask): PaneLine[] =>
+    at(
+      from,
+      { kind: 'dim', text: 'GET /api/tasks/next' },
+      { kind: 'plain', text: `  «${task.title}»` },
+      { kind: 'dim', text: `  ${task.pick}` },
+    );
+  const ran = (from: number, task: WalkTask): PaneLine[] =>
+    at(
+      from,
+      { kind: 'dim', text: 'herdr workspace create' },
+      { kind: 'dim', text: `herdr agent start --kind ${task.tool === 'Codex' ? 'codex' : 'claude'}` },
+      { kind: 'dim', text: 'herdr agent prompt' },
+    );
+  const daemon: PaneLine[] = [
+    { kind: 'plain', text: '$ myclaw start' },
+    ...picked(0, WALK_TASKS[0]),
+    ...ran(9, WALK_TASKS[0]),
+    ...at(
+      9,
+      { kind: 'dim', text: 'herdr agent wait → idle' },
+      { kind: 'plain', text: 'PUT session.jsonl.gz' },
+      { kind: 'plain', text: '  transcript uploaded ✓' },
+    ),
+    ...picked(10, WALK_TASKS[1]),
+    ...ran(12, WALK_TASKS[1]),
+    ...picked(12, WALK_TASKS[2]),
+  ];
+  const paneOf = (task: WalkTask): PaneLine[] => {
+    const prompt: PaneLine = {
+      kind: 'you',
+      text: `Follow the "myclaw:do-task" skill to do task ("${task.title}") end to end.`,
+    };
+    if (task.tool === 'Codex')
+      return [
+        { kind: 'dim', text: task.cmd },
+        { kind: 'plain', text: '>_ OpenAI Codex' },
+        { kind: 'dim', text: `   model: ${task.banner}` },
+        { kind: 'dim', text: '   directory: ~/src' },
+        ...at(task.prompt, prompt),
+        ...at(task.done, { kind: 'say', text: task.said }),
+      ];
+    return [
+      ...at(task.start, { kind: 'dim', text: task.cmd }, { kind: 'banner', text: task.banner }),
+      ...at(task.prompt, prompt),
+      ...at(
+        task.prompt + 1,
+        { kind: 'tool', text: 'Skill(myclaw:do-task)' },
+        { kind: 'sub', text: 'Successfully loaded skill' },
+      ),
+      ...at(task.prompt + 2, { kind: 'plain', text: '  Called myclaw 2 times' }),
+      ...at(task.prompt + 3, { kind: 'plain', text: '  Read 1 file, ran 2 commands' }),
+      ...at(
+        task.done,
+        { kind: 'say', text: task.said },
+        { kind: 'dim', text: '✻ Cogitated for 4m 12s' },
+      ),
+      ...at(task.start, { kind: 'box', text: '' }),
+    ];
+  };
+  const state = { idle: 'idle', working: 'working', done: 'finished' };
+  return (
+    <div className="ww-imp__runner ww-imp__runner--full">
+      <div className="ww-imp__runnerleft">
+        <RunnerCode hot={(i) => WALK[step].includes(i)} />
+      </div>
+      <div className="ww-imp__runnerright">
+        <Herdr
+          status={[queued ? 'queue: 1' : `in work: ${working}`]}
+          spaces={open.map((task, i) => ({ name: task.title, state: runOf(task), focused: focus === i }))}
+          agents={open
+            .filter((task) => step >= task.start)
+            .map((task, i) => ({
+              title: task.title,
+              role: `${task.tool} · ${state[runOf(task)]}`,
+              state: '',
+              run: runOf(task),
+              focused: focus === i,
+              model: task.model,
+            }))}
+          hotModel={step === 3 || step >= 11}
+          big
+          home={focus < 0}
+        >
+          <HPane key={focus} lines={focus < 0 ? daemon : paneOf(WALK_TASKS[focus])} />
+        </Herdr>
+      </div>
+    </div>
+  );
+}
+
+function RunnerCode({
+  hot,
+  code = RUNNER_CODE,
+}: {
+  hot: (index: number) => boolean;
+  code?: { text: string }[];
+}) {
+  return (
+    <pre className="ww-imp__code">
+      {code.map((line, i) => (
+        <span key={line.text} className={hot(i) ? 'ww-imp__codeline--hot' : undefined}>
+          {line.text}
+          {'\n'}
+        </span>
+      ))}
+    </pre>
+  );
+}
 
 /** The pace rule, as the server applies it when the daemon asks for the next task
  *  (juggernaut apps/api/src/services/tasks.ts): utilization of the 7-day window minus
@@ -559,183 +802,297 @@ function PaceCard() {
 
 export const RunnerSlide: SlideDefinition = {
   id: 'improve-runner',
-  title: (
+  content: () => (
     <>
-      A daemon instead of /loop <span className="ww-llm__titlesub">— just plain code</span>
-    </>
-  ),
-  maxRevealStages: RUNNER_BEATS.length,
-  initialRevealStage: 1,
-  content: ({ revealStage }) => {
-    const stage = Math.min(Math.max(revealStage, 1), RUNNER_BEATS.length);
-    const beat = RUNNER_BEATS[stage - 1];
-    const running = stage >= 2;
-    return (
-      <>
-        <CornerRings corner="top-right" />
-        <div className="ww-imp">
-          <div className="ww-imp__claim" key={stage}>
-            {beat.claim}
-          </div>
-          <div className="ww-imp__runner">
-            <div className="ww-imp__runnerleft">
-              <pre className="ww-imp__code">
-                {RUNNER_CODE.map((line) => (
-                  <span
-                    key={line.text}
-                    className={line.at === stage || line.also === stage ? 'ww-imp__codeline--hot' : undefined}
-                  >
-                    {line.text}
-                    {'\n'}
-                  </span>
-                ))}
-              </pre>
-            </div>
-            <div className="ww-imp__runnerright">
-            <Herdr
-              status={running ? ['inbox: 3', 'in work: 2', 'Claude 7d 62%'] : ['inbox: 3', 'queue: empty', 'Claude 7d 62%']}
-              spaces={running ? RUN_SPACES : []}
-              agents={running ? RUN_AGENTS : []}
-              hotModel={stage === 3}
-            >
-              <HPane lines={running ? CAR_PANE : DAEMON_PANE} />
-            </Herdr>
-            {/* the web app's own card, held over the terminal: what the server looks at */}
-            <Reveal at={4} stage={revealStage}>
-              <PaceCard />
-            </Reveal>
-            </div>
-          </div>
-          <Ledger fixed={['chat-only UX', ...beat.fixed]} />
+      <CornerRings corner="top-right" />
+      <div className="ww-imp ww-imp--claim">
+        {/* no title band: the same «✓ fixed» verdict line as the board slide */}
+        <div className="ww-asst__claim ww-asst__claim--great">
+          <span className="ww-asst__verdict">
+            <span aria-hidden="true">✓</span>
+            fixed
+          </span>
+          <span>different models/agents for different types of tasks</span>
         </div>
-      </>
-    );
-  },
-  notes:
-    'Fifth — the three problems left, and one move takes all of them. We drop /loop. Instead a '
-    + 'daemon runs the cycle, and the cycle is just plain code — a while loop. It uses herdr, a '
-    + 'terminal multiplexer for agents: it can open a pane, start an agent in it, prompt it, and '
-    + 'tell whether it is working. '
-    + 'Beat 1 — the poll is an HTTP call. No model is involved in asking «is there work?», so an '
-    + 'empty queue costs exactly nothing. Every sixty seconds instead of every ten minutes, and '
-    + 'still free. '
-    + 'Beat 2 — when there IS a task, the daemon opens a new pane for it and starts a fresh '
-    + 'agent there. A fresh context for every task: nothing to compact, nothing left over from '
-    + 'the previous eleven. And when the same task comes back from my queue, it goes to the SAME '
-    + 'pane — so the agent still remembers that one. '
-    + 'Beat 3 — and since the daemon starts the agent, it chooses the flags: the model and the '
-    + 'reasoning effort, per task. The plan for a migration goes to the biggest model on high; '
-    + 'the typo goes to the smallest on low. I can set it on the task; an agent filing a task can '
-    + 'suggest it. '
-    + 'Beat 4 — one more thing the queue can do once it, and not the agent, decides what runs '
-    + 'next: it paces the work to my subscription. The server knows how much of the weekly limit '
-    + 'is used and how much of the week is gone. Ahead of pace — low-priority tasks wait; more '
-    + 'than a few points ahead — only high priority is served. So the limit lasts the week and '
-    + 'none of it is left unused at the reset: the best utilization of a subscription I am '
-    + 'paying for anyway. '
-    + 'And what we lose from the «great» list: nothing. Each pane IS Claude Code — every feature '
-    + 'it ships still arrives for free, and the panes start with remote control on, so the phone '
-    + 'still works. '
-    + 'Honest about the picture: the terminal is drawn after my real herdr, with one addition — '
-    + 'the model beside each agent, which the real sidebar does not print. The usage card is the '
-    + 'app\'s own, with illustrative figures. '
-    + 'Honest about the code: it is the idea in ten lines. The real one, `juggernaut start`, is '
-    + 'about five thousand, because it also heartbeats, reaps dead panes, uploads the transcript '
-    + 'and survives a sleeping laptop. The server resolves the model — task override, then the '
-    + 'agent\'s default, then a built-in — and hands the daemon two finished strings.',
-};
-
-/* ─── 6 · Any agent — and they talk ───────────────────────────────────────── */
-
-const FLEET_SPACES: Space[] = [
-  { name: 'Add priorities to tasks', state: 'working', focused: true },
-  { name: 'Renew the car insurance', state: 'working' },
-];
-const FLEET_AGENTS: Agent[] = [
-  { title: 'Add priorities to tasks', role: 'autonomous · Claude Code', state: 'in progress', run: 'working', focused: true },
-  { title: 'Add priorities to tasks', role: 'review · Codex', state: 'finished', run: 'done' },
-  { title: 'Renew the car insurance', role: 'autonomous · OpenCode', state: 'in progress', run: 'working' },
-];
-const AUTHOR_PANE: PaneLine[] = [
-  { kind: 'you', text: 'Work the task «Add priorities to tasks»' },
-  { kind: 'tool', text: 'Bash(pnpm test) — 17 passed' },
-  { kind: 'tool', text: 'Bash(myclaw review)' },
-  { kind: 'say', text: 'Codex found two things. Fixing the index first.' },
-];
-const REVIEW_PANE: PaneLine[] = [
-  { kind: 'you', text: 'Review the uncommitted changes' },
-  { kind: 'tool', text: 'git diff' },
-  { kind: 'say', text: '2 findings: no index on status; a migration without a default.' },
-];
-
-const TALK = [
-  { verb: 'review', what: 'the other vendor reads my diff before every commit' },
-  { verb: 'consult', what: 'a second opinion on a plan — read-only' },
-  { verb: 'delegate', what: 'hand over a frozen spec, keep the judgement' },
-];
-
-export const AnyAgentSlide: SlideDefinition = {
-  id: 'improve-any-agent',
-  title: (
-    <>
-      Not only Claude Code <span className="ww-llm__titlesub">— and they talk</span>
-    </>
-  ),
-  maxRevealStages: 2,
-  initialRevealStage: 1,
-  content: ({ revealStage }) => (
-    <>
-      <CornerRings corner="bottom-left" />
-      <div className="ww-imp">
-        <div className="ww-imp__fleet">
-          <Herdr status={['inbox: 3', 'in work: 2', 'Codex 7d 3%']} spaces={FLEET_SPACES} agents={FLEET_AGENTS}>
-            <HPane lines={AUTHOR_PANE} />
-            <HPane lines={REVIEW_PANE} />
-          </Herdr>
-          <div className="ww-imp__fleetside">
-            <code className="ww-imp__call">herdr agent start --kind …</code>
-            <div className="ww-imp__kinds">
-              {['claude', 'codex', 'opencode', 'cursor', 'gemini', 'copilot', '+18'].map((kind) => (
-                <span key={kind} className="ww-imp__kind">
-                  {kind}
-                </span>
-              ))}
-            </div>
-            <div className="ww-imp__free">
-              codex and opencode also run <strong>OpenRouter</strong> models — the{' '}
-              <strong>free</strong> ones included
-            </div>
-            <Reveal at={2} stage={revealStage}>
-              <div className="ww-imp__talk">
-                {TALK.map((item) => (
-                  <div key={item.verb} className="ww-imp__talkrow">
-                    <code>{item.verb}</code>
-                    <span>{item.what}</span>
-                  </div>
-                ))}
-              </div>
-            </Reveal>
-          </div>
-        </div>
-        <Ledger fixed={[...PROBLEMS]} />
+        <RunnerWalk />
       </div>
     </>
   ),
   notes:
-    'Sixth — a bonus we did not ask for. The daemon does not care WHAT it starts in the pane. '
-    + 'herdr knows two dozen agent CLIs — Claude Code, Codex, OpenCode, Cursor, Gemini, Copilot '
-    + 'and so on — and starting another one is the same line with another --kind. No additional '
-    + 'effort: a task is assigned to an agent, the daemon starts that agent. I run three kinds '
-    + 'every day; when one vendor is out of credits, the queue keeps moving on the others. '
-    + 'And the model does not have to come from a subscription at all: Codex and OpenCode can be '
-    + 'pointed at OpenRouter, which also lists free models — so the cheap, boring tasks can run on '
-    + 'a model that costs nothing. '
-    + 'Click — and once they sit in neighbouring panes, we can teach them to talk to one another. '
-    + 'Three verbs. Review: before every commit, an agent of the OTHER vendor reads the diff — an '
-    + 'author and a reviewer that share a model share their blind spots. Consult: a second '
-    + 'opinion on a plan, read-only. Delegate: one writes the spec and keeps the judgement, the '
-    + 'other does the typing. '
-    + 'And look at the foot of the slide: all four are green. '
-    + 'Honest about the picture: the window is drawn after my real herdr — spaces named after '
-    + 'tasks, an agent list with roles — but these panes are staged; the commands are the real ones.',
+    'The three problems left, and one move takes all of them. We drop /loop. Instead a daemon '
+    + 'runs the cycle, and the cycle is just plain code — a while loop. It uses herdr, a terminal '
+    + 'multiplexer for agents: it can open a pane, start an agent in it, prompt it, and tell '
+    + 'whether it is working. '
+    + 'Frame 1 plays by itself — follow the highlighted line. The poll is an HTTP call: no model '
+    + 'is involved in asking «is there work?». A task comes back, and run() is not awaited, so '
+    + 'the loop keeps polling. herdr opens a space for the task — a fresh context, nothing left '
+    + 'over from the previous eleven. It starts the agent the task names, with the model and the '
+    + 'effort the task names. It sends the prompt — follow the do-task skill. It waits until the '
+    + 'agent is done, and uploads the session log to the server. '
+    + 'Then two more tasks arrive, and that is the point of the headline: booking the car '
+    + 'service is complex agentic work — Opus, medium effort. Putting it in the calendar is '
+    + 'trivial — Sonnet. And a cover for a playlist is image generation, which goes to Codex. '
+    + 'I can set the model on the task; an agent filing a task picks it from a table. '
+    + 'And what we lose from the «great» list: nothing. Each pane IS Claude Code — every feature '
+    + 'it ships still arrives for free, and the panes start with remote control on, so the phone '
+    + 'still works. '
+    + 'Honest about the picture: the terminal is a shortened real session — the prompt and the '
+    + 'herdr calls are the real ones, the tasks are staged; the model beside each agent is the '
+    + 'deck\'s addition, the real sidebar does not print it. The real daemon, `myclaw start`, is about five thousand lines, '
+    + 'because it also heartbeats, reaps dead panes and survives a sleeping laptop.',
+};
+
+/* ─── 6 · Any agent — and they talk ───────────────────────────────────────── */
+
+/**
+ * Codex's pane, drawn after Codex's own TUI rather than with Claude Code's marks
+ * (Yarik, 16.11.2026: «щось кодекс не дуже реалістично виглядає»): the start screen
+ * in a box with the labels dim and the values bright, each prompt on a grey row with
+ * the slash command coloured, each answer under a small grey dot with a finding's
+ * priority coloured and its text hanging under it, then the empty composer and the
+ * status line with the model and the folder.
+ */
+function CodexPane({ step }: { step: number }) {
+  const ask = (from: number, text: ReactNode) =>
+    step >= from && (
+      <div className="ww-cx__row ww-cx__in ww-cx__ask">
+        <span className="ww-cx__dim">›</span>
+        <span>{text}</span>
+      </div>
+    );
+  const answer = (from: number, body: ReactNode) =>
+    step >= from && (
+      <div className="ww-cx__row ww-cx__in">
+        <span className="ww-cx__dot" />
+        <span className="ww-cx__answer">{body}</span>
+      </div>
+    );
+  const finding = (priority: 'p1' | 'p2', text: string) => (
+    <span className="ww-cx__finding">
+      <span>-</span>
+      <span>
+        <span className={`ww-cx__${priority}`}>[{priority.toUpperCase()}]</span> {text}
+      </span>
+    </span>
+  );
+  return (
+    <div className="ww-hd__pane ww-cx">
+      {step >= 2 && (
+      <div className="ww-cx__box">
+        <span>
+          <span className="ww-cx__dim">&gt;_ </span>
+          <strong>OpenAI Codex</strong>
+        </span>
+        <span>
+          <span className="ww-cx__dim">model: </span>gpt-6-sol high
+        </span>
+        <span>
+          <span className="ww-cx__dim">directory: </span>~/src/myclaw
+        </span>
+      </div>
+      )}
+      {ask(
+        3,
+        <>
+          <span className="ww-cx__cmd">/review</span> review the uncommitted changes in ~/src/myclaw. Context from
+          the author: added tasks.priority …
+        </>,
+      )}
+      {answer(
+        4,
+        <>
+          <strong>Review comment:</strong>
+          {finding('p1', 'No index on tasks.priority — 0042_priority.sql:7: the board sorts by it on every load')}
+          {finding('p2', 'Migration has no default — 0042_priority.sql:3: existing rows fail NOT NULL')}
+        </>,
+      )}
+      {ask(7, 'P2: line 3 has no NOT NULL, the column is nullable. Answer in writing. If you now agree the finding does not hold, say so plainly …')}
+      {answer(8, <>Agreed: P2 does not hold, priority is nullable. P1 stands.</>)}
+      {ask(10, 'Re-review. Since your last verdict I changed: added the index. Re-check only what changed …')}
+      {answer(11, <strong>No findings.</strong>)}
+      {step >= 2 && (
+        <>
+          <div className="ww-cx__row ww-cx__ask ww-cx__prompt">
+            <span className="ww-cx__dim">›</span>
+          </div>
+          <span className="ww-cx__status">gpt-6-sol high · ~/src/myclaw</span>
+        </>
+      )}
+    </div>
+  );
+}
+
+const REVIEW_TASK = 'Add priorities to tasks';
+/**
+ * Agents talking to one another ABOUT a review — not one question and one answer but
+ * the whole exchange the development process asks for (its «adversarial review»
+ * step, read 16.11.2026): the author treats the findings as advice, checks each
+ * against the code, accepts one, argues the other in writing (`review ask`), and
+ * after the fix asks the SAME reviewer to look again, until it returns no findings —
+ * only then the commit. The layout is the «Claude Strangelove» deck's «Рецепт 5:
+ * авторев'ю» (two panes side by side, the author on the left); the three prompts are
+ * the real ones, shortened (kickoff, ask, re-review); the task and its findings are
+ * staged. The product is «myclaw» here, as everywhere in the deck.
+ */
+const REVIEW_STEPS = 13;
+/** When the reviewer is thinking, and from when it has answered. */
+const REVIEWER_BUSY = [3, 7, 10];
+
+function ReviewWalk() {
+  const t = useClock(0);
+  const all = t >= Number.MAX_SAFE_INTEGER;
+  const last = REVIEW_STEPS - 1;
+  const step = all ? last : Math.min(Math.floor(t / WALK_MS) % (REVIEW_STEPS + 2), last);
+  useAnimating(!all && t < REVIEW_STEPS * WALK_MS);
+
+  const at = (from: number, ...lines: PaneLine[]): PaneLine[] => (step >= from ? lines : []);
+  const reviewer: Run = REVIEWER_BUSY.includes(step) ? 'working' : step >= 4 ? 'done' : 'idle';
+  // The author drives the reviewer with herdr's own commands, one per turn of the
+  // conversation (Yarik, 16.11.2026: «замість myclaw review використовуй herdr команди
+  // напряму») — the same calls the review command makes for it.
+  const author: PaneLine[] = [
+    { kind: 'tool', text: 'Bash(pnpm lint && pnpm test)' },
+    { kind: 'sub', text: '✔ 0 problems · 17 passed' },
+    ...at(1, { kind: 'tool', text: 'Bash(herdr pane split --direction right)' }, { kind: 'sub', text: 'pane w1:p2' }),
+    ...at(
+      2,
+      { kind: 'tool', text: 'Bash(herdr agent start rv-tasks --kind codex)' },
+      { kind: 'sub', text: 'rv-tasks ready · gpt-6-sol high' },
+    ),
+    ...at(3, { kind: 'tool', text: 'Bash(herdr agent prompt rv-tasks "/review …" --wait)' }),
+    ...at(
+      5,
+      { kind: 'sub', text: '2 findings' },
+      { kind: 'dim', text: '    [P1] 0042_priority.sql:7 · no index' },
+      { kind: 'dim', text: '    [P2] 0042_priority.sql:3 · no default' },
+    ),
+    ...at(
+      6,
+      { kind: 'say', text: 'P1 is real. P2 is not: the column is nullable.' },
+      { kind: 'tool', text: 'Bash(herdr agent prompt rv-tasks "P2: line 3 has no NOT NULL …" --wait)' },
+    ),
+    ...at(8, { kind: 'sub', text: 'P2 withdrawn · P1 stands' }),
+    ...at(
+      9,
+      { kind: 'tool', text: 'Update(0042_priority.sql)' },
+      { kind: 'sub', text: 'Added 1 line' },
+      { kind: 'tool', text: 'Bash(herdr agent prompt rv-tasks "Re-review … added the index" --wait)' },
+    ),
+    ...at(11, { kind: 'sub', text: 'no findings' }),
+    ...at(12, { kind: 'tool', text: 'Bash(git commit -m "Add priorities to tasks")' }),
+    { kind: 'box', text: '' },
+  ];
+  const state = { idle: 'idle', working: 'working', done: 'done' };
+  return (
+    <div className="ww-imp__runner ww-imp__runner--full ww-imp__runner--solo">
+      <div className="ww-imp__runnerright">
+        <Herdr
+          status={['in work: 1']}
+          spaces={[{ name: REVIEW_TASK, state: 'working', focused: true }]}
+          agents={[
+            {
+              title: REVIEW_TASK,
+              role: 'Claude Code · working',
+              state: '',
+              run: 'working',
+              focused: reviewer !== 'working',
+            },
+            ...(step >= 2
+              ? [
+                  {
+                    title: 'rv-tasks',
+                    role: `Codex · ${state[reviewer]}`,
+                    state: '',
+                    run: reviewer,
+                    focused: reviewer === 'working',
+                  },
+                ]
+              : []),
+          ]}
+          big
+          cols
+        >
+          <HPane lines={author} />
+          {step >= 1 && <CodexPane step={step} />}
+        </Herdr>
+      </div>
+    </div>
+  );
+}
+
+export const AnyAgentSlide: SlideDefinition = {
+  id: 'improve-any-agent',
+  content: () => (
+    <>
+      <CornerRings corner="bottom-left" />
+      <div className="ww-imp ww-imp--claim">
+        <div className="ww-asst__claim ww-asst__claim--great">
+          <span className="ww-asst__verdict">
+            <span aria-hidden="true">✓</span>
+            bonus
+          </span>
+          <span>agents of different vendors argue over a review</span>
+        </div>
+        <ReviewWalk />
+      </div>
+    </>
+  ),
+  notes:
+    'A bonus we did not ask for. The daemon does not care WHAT it starts in the pane — and once '
+    + 'agents can open panes themselves, they can talk to one another. One case, the one I use '
+    + 'on every commit: the review. On the left is the author, Claude Code. Lint and tests pass, '
+    + 'and it drives herdr itself: split the pane, start an agent of the OTHER vendor in it — '
+    + 'Codex — and prompt it with the diff, waiting for the answer. Two findings come back, each with a '
+    + 'priority. Now the part that makes it a conversation. A review is advice, not an edit '
+    + 'script: the author checks each finding against the code. The first is real. The second is '
+    + 'not — the column is nullable — so it says so, in writing, with another prompt. Codex answers: '
+    + 'agreed, the second does not hold, the first stands. The author fixes the first and asks '
+    + 'the SAME reviewer to look again — it still has the whole argument in its context. No '
+    + 'findings. Only then the commit. Why the other vendor: an author and a reviewer that share '
+    + 'a model share their blind spots. The same mechanism gives two more verbs — consult, a '
+    + 'second opinion on a plan, and delegate, hand over a frozen spec. '
+    + 'Honest about the picture: the three prompts are the real ones, shortened; the task and '
+    + 'its findings are staged.',
+};
+
+/* ─── The queue paces the work ────────────────────────────────────────────── */
+
+/** Stood as the runner slide's last frame until 16.11.2026; Yarik moved it after the
+ *  slide where the agents review one another. Same picture: the poll is the line that
+ *  matters, and the web app's own usage card is held over the terminal. */
+export const PaceSlide: SlideDefinition = {
+  id: 'improve-pace',
+  content: () => (
+    <>
+      <CornerRings corner="top-right" />
+      <div className="ww-imp ww-imp--claim">
+        <div className="ww-asst__claim ww-asst__claim--great">
+          <span className="ww-asst__verdict">
+            <span aria-hidden="true">✓</span>
+            bonus
+          </span>
+          <span>the queue paces the work to the subscription</span>
+        </div>
+        <div className="ww-imp__runner ww-imp__runner--full">
+          <div className="ww-imp__runnerleft">
+            <RunnerCode hot={(i) => i === 1} />
+          </div>
+          <div className="ww-imp__runnerright">
+            <Herdr status={['inbox: 3', 'in work: 2', 'Claude 7d 62%']} spaces={RUN_SPACES} agents={RUN_AGENTS}>
+              <HPane lines={CAR_PANE} />
+            </Herdr>
+            {/* the web app's own card, held over the terminal: what the server looks at */}
+            <PaceCard />
+          </div>
+        </div>
+      </div>
+    </>
+  ),
+  notes:
+    'One more thing the queue can do once it, and not the agent, decides what runs next: it '
+    + 'paces the work to my subscription. The server knows how much of the weekly limit is used '
+    + 'and how much of the week is gone. Ahead of pace — low-priority tasks wait; more than a few '
+    + 'points ahead — only high priority is served. So the limit lasts the week and none of it is '
+    + 'left unused at the reset: the best utilization of a subscription I am paying for anyway. '
+    + 'Honest about the picture: the usage card is the app\'s own, with illustrative numbers.',
 };

@@ -50,9 +50,10 @@ import {
   TaskBoardSlide,
   RunnerSlide,
   AnyAgentSlide,
+  PaceSlide,
 } from './improve';
 import { MiniappsSlide } from './MiniappsSlide';
-import { TalkPrepSlide, ArchitectureSlide, HuntersSlide, FactoryRevealSlide, FactoryPhilosophySlide } from './factory';
+import { TalkPrepSlide, ArchitectureSlide, ArchitectureDaemonSlide, ArchitectureTwoSlide, HuntersSlide, FactoryRevealSlide, FactoryPhilosophySlide } from './factory';
 
 /**
  * LAYOUT GALLERY — one example of every WAWTech layout, kept as reference code
@@ -115,11 +116,14 @@ export const slides = [
   GoldbergSlide,
   AssistantReadySlide,
   AssistantSessionSlide,
-  TaskBoardSlide,
-  MiniappsSlide,
+  ArchitectureSlide,
   RunnerSlide,
   AnyAgentSlide,
-  ArchitectureSlide,
+  ArchitectureDaemonSlide,
+  ArchitectureTwoSlide,
+  PaceSlide,
+  TaskBoardSlide,
+  MiniappsSlide,
   HuntersSlide,
   FactoryRevealSlide,
   FactoryPhilosophySlide,

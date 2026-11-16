@@ -3426,8 +3426,9 @@
   flex-direction: column;
   gap: 2px;
 }
-.ww-jg__navgroup > .ww-jg__label {
-  padding: 0 16px 6px;
+.ww-jg__navgroup + .ww-jg__navgroup {
+  padding-top: 14px;
+  border-top: 2px solid var(--jg-ink-200);
 }
 .ww-jg__navitem {
   display: flex;
@@ -4336,10 +4337,6 @@
 .ww-ma__cols--wide {
   grid-template-columns: 1.7fr 1fr;
 }
-.ww-ma__card--grow {
-  flex: 1;
-  min-height: 0;
-}
 .ww-ma__card--slim {
   padding: 12px 28px;
 }
@@ -5041,6 +5038,221 @@
 .ww-ma__cover--b {
   background: linear-gradient(140deg, var(--jg-ochre-300) 0%, var(--jg-vermilion) 90%);
 }
+/* the family tree's task: the scans the agent attached, in its comments */
+.ww-ma__scans {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+}
+.ww-ma__scan {
+  max-height: 340px;
+  max-width: 100%;
+  min-width: 0;
+  border: 2px solid var(--jg-ink-200);
+  border-radius: 2px;
+  object-fit: contain;
+}
+/* music: the duel's pick, the playlists it mirrors into */
+.ww-ma__cols--music {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.ww-ma__duel--songs {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.ww-ma__duel--songs .ww-jg__label {
+  white-space: normal;
+  text-align: center;
+}
+.ww-ma__duel--covers img.ww-ma__cover {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 2px;
+}
+.ww-ma__duel > span {
+  transition: opacity var(--transition-normal), border-color var(--transition-normal), background var(--transition-normal);
+}
+.ww-ma__duel > .ww-ma__side--on {
+  border-color: var(--jg-ochre-600, var(--jg-ochre-300));
+  border-width: 4px;
+  background: var(--jg-ochre-50);
+}
+.ww-ma__duel > .ww-ma__side--off {
+  opacity: 0.4;
+}
+.ww-ma__rankbox {
+  position: relative;
+  display: block;
+}
+.ww-ma__rankrow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  transition: transform 800ms var(--ease), background var(--transition-normal);
+}
+.ww-ma__rankrow + .ww-ma__rankrow {
+  border-top: 0;
+}
+.ww-ma__rankrow {
+  border-bottom: 2px solid var(--jg-ink-200);
+}
+.ww-ma__rankrow--moved {
+  background: var(--jg-ochre-50);
+}
+.ww-ma__rankrow .ww-jg__label:first-child {
+  width: 34px;
+  text-align: right;
+}
+.ww-ma__rankrow > .ww-ma__actions {
+  min-width: 0;
+  overflow: hidden;
+}
+.ww-ma__rankrow .ww-jg__itemtext {
+  min-width: 0;
+  gap: 6px;
+}
+.ww-ma__rankrow .ww-jg__itemtext > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ww-ma__rankrow > .ww-jg__label {
+  flex: none;
+}
+.ww-ma__rankcover {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: 2px;
+  object-fit: cover;
+}
+/* Spotify on the phone: the app's own dark idiom, scoped here */
+.ww-spo {
+  zoom: 0.62;
+  display: flex;
+  flex-direction: column;
+  width: 560px;
+  height: 1150px;
+  border-radius: 62px;
+  overflow: hidden;
+  background: var(--spo-ground);
+  color: var(--spo-ink);
+  font-family: var(--jg-sans);
+  font-size: var(--font-size-code);
+  line-height: 1.25;
+}
+.ww-spo__status {
+  flex: none;
+  display: flex;
+  justify-content: space-between;
+  padding: 26px 44px 8px;
+  font-weight: 700;
+}
+.ww-spo__page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 18px 36px 36px;
+  overflow: hidden;
+}
+.ww-spo__h1 {
+  font-size: var(--font-size-body);
+  font-weight: 700;
+}
+.ww-spo__dim {
+  color: var(--spo-dim);
+}
+.ww-spo__chips {
+  display: flex;
+  gap: 14px;
+}
+.ww-spo__chips > span {
+  padding: 8px 24px;
+  border-radius: 999px;
+  background: var(--spo-chip);
+}
+.ww-spo__chips > span:first-child {
+  background: var(--spo-green);
+  color: var(--spo-ground);
+}
+.ww-spo__libitem,
+.ww-spo__track {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  border-radius: 6px;
+}
+.ww-spo__liked {
+  display: grid;
+  place-items: center;
+  width: 130px;
+  height: 130px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, var(--spo-liked-from), var(--spo-liked-to));
+  font-size: var(--font-size-heading);
+}
+.ww-spo__libitem img {
+  width: 130px;
+  height: 130px;
+  border-radius: 4px;
+}
+.ww-spo__libitem > span,
+.ww-spo__track > span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.ww-spo__track img {
+  width: 92px;
+  height: 92px;
+}
+.ww-spo__track strong,
+.ww-spo__track .ww-spo__dim {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ww-spo__hero {
+  width: 380px;
+  height: 380px;
+  box-shadow: 0 20px 50px color-mix(in srgb, var(--spo-ground) 60%, transparent);
+}
+.ww-spo__by {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+}
+/* the cover, and the playlist's QR code beside it (scan it off the slide) */
+.ww-spo__herorow {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+/* over the cover's bottom-right corner, like a sticker on it */
+.ww-spo__herorow > .ww-qrlink > .ww-spo__qr {
+  position: absolute;
+  right: 0;
+  bottom: -28px;
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--spo-ground) 70%, transparent);
+}
+.ww-spo__qr {
+  display: block;
+  border-radius: 8px;
+}
+.ww-spo__play {
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: var(--spo-green);
+  color: var(--spo-ground);
+}
 /* health */
 .ww-ma__profile {
   display: flex;
@@ -5107,36 +5319,6 @@
   object-position: center 60%;
   border-radius: 4px;
 }
-/* routes */
-.ww-ma__map {
-  flex: 1;
-  min-height: 0;
-  border-radius: 4px;
-  overflow: hidden;
-}
-.ww-ma__map .ww-map__art {
-  height: 100%;
-}
-.ww-ma__stop {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-left: 22px;
-  border-left: 3px dotted var(--jg-ink-300);
-}
-.ww-ma__stoptime > span:first-child {
-  font-family: var(--jg-serif);
-  font-weight: 500;
-}
-.ww-ma__weather {
-  display: flex;
-  flex-direction: column;
-  padding: 6px 20px;
-  border: 2px solid var(--jg-moss-300);
-  border-radius: 4px;
-  background: var(--jg-moss-50);
-  font-size: var(--font-size-code);
-}
 /* sleep */
 .ww-ma__nights {
   width: 100%;
@@ -5161,6 +5343,88 @@
 }
 .ww-ma__meter .ww-jg__label {
   white-space: normal;
+}
+.ww-ma__sleeper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: inherit;
+  min-height: 0;
+}
+.ww-ma__sleephead {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+}
+.ww-ma__cols--sleep {
+  flex: 1;
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: stretch;
+}
+/* the regularity raster takes whatever height the column has left */
+.ww-ma__card--fill {
+  flex: 1;
+  min-height: 0;
+}
+.ww-ma__card--fill .ww-ma__nights {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+.ww-ma__cols--sleep > * {
+  min-height: 0;
+}
+/* a list longer than the page: as many rows as fit, the rest cut off below */
+.ww-ma__card--clip {
+  overflow: hidden;
+}
+/* the child's day ahead: the predicted sleeps as dashed outlines on a 06:00→night track */
+.ww-ma__fctrack {
+  position: relative;
+  height: 34px;
+  border-radius: 2px;
+  background: var(--jg-ochre-50);
+  overflow: hidden;
+}
+.ww-ma__fctrack > span {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  border: 2px dashed var(--jg-moss);
+  border-radius: 2px;
+  background: var(--jg-moss-50);
+}
+.ww-ma__fcticks {
+  position: relative;
+  height: 1.2em;
+  margin-top: -6px;
+}
+.ww-ma__fcticks > span {
+  position: absolute;
+  transform: translateX(-50%);
+}
+.ww-ma__fcticks > span:first-child {
+  transform: none;
+}
+.ww-ma__fcitem {
+  display: grid;
+  grid-template-columns: 210px 150px minmax(0, 1fr);
+  font-size: var(--font-size-code);
+  line-height: 1.2;
+  align-items: baseline;
+  gap: 16px;
+}
+.ww-ma__sleepday {
+  display: grid;
+  grid-template-columns: 210px 200px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 4px 20px;
+  padding-top: 8px;
+  border-top: 2px solid var(--jg-ink-200);
+}
+.ww-ma__sleepsplit {
+  white-space: pre-line;
 }
 .ww-ma__meter {
   display: flex;
@@ -5197,9 +5461,7 @@
   width: 28px;
   height: 28px;
 }
-.ww-jg__nav--dense .ww-jg__navgroup > .ww-jg__label {
-  padding-bottom: 0;
-}
+
 
 /* 5 · the Agents page's own card, lifted out beside the loop: the week's usage as a
    line against the dotted diagonal of an even pace */
@@ -5291,6 +5553,70 @@
   color: var(--hd-text);
   text-align: left;
 }
+/* the walk-through: close to the code's own size (the code stands at zoom 1) */
+.ww-hd--big {
+  zoom: 0.85;
+  grid-template-columns: 490px minmax(0, 1fr);
+  /* a long session scrolls off the top of its pane, as in a terminal */
+  grid-template-rows: minmax(0, 1fr);
+}
+.ww-hd--big .ww-hd__main { min-height: 0; }
+/* Codex's pane: its own TUI, not Claude Code's marks */
+.ww-cx { color: var(--hd-text); }
+.ww-cx strong { font-weight: 700; color: var(--cc-text); }
+.ww-cx__dim { color: var(--hd-dim); }
+.ww-cx__box {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 18px;
+  border: 2px solid var(--hd-dim);
+  border-radius: 8px;
+  animation: ww-asst-in 320ms var(--ease) backwards;
+}
+.ww-cx__row {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 12px;
+}
+.ww-cx__in { animation: ww-asst-in 320ms var(--ease) backwards; }
+.ww-cx__ask {
+  margin: 0 -12px;
+  padding: 6px 12px;
+  background: var(--hd-row);
+}
+.ww-cx__cmd { color: var(--hd-done); }
+.ww-cx__dot {
+  width: 10px;
+  height: 10px;
+  margin-top: 15px;
+  border-radius: 50%;
+  background: var(--hd-dim);
+}
+.ww-cx__answer {
+  display: flex;
+  flex-direction: column;
+}
+.ww-cx__finding {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 8px;
+}
+.ww-cx__p1 { color: var(--hd-alert); }
+.ww-cx__p2 { color: var(--hd-work); }
+.ww-cx__prompt { min-height: 48px; }
+.ww-cx__status {
+  color: var(--hd-dim);
+  zoom: 0.8;
+}
+.ww-hd__panes--cols {
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+/* the terminal alone, with no code panel beside it */
+.ww-imp__runner.ww-imp__runner--solo { grid-template-columns: minmax(0, 1fr); }
+.ww-hd--big .ww-hd__model--hot { margin-left: 0; }
+.ww-hd--big .ww-hd__panes { min-height: 0; }
 .ww-hd__side {
   display: flex;
   flex-direction: column;
@@ -5298,6 +5624,20 @@
   padding: 22px 16px;
   background: var(--hd-side);
   overflow: hidden;
+}
+.ww-hd__brand {
+  margin-top: auto;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: var(--font-size-body);
+  color: var(--hd-fg);
+}
+.ww-hd__brand img {
+  width: 96px;
+  height: 96px;
+  border-radius: 20px;
 }
 .ww-hd__head {
   padding: 0 10px 10px;
@@ -5408,6 +5748,28 @@
   background: var(--hd-bg);
   overflow: hidden;
 }
+/* a line arriving in a pane (the runner's walk-through adds them one by one) */
+.ww-hd__line { animation: ww-asst-in 320ms var(--ease) backwards; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ww-hd__line--sub { color: var(--hd-dim); }
+/* Claude Code's start screen: the mascot beside the version, model and folder */
+.ww-hd__banner {
+  display: flex;
+  gap: 20px;
+  line-height: 1.15;
+}
+.ww-hd__mascot { color: var(--cc-claude); }
+/* its composer: a rule above and below the prompt, the mode line under it */
+.ww-hd__box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: none;
+}
+.ww-hd__boxin {
+  padding: 6px 0;
+  border-top: 2px solid var(--hd-dim);
+  border-bottom: 2px solid var(--hd-dim);
+}
 .ww-hd__line--dim {
   color: var(--hd-dim);
 }
@@ -5429,9 +5791,11 @@
 /* 5 · the runner: the loop as code, and the herdr window it drives */
 .ww-imp__runner {
   display: grid;
-  grid-template-columns: 800px minmax(0, 1fr);
+  grid-template-columns: 840px minmax(0, 1fr);
   gap: var(--space-md);
 }
+/* the runner with no title band: the code and the terminal take the whole stage */
+.ww-imp--claim > .ww-imp__runner--full { flex: 1; min-height: 0; }
 .ww-imp__code {
   margin: 0;
   padding: var(--space-md) var(--space-lg);
@@ -5543,4 +5907,477 @@
 }
 .ww-imp__free strong {
   color: var(--ww-magenta);
+}
+
+/* every QR on the slides is a link too (src/components/QrLink.tsx) */
+.ww-qrlink {
+  display: contents;
+}
+.ww-qrlink > svg {
+  cursor: pointer;
+}
+
+/* ─── The architecture: one request, six numbered steps (factory.tsx) ─────
+   A 1696 × 904 drawing: every node is placed in px, and the lines' paths in
+   factory.tsx use the same coordinates. Screens on the left, the server in the
+   middle with what it integrates under it, the two laptops on the right. */
+.ww-arch {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1696px;
+  height: 904px;
+  transform: translate(-50%, -50%);
+  color: var(--ww-purple);
+  font-size: var(--font-size-code);
+  line-height: 1.15;
+}
+.ww-arch strong {
+  font-family: var(--font-tight);
+  font-size: var(--font-size-body);
+  font-weight: 700;
+  line-height: 1;
+}
+/* the legend: the six steps, in order, across the top */
+.ww-arch__legend {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ww-arch__step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  color: var(--ww-text-muted);
+  transition: color var(--transition-normal);
+}
+.ww-arch__step b,
+.ww-arch__badge {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--ww-lavender);
+  color: var(--ww-purple);
+  font-family: var(--font-tight);
+  transition: background var(--transition-normal), color var(--transition-normal), transform var(--transition-normal);
+}
+.ww-arch__step--on {
+  color: var(--ww-magenta);
+}
+.ww-arch__step--on b,
+.ww-arch__badge--on {
+  background: var(--ww-magenta);
+  color: var(--ww-white);
+}
+/* the same number, on the line where the step happens */
+.ww-arch__badge {
+  position: absolute;
+  margin: -23px 0 0 -23px;
+  box-shadow: 0 0 0 6px var(--ww-paper);
+}
+.ww-arch__badge--on {
+  transform: scale(1.18);
+}
+/* the lines: dashes that flow the way the task travels */
+.ww-arch__beams {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ww-arch__rail {
+  stroke: var(--ww-violet);
+  stroke-width: 6;
+  stroke-dasharray: 2 16;
+  animation: ww-arch-flow 900ms linear infinite;
+}
+@keyframes ww-arch-flow {
+  to {
+    stroke-dashoffset: -18;
+  }
+}
+.ww-arch__tip {
+  fill: var(--ww-violet);
+  stroke: none;
+}
+.ww-arch__tip--on {
+  fill: var(--ww-magenta);
+}
+.ww-arch__beam {
+  stroke: var(--ww-magenta);
+  stroke-width: 8;
+  stroke-dasharray: 1;
+  animation: ww-arch-draw 1500ms var(--ease) backwards;
+}
+@keyframes ww-arch-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+/* the task itself, travelling along the lit line */
+.ww-arch__token {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--ww-white);
+  border: 5px solid var(--ww-magenta);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--ww-magenta) 45%, transparent);
+  offset-rotate: 0deg;
+  offset-anchor: center;
+  animation: ww-arch-travel 1500ms var(--ease) forwards;
+}
+/* the report travels back as its own thing: a finished card */
+.ww-arch__token--report {
+  border-color: var(--ww-purple);
+  background: var(--ww-mint);
+}
+@keyframes ww-arch-travel {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+/* nothing is framed: the things stand free, and the step lights them */
+.ww-arch__api,
+.ww-arch__ext,
+.ww-arch__mac,
+.ww-arch__reach,
+.ww-arch__dev,
+.ww-arch__title {
+  position: absolute;
+}
+.ww-arch--glow {
+  filter: drop-shadow(0 0 22px var(--ww-magenta));
+}
+.ww-arch__note {
+  position: absolute;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  color: var(--ww-text-muted);
+}
+.ww-arch__note--ext {
+  left: 816px;
+  top: 672px;
+}
+.ww-arch__note--mac {
+  left: 1270px;
+  top: 652px;
+  width: 380px;
+  white-space: normal;
+}
+/* me — every screen, on an arc: the label, then the thing itself */
+.ww-arch__title--me {
+  left: 0;
+  top: 70px;
+}
+.ww-arch__dev {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 82px;
+  transform: translateX(-256px);
+  transition: color var(--transition-normal);
+}
+/* a screen whose name is written on its right */
+.ww-arch__dev--flip {
+  flex-direction: row-reverse;
+  transform: none;
+}
+.ww-arch__dev.ww-arch__dev--flip i {
+  width: auto;
+  margin-left: -28px;
+  text-align: left;
+  white-space: nowrap;
+}
+.ww-arch__dev i {
+  width: 240px;
+  font-style: normal;
+  text-align: right;
+}
+.ww-arch__dev svg {
+  flex: none;
+  width: 112px;
+  height: 82px;
+  overflow: visible;
+  fill: none;
+  stroke: var(--ww-purple);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform var(--transition-normal);
+}
+.ww-arch__dev.ww-arch--hot {
+  color: var(--ww-magenta);
+}
+.ww-arch__dev.ww-arch--hot svg {
+  transform: scale(1.16);
+  stroke: var(--ww-magenta);
+}
+.ww-arch__dev .is-body {
+  fill: var(--ww-white);
+}
+.ww-arch__dev .is-soft {
+  fill: var(--ww-lavender);
+  stroke: none;
+}
+.ww-arch__dev .is-mint {
+  fill: var(--ww-mint);
+  stroke: none;
+}
+.ww-arch__dev .is-dark {
+  fill: var(--ww-ink);
+  stroke: var(--ww-ink);
+}
+.ww-arch__dev .is-claude {
+  stroke: var(--cc-claude);
+  stroke-width: 5;
+}
+.ww-arch__dev .is-light {
+  stroke: var(--cc-dim);
+  stroke-width: 4;
+}
+/* Railway — a cloud drawn in the same coordinates as the lines, and the server in it */
+.ww-arch__cloud {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: color-mix(in srgb, var(--ww-lavender) 55%, var(--ww-paper));
+  stroke: var(--ww-purple);
+  stroke-width: 5;
+  stroke-linejoin: round;
+  transition: filter var(--transition-normal);
+}
+.ww-arch__api {
+  left: 610px;
+  top: 222px;
+  width: 360px;
+  height: 410px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.ww-arch__apihead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.ww-arch__apihead svg {
+  width: 52px;
+  height: 52px;
+  fill: var(--ww-white);
+  stroke: var(--ww-purple);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ww-arch__apihead--db span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ww-arch__apihead--db i {
+  zoom: 0.62;
+  font-family: var(--font-mono);
+  font-style: normal;
+  white-space: nowrap;
+}
+/* the queue: drawn at the deck's sizes and zoomed, like the other miniatures */
+.ww-arch__queue {
+  zoom: 0.62;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 520px;
+  font-family: var(--font-mono);
+}
+.ww-arch__queue i {
+  font-style: normal;
+  color: var(--ww-text-muted);
+}
+.ww-arch__slot {
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: 3px dashed color-mix(in srgb, var(--ww-purple) 30%, transparent);
+  white-space: pre;
+}
+.ww-arch__slot--full {
+  border: 3px solid var(--ww-white);
+  border-left: 10px solid var(--ww-purple);
+  background: var(--ww-white);
+  animation: ww-asst-in 420ms 1300ms var(--ease) backwards;
+}
+.ww-arch__slot--hot {
+  border-left-color: var(--ww-magenta);
+  box-shadow: 0 0 0 5px var(--ww-magenta);
+}
+.ww-arch__apihead {
+  transition: color var(--transition-normal);
+}
+.ww-arch__apihead.ww-arch--hot {
+  color: var(--ww-magenta);
+}
+.ww-arch__apihead.ww-arch--hot svg {
+  stroke: var(--ww-magenta);
+}
+.ww-arch__api .ww-arch__icons {
+  width: 340px;
+  align-self: center;
+}
+.ww-arch__api .ww-arch__icons span {
+  zoom: 0.5;
+}
+.ww-arch__icons svg {
+  fill: none;
+  stroke: var(--ww-purple);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* what the server integrates with, and what the agents reach — icons standing free */
+.ww-arch__ext,
+.ww-arch__reach {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  transition: color var(--transition-normal);
+}
+.ww-arch__ext {
+  left: 525px;
+  top: 752px;
+  width: 530px;
+}
+.ww-arch__reach {
+  left: 1250px;
+  top: 770px;
+  width: 446px;
+}
+.ww-arch__reach.ww-arch--hot {
+  color: var(--ww-magenta);
+}
+.ww-arch__reach.ww-arch--hot svg {
+  stroke: var(--ww-magenta);
+}
+.ww-arch__icons {
+  align-self: stretch;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px 0;
+}
+.ww-arch__reach .ww-arch__icons {
+  grid-template-columns: repeat(3, 1fr);
+}
+.ww-arch__icons span {
+  zoom: 0.56;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+.ww-arch__icons svg {
+  width: 64px;
+  height: 64px;
+}
+/* the factory — two laptops, both agents on each */
+.ww-arch__mac {
+  left: 1270px;
+  width: 370px;
+  transition: filter var(--transition-normal);
+}
+.ww-arch__screen {
+  height: 200px;
+  padding: 12px;
+  border-radius: 20px 20px 0 0;
+  background: var(--ww-ink);
+}
+/* the terminal: drawn at the deck's sizes and zoomed, like the recreated apps */
+.ww-arch__mini {
+  zoom: 0.62;
+  height: 284px;
+  display: flex;
+  flex-direction: column;
+  background: var(--cc-dim);
+  font-family: var(--font-mono);
+}
+.ww-arch__panes {
+  flex: 1;
+  display: grid;
+  grid-auto-rows: 1fr;
+  gap: 3px;
+}
+.ww-arch__pane {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px;
+  background: var(--cc-bg);
+  color: var(--cc-dim);
+  transition: color var(--transition-normal);
+}
+.ww-arch__panes--cols {
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+}
+.ww-arch__panes--cols .ww-arch__pane {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 14px;
+}
+/* a waiting task in a queue that fills and drains: it arrives at once, not after the ask */
+.ww-arch__slot--now { animation-delay: 0ms; }
+/* the daemon's column: its name on a strip, the agents it starts under it */
+.ww-arch__stack {
+  display: grid;
+  grid-template-rows: auto;
+  grid-auto-rows: 1fr;
+  gap: 3px;
+}
+.ww-arch__stack em {
+  padding: 6px 22px;
+  background: var(--ww-mint);
+  font-style: normal;
+  font-weight: 600;
+  color: var(--ww-purple);
+}
+.ww-arch__panes--cols .ww-arch__stack .ww-arch__pane { gap: 4px; }
+.ww-arch__pane b {
+  font-weight: 600;
+  color: var(--cc-text);
+}
+.ww-arch__pane i {
+  font-style: normal;
+}
+.ww-arch__pane--on i {
+  color: var(--cc-claude);
+}
+.ww-arch__base {
+  display: block;
+  height: 24px;
+  margin: 0 -14px;
+  border-radius: 6px 6px 20px 20px;
+  background: var(--ww-text-muted);
 }

@@ -2,10 +2,10 @@ import { ReactNode } from 'react';
 import { SlideDefinition } from '../types/slides';
 import { CornerRings } from '../components/wawtech';
 import { useAnimating } from '../components/frameSettled';
+import { QrLink } from '../components/QrLink';
 import { useClock } from './BootstrapSlide';
 import { Browser, InFlight, STREAM_MS } from './improve';
 import { App, Comment, Fields, Ico, IconName, NavGroup, Thumb } from './ledgerApp';
-import { RouteMap } from './RouteMap';
 import dryGuatemala from '../assets/coffee/dry-guatemala.jpg';
 import bekeleKechara from '../assets/coffee/ethiopia-bekele-kechara.jpg';
 import decaf from '../assets/coffee/decaf.jpg';
@@ -34,6 +34,26 @@ import superPumpedCover from '../assets/books/super-pumped.jpg';
 import rehearsalPoster from '../assets/movies/the-rehearsal.jpg';
 import seeEverythingPoster from '../assets/movies/you-can-see-everything.jpg';
 import droneMap from '../assets/threat/drone-map-kyiv.jpg';
+import kotykAct1925 from '../assets/rodovid/davio-r6129-8-27-akt36-1925-kotyk.jpg';
+import volovodivkaDeaths1917 from '../assets/rodovid/volovodivka-1917-husak-deaths.jpg';
+import volovodivkaRegister1917 from '../assets/rodovid/volovodivka-1917-vidomist.jpg';
+import top100Cover from '../assets/music/top-100.jpg';
+import topNew30Cover from '../assets/music/top-new-30.jpg';
+import silenceSpeaksCover from '../assets/music/6gVhXhMUUhlnsGtQrc2tWE.jpg';
+import naysayerCover from '../assets/music/7l1aujAcBQWpG1nHKOxPGe.jpg';
+import nihilistCover from '../assets/music/0LnNkDzIGaYKCvGbe5N9Wo.jpg';
+import shadowMosesCover from '../assets/music/68osIGtVjM7QWVe6pazLHj.jpg';
+import mapChangeCover from '../assets/music/6wqBUUWSTn39vEXVM67avV.jpg';
+import costOfGivingUpCover from '../assets/music/2PcaKowfrJ2FDoBP5uxHaU.jpg';
+import prisonerCover from '../assets/music/745kdUEA8U8K2AoigX7Myx.jpg';
+import theseColoursCover from '../assets/music/564qvXssjJM1BkMm4FgPzA.jpg';
+import holyHellCover from '../assets/music/7z3Q4j4HJDSOZtbR5rbYdG.jpg';
+import mementoMoriCover from '../assets/music/7wyK7q4LROqh8nW2XUVKaD.jpg';
+import krapkaCover from '../assets/music/00rQF2UYdSCJy06NOdCHfb.jpg';
+import trueBelieversCover from '../assets/music/6bzbBeqibhl70svGOboJDN.jpg';
+import emptyHandsCover from '../assets/music/2LlSWchdFYUOfo57Yv8JFf.jpg';
+import prayForPlaguesCover from '../assets/music/2h2z6VlYWtw5jUZ1GRSrg8.jpg';
+import dyingToForgetCover from '../assets/music/58n0MyTEOVHzAlPowTVt4P.jpg';
 
 /**
  * «Artifacts that stay: miniapps» — the pages of the assistant's web app.
@@ -53,8 +73,10 @@ import droneMap from '../assets/threat/drone-map-kyiv.jpg';
  * photos of them (src/assets/coffee/, src/assets/supplies/, taken off the product). Its verdicts and the «your taste»
  * summary are sharpened for the stage: on the real page all he has said so far is
  * «OK». In the order shown:
- *   Coffee · Money · Supplies · Books · Movies · Health ·
- *   Threat forecast · Home · Routes · Sleep · Sport · Music · Family tree.
+ *   Coffee · Money · Supplies · Books · Movies ·
+ *   Threat forecast · Home · Sleep · Health · Sport · Music · Family tree.
+ * Home, Sleep and Health first replay the real task each was born in; Family tree
+ * is only a task — a month of archive research, with the scans the agent found.
  * (The app has more — the nanny's hours, work hours, important dates, his
  * sole-proprietor books, a wall display; the notes say so.)
  */
@@ -1480,122 +1502,229 @@ const Home = ({ t = 0 }: { t?: number }) => {
   );
 };
 
-/* ─── Routes ──────────────────────────────────────────────────────────────── */
-
-const Weather = ({ temp, air, when }: { temp: string; air: string; when: string }) => (
-  <span className="ww-ma__weather">
-    <span>
-      {temp} · partly cloudy · air {air} · pollen low
-    </span>
-    <L>{when}</L>
-  </span>
-);
-
-const Stop = ({ kind, time, where, children }: { kind: string; time: string; where: string; children?: ReactNode }) => (
-  <span className="ww-ma__stop">
-    <L>{kind}</L>
-    <span className="ww-ma__stoptime">
-      <span>{time}</span> <span className="ww-ma__sub">{where}</span>
-    </span>
-    {children}
-  </span>
-);
-
-const Routes = () => (
-  <Page icon="routes" name="Routes">
-    <div className="ww-ma__cols">
-      <div className="ww-ma__col">
-        <div className="ww-ma__card ww-ma__card--grow">
-          <L>Now</L>
-          <div className="ww-ma__map">
-            <RouteMap bare pick={1} />
-          </div>
-          <L>14 min ago · ±300 m</L>
-          <span className="ww-ma__actions">
-            <span className="ww-jg__pill ww-jg__pill--time">09:40</span>
-            <span>Car service — AutoHub Podil</span>
-          </span>
-        </div>
-      </div>
-      <div className="ww-ma__col">
-        <L>The next 24 hours</L>
-        <div className="ww-ma__card">
-          <span className="ww-jg__itemname">Car service — AutoHub Podil</span>
-          <span className="ww-ma__sub">leave in 35 min</span>
-          <span className="ww-ma__button">Go in Google Maps ↗</span>
-          <Stop kind="Leave" time="09:12" where="current location · 14 min ago">
-            <Weather temp="4°" air="good · 20" when="Forecast for 09:00 — when you leave" />
-            <Buttons items={['on foot 96 min', 'transit 41 min', 'car 22 min']} on="car 22 min" />
-          </Stop>
-          <Stop kind="Arrive" time="09:34" where="AutoHub Podil, 12 Kyrylivska St" />
-          <Stop kind="Leave" time="10:00" where="AutoHub Podil, 12 Kyrylivska St">
-            <Buttons items={['on foot 70 min', 'transit 24 min', 'car 16 min']} on="transit 24 min" />
-          </Stop>
-          <Stop kind="Arrive" time="10:24" where="the office" />
-        </div>
-      </div>
-    </div>
-  </Page>
-);
-
 /* ─── Sleep ───────────────────────────────────────────────────────────────── */
+/* The real page (apps/web/src/routes/sleep.tsx) has a tab per person: «Я» with the
+ * Health Connect nights and their score, and one per child with the Huckleberry
+ * log — the forecast, the same regularity raster (naps included) and «По днях».
+ * The frame cycles through the three tabs by itself. REAL data, at Yarik's word
+ * (16.11.2026): /api/sleep/nights?days=14 for each profile, read the night of
+ * 15→16 Nov; the children's names are the tab labels he asked for. A column is a
+ * day, 20:00 to 20:00 Kyiv; a raster gap is a night nobody logged. Left out: the
+ * forecast card (its rationale), ages, and the night still in progress. */
 
-/** Fourteen nights: when he fell asleep and woke, in hours after 20:00. */
-const NIGHTS: [number, number][] = [
-  [5.4, 13.2], [5.1, 13.5], [5.8, 13.0], [4.6, 12.4], [5.3, 13.6], [5.9, 14.0], [6.0, 13.3],
-  [4.8, 12.9], [5.2, 12.2], [5.6, 13.4], [5.0, 13.1], [6.1, 13.8], [5.3, 12.4], [5.4, 13.7],
+const ME_NIGHTS: [number, number][][] = [
+  [[5.27, 5.48], [6.5, 7.45], [8.47, 11.25], [11.78, 14.55]],
+  [[6.25, 7.32], [9.37, 10.28], [10.78, 11.92], [12.63, 12.93]],
+  [[5.02, 5.4], [5.5, 9.2], [10.48, 12.75], [13.17, 13.92]],
+  [[3.53, 8.43], [8.63, 8.8], [9.75, 11.75], [11.87, 13]],
+  [[8.45, 12.13], [12.23, 14.03]],
+  [[5.25, 5.68], [6.12, 7.1], [7.6, 13.57]],
+  [[5.97, 11.58]],
+  [[6.47, 7.9], [8, 8.27], [8.52, 12.35]],
+  [[6.18, 8.85], [9.12, 10.45], [10.55, 12.55]],
+  [[6.25, 13]],
+  [[7.62, 8.07], [8.32, 10], [11.13, 13.75]],
+  [[5.55, 13.98]],
+  [[3.68, 4.28], [4.32, 7.22], [7.48, 12.33]],
+  [],
 ];
-const SCORES = [
-  { date: 'Thu 12 Nov', span: '01:21 → 09:45', score: 57, sleep: ['4 h 45 min', 'too little', 34], steady: ['±16 min', 'steady', 82], pauses: ['12 min', 'pauses', 88] },
-  { date: 'Wed 11 Nov', span: '02:05 → 09:00', score: 85, sleep: ['6 h 45 min', 'too little', 78], steady: ['±27 min', 'drifting', 70], pauses: ['10 min', 'pauses', 90] },
-] as const;
+const MARTYN_NIGHTS: [number, number][][] = [
+  [],
+  [],
+  [[1.23, 9.33], [11.33, 12.65]],
+  [[2.5, 13]],
+  [[2.92, 12.77]],
+  [],
+  [[3.15, 13.53]],
+  [[2.67, 12.5]],
+  [[3.45, 12.6]],
+  [[0, 12.5]],
+  [[0.83, 11.73]],
+  [[1.5, 12.83]],
+  [],
+  [],
+];
+const MARTYN_DAYS: [string, string, string][] = [
+  ['Fri 13 Nov', '11 h 21 min', 'night 11 h 21 min'],
+  ['Thu 12 Nov', '10 h 55 min', 'night 10 h 55 min'],
+  ['Wed 11 Nov', '12 h 44 min', 'night 12 h 44 min'],
+  ['Tue 10 Nov', '9 h 09 min', 'night 9 h 09 min'],
+  ['Mon 9 Nov', '9 h 51 min', 'night 9 h 51 min'],
+  ['Sun 8 Nov', '10 h 24 min', 'night 10 h 24 min'],
+  ['Fri 6 Nov', '9 h 52 min', 'night 9 h 52 min'],
+  ['Thu 5 Nov', '10 h 31 min', 'night 10 h 31 min'],
+  ['Wed 4 Nov', '9 h 26 min', 'night 8 h 06 min · 1 nap · 1 h 20 min'],
+];
+const PAVLYNA_NIGHTS: [number, number][][] = [
+  [[0.33, 0.97], [2.22, 14.53], [16.47, 17.43]],
+  [[14.63, 15.37], [17.5, 17.9], [19, 19.5], [21.55, 22.42]],
+  [[0, 0.42], [1.5, 10.12], [11.6, 12.65], [15.08, 15.65], [17.3, 18.13], [19.82, 20.05], [22.48, 23.05]],
+  [[2, 13.1], [15.2, 17], [19.23, 19.67], [21.05, 21.57], [22.8, 23.97]],
+  [[2.25, 13], [15.33, 15.73], [17.75, 18.23], [21, 23]],
+  [[1.33, 12.4], [14.55, 15.77], [18.33, 19.25], [21.32, 21.98]],
+  [[0.75, 12.72], [14.8, 15.32], [17.17, 17.95], [19.55, 20.87], [23.5, 23.93]],
+  [[1.72, 12.05], [13.97, 14.87], [16.93, 17.5], [19.2, 19.6], [21.6, 22.73]],
+  [[2.12, 12.83], [14.75, 16.42], [18.68, 19.27], [20.42, 21.18], [23.05, 23.87]],
+  [[1.83, 13.27], [14.92, 15.92], [17.83, 19.62], [21.88, 22.45]],
+  [[0.32, 0.95], [3.5, 12.5], [14.83, 16], [18.25, 19.5], [21.45, 21.83]],
+  [[0, 0.37], [2.05, 14], [15.78, 17.17], [18.83, 19.27], [21.25, 21.5], [23.27, 24]],
+  [[2.28, 12.7], [14.63, 15.12], [16.78, 17.4], [17.78, 20.28], [21.28, 21.9]],
+  [[1.17, 1.5]],
+];
+const PAVLYNA_DAYS: [string, string, string][] = [
+  ['Sat 14 Nov', '14 h 42 min', 'night 10 h 26 min · 4 naps · 4 h 16 min'],
+  ['Fri 13 Nov', '15 h 10 min', 'night 11 h 57 min · 5 naps · 3 h 13 min'],
+  ['Thu 12 Nov', '12 h 27 min', 'night 9 h 01 min · 4 naps · 3 h 26 min'],
+  ['Wed 11 Nov', '14 h 48 min', 'night 11 h 26 min · 3 naps · 3 h 22 min'],
+  ['Tue 10 Nov', '14 h 34 min', 'night 10 h 43 min · 4 naps · 3 h 51 min'],
+  ['Mon 9 Nov', '13 h 22 min', 'night 10 h 19 min · 4 naps · 3 h 03 min'],
+];
 
-const Sleep = () => (
-  <Page icon="sleep" name="Sleep">
-    <Buttons items={['Me', 'Kid']} on="Me" />
-    <span className="ww-ma__actions">
-      <span className="ww-jg__itemname">☀ Awake</span>
-      <span className="ww-ma__sub">up at 09:45 · 4 h 45 min last night</span>
+/* As many past days / scored nights as fit the page whole: 4 scores, 9 days for
+ *  Martyn (all he has logged in the window), 6 for Pavlyna. */
+/** The forecast card, read off /api/sleep/nights' `forecast` the night of 15→16 Nov:
+ *  a 06:00→night track (hours after 06:00; `end` is its length), the predicted
+ *  sleeps on it as dashed outlines, and the upcoming ones listed. */
+type Forecast = { end: number; sleeps: [number, number][]; items: [string, string, string][]; foot: string };
+const MARTYN_FORECAST: Forecast = {
+  end: 17.58,
+  sleeps: [[0, 2.58], [15.17, 17.58]],
+  items: [['≈ 21:10', 'night sleep', 'falls asleep 21:10–22:35']],
+  foot: 'nap cycle 40 min',
+};
+const PAVLYNA_FORECAST: Forecast = {
+  end: 17.08,
+  sleeps: [[0, 2.92], [5, 6.03], [7.95, 8.47], [10.38, 10.9], [12.82, 13.33], [15.75, 17.08]],
+  items: [
+    ['11:00–12:02', 'nap 1', 'falls asleep 10:50–11:15'],
+    ['13:57–14:28', 'nap 2', 'falls asleep 13:42–14:12'],
+    ['16:23–16:54', 'nap 3', 'falls asleep 16:08–16:38'],
+    ['18:49–19:20', 'nap 4', 'falls asleep 18:34–19:04'],
+    ['≈ 21:45', 'night sleep', 'falls asleep 21:45–22:05'],
+  ],
+  foot: 'nap cycle 31 min',
+};
+
+const ForecastCard = ({ f }: { f: Forecast }) => (
+  <div className="ww-ma__card">
+    <L>Today · forecast · {f.foot}</L>
+    <span className="ww-ma__fctrack" aria-hidden="true">
+      {f.sleeps.map(([from, to]) => (
+        <span key={from} style={{ left: `${(from / f.end) * 100}%`, width: `${((Math.min(to, f.end) - from) / f.end) * 100}%` }} />
+      ))}
     </span>
-    <div className="ww-ma__cols">
-      <div className="ww-ma__card">
-        <L>Regularity · 14 days · a column is a day, 20:00 to 20:00</L>
-        <svg className="ww-ma__nights" viewBox="0 0 140 100" preserveAspectRatio="none" aria-hidden="true">
-          {NIGHTS.map(([from, to], i) => (
-            <g key={i}>
-              <rect className="ww-ma__nightcol" x={i * 10 + 1} y="0" width="8" height="100" />
-              <rect className="ww-ma__nightbar" x={i * 10 + 1} y={(from / 24) * 100} width="8" height={((to - from) / 24) * 100} />
-            </g>
-          ))}
-        </svg>
-        <span className="ww-jg__ribbonlegend ww-jg__label">
-          <span>31 Oct</span>
-          <span>13 Nov</span>
+    <span className="ww-ma__fcticks ww-jg__label" aria-hidden="true">
+      {[0, 2, 4, 6, 8, 10, 12, 14, 16].map((h) => (
+        <span key={h} style={{ left: `${(h / f.end) * 100}%` }}>
+          {String(6 + h).padStart(2, '0')}
         </span>
-      </div>
-      <div className="ww-ma__card">
-        <L>Sleep score</L>
-        {SCORES.map((night) => (
-          <span key={night.date} className="ww-ma__score">
-            <L>
-              {night.date} · {night.span}
-            </L>
-            <span className="ww-ma__big">{night.score}</span>
-            {[night.sleep, night.steady, night.pauses].map(([value, word, fill]) => (
-              <span key={word} className="ww-ma__meter">
-                <span className="ww-ma__bar ww-ma__bar--slate" aria-hidden="true">
-                  <span style={{ width: `${fill}%` }} />
-                </span>
-                <span>{value}</span>
-                <L>{word}</L>
-              </span>
-            ))}
-          </span>
-        ))}
-      </div>
-    </div>
-  </Page>
+      ))}
+    </span>
+    {f.items.map(([time, what, range]) => (
+      <span key={time} className="ww-ma__fcitem">
+        <span>{time}</span>
+        <span className="ww-ma__sub">{what}</span>
+        <L>{range}</L>
+      </span>
+    ))}
+  </div>
 );
+
+type Sleeper = {
+  tab: string;
+  nights: [number, number][][];
+  now: [string, string];
+  /** an adult has scored nights; a child has its days */
+  scores?: typeof MY_SCORES;
+  days?: [string, string, string][];
+  forecast?: Forecast;
+};
+const MY_SCORES = [
+  { date: 'Sat 14 Nov', span: '23:31 → 08:20', score: 86, sleep: ['8 h 21 min', 'normal', 100], steady: ['±35 min', 'drifting', 71], pauses: ['22 min', 'pauses', 100] },
+  { date: 'Fri 13 Nov', span: '01:23 → 10:00', score: 95, sleep: ['8 h 26 min', 'normal', 100], steady: ['±18 min', 'steady', 85], pauses: ['11 min', 'pauses', 100] },
+  { date: 'Thu 12 Nov', span: '01:21 → 09:45', score: 57, sleep: ['4 h 45 min', 'too little', 25], steady: ['±16 min', 'steady', 87], pauses: ['44 min', 'pauses', 100] },
+  { date: 'Wed 11 Nov', span: '02:05 → 09:00', score: 85, sleep: ['6 h 45 min', 'too little', 92], steady: ['±27 min', 'drifting', 77], pauses: ['10 min', 'pauses', 100] },
+] as const;
+const SLEEPERS: Sleeper[] = [
+  { tab: 'Me', nights: ME_NIGHTS, now: ['☀ Awake', 'up at 08:21 · 8 h 21 min last night'], scores: MY_SCORES },
+  { tab: 'Martyn', nights: MARTYN_NIGHTS, now: ['☾ Asleep', 'since 23:10 · wakes ≈ 08:35 (08:30–08:55)'], days: MARTYN_DAYS, forecast: MARTYN_FORECAST },
+  { tab: 'Pavlyna', nights: PAVLYNA_NIGHTS, now: ['☾ Asleep', 'since 23:07 · wakes ≈ 08:55 (08:35–09:05)'], days: PAVLYNA_DAYS, forecast: PAVLYNA_FORECAST },
+];
+/** How long the frame stays on each person before the next tab. */
+const SLEEPER_MS = 6000;
+
+const Sleep = ({ t = 0 }: { t?: number }) => {
+  // round and round; the export (t = MAX) parks on «Me»
+  const who = t >= Number.MAX_SAFE_INTEGER ? SLEEPERS[0] : SLEEPERS[Math.floor(t / SLEEPER_MS) % SLEEPERS.length];
+  return (
+    <Page icon="sleep" name="Sleep">
+      <div key={who.tab} className="ww-ma__sleeper">
+        <span className="ww-ma__sleephead">
+          <Buttons items={SLEEPERS.map((x) => x.tab)} on={who.tab} />
+          <span className="ww-ma__actions ww-jg__arrive">
+            <span className="ww-jg__itemname">{who.now[0]}</span>
+            <span className="ww-ma__sub">{who.now[1]}</span>
+          </span>
+        </span>
+        <div className="ww-ma__cols ww-ma__cols--sleep ww-jg__arrive">
+          <div className="ww-ma__col">
+            {who.forecast && <ForecastCard f={who.forecast} />}
+            <div className="ww-ma__card ww-ma__card--fill">
+              <L>Regularity · 14 days · 20:00 to 20:00</L>
+              <svg className="ww-ma__nights" viewBox="0 0 140 100" preserveAspectRatio="none" aria-hidden="true">
+                {who.nights.map((day, i) => (
+                  <g key={i}>
+                    <rect className="ww-ma__nightcol" x={i * 10 + 1} y="0" width="8" height="100" />
+                    {day.map(([from, to]) => (
+                      <rect key={from} className="ww-ma__nightbar" x={i * 10 + 1} y={(from / 24) * 100} width="8" height={((to - from) / 24) * 100} />
+                    ))}
+                  </g>
+                ))}
+              </svg>
+              <span className="ww-jg__ribbonlegend ww-jg__label">
+                <span>2 Nov</span>
+                <span>15 Nov</span>
+              </span>
+            </div>
+          </div>
+          {who.scores ? (
+            <div className="ww-ma__card ww-ma__card--clip">
+              <L>Sleep score</L>
+              {who.scores.map((night) => (
+                <span key={night.date} className="ww-ma__score">
+                  <L>
+                    {night.date} · {night.span}
+                  </L>
+                  <span className="ww-ma__big">{night.score}</span>
+                  {[night.sleep, night.steady, night.pauses].map(([value, word, fill]) => (
+                    <span key={word} className="ww-ma__meter">
+                      <span className="ww-ma__bar ww-ma__bar--slate" aria-hidden="true">
+                        <span style={{ width: `${fill}%` }} />
+                      </span>
+                      <span>{value}</span>
+                      <L>{word}</L>
+                    </span>
+                  ))}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <div className="ww-ma__card ww-ma__card--clip">
+              <L>By day</L>
+              {who.days!.map(([day, total, split]) => (
+                <span key={day} className="ww-ma__sleepday">
+                  <L>{day}</L>
+                  <span>{total}</span>
+                  <span className="ww-ma__sub ww-ma__sleepsplit">{split.replace(' · ', '\n')}</span>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </Page>
+  );
+};
 
 /* ─── Sport ───────────────────────────────────────────────────────────────── */
 
@@ -1664,87 +1793,225 @@ const Sport = () => (
 );
 
 /* ─── Music ───────────────────────────────────────────────────────────────── */
+/* The real page (apps/web/src/routes/music.tsx): «Songs · duel and top 30» — the
+ * duel card on top (DuelCard: «Which of these is better?», two sides, «Draw»), the
+ * ranking under it, and under the ranking the two playlists it mirrors into
+ * Spotify every day (left off this frame at his word; the next frame is Spotify). REAL, read 16.11.2026 with music_top_tracks /
+ * music_playlist_details / music_status: the ranks, strengths, duel counts, both
+ * playlists' names, descriptions and covers (his own), 100 and 30 songs, synced
+ * 15 Nov 09:41. The duels are STAGED: four pairs from his top ten, the first three
+ * answered (two by the lower song) and the ranking re-sorted after each with an
+ * illustrative Bradley–Terry-style step; duel counts are left off the rows (his call). Album covers: Spotify oEmbed
+ * thumbnails, as on the music-prototype slide. Translated: the labels. */
 
-const PLAYED = [
-  { track: 'Paranoid Android', by: 'Radiohead · OK Computer', when: '2h ago' },
-  { track: 'Karma Police', by: 'Radiohead · OK Computer', when: '2h ago' },
-  { track: 'Teardrop', by: 'Massive Attack · Mezzanine', when: '2h ago' },
-  { track: 'Roads', by: 'Portishead · Dummy', when: '3h ago' },
+type Song = { name: string; by: string; cover?: string; strength?: number; duels?: number };
+const TOP_SONGS: Song[] = [
+  { name: 'Silence Speaks', by: 'While She Sleeps, Oli Sykes', cover: silenceSpeaksCover, strength: 2.774, duels: 9 },
+  { name: 'Naysayer', by: 'Architects', cover: naysayerCover, strength: 2.644, duels: 9 },
+  { name: 'Nihilist', by: 'Architects', cover: nihilistCover, strength: 2.605, duels: 9 },
+  { name: 'Shadow Moses', by: 'Bring Me The Horizon', cover: shadowMosesCover, strength: 2.565, duels: 9 },
+  { name: 'Map Change', by: 'Every Time I Die', cover: mapChangeCover, strength: 2.488, duels: 9 },
+  { name: 'the cost of giving up', by: 'Poppy', cover: costOfGivingUpCover, strength: 2.477, duels: 9 },
+  { name: "These Colours Don't Run", by: 'Architects', cover: theseColoursCover, strength: 2.329, duels: 9 },
+  { name: 'Holy Hell', by: 'Architects', cover: holyHellCover, strength: 2.329, duels: 8 },
+  { name: 'Prisoner', by: 'NOVELISTS', cover: prisonerCover, strength: 2.319, duels: 8 },
+  { name: 'Memento Mori', by: 'Architects', cover: mementoMoriCover, strength: 2.283, duels: 9 },
 ];
-const TOP = [
-  { track: 'Glory Box', by: 'Portishead', score: '3.77' },
-  { track: 'Angel', by: 'Massive Attack', score: '2.64' },
-  { track: 'Idioteque', by: 'Radiohead', score: '2.51' },
+const TOP_NEW: Song[] = [
+  { name: 'True Believers (feat. Sam Carter)', by: 'DON BROCO, Sam Carter', cover: trueBelieversCover },
+  { name: 'Empty Hands', by: 'Poppy', cover: emptyHandsCover },
+  { name: 'Pray for Plagues - 2026 Repented', by: 'Bring Me The Horizon', cover: prayForPlaguesCover },
+  { name: 'Dying To Forget', by: 'Poppy', cover: dyingToForgetCover },
+  { name: 'Крапка', by: 'Megamass', cover: krapkaCover },
 ];
-const PLAY_HEAT = '2 2 2 3 3 2 1  0 3 1 1 1 2 2  2 1 2 2 2 0 0'.split(/\s+/).map(Number);
+/** The duels the frame plays, in order: three answered — two of them by the LOWER
+ *  song, so the ranking visibly moves — and a fourth left waiting. Staged: the pairs
+ *  and the picks are chosen for the slide (the notes say so). */
+const DUELS: { a: number; b: number; pick?: 'a' | 'b' }[] = [
+  { a: 8, b: 2, pick: 'a' }, // Prisoner over Nihilist
+  { a: 5, b: 1, pick: 'a' }, // the cost of giving up over Naysayer
+  { a: 7, b: 4, pick: 'a' }, // Holy Hell over Map Change
+  { a: 0, b: 3 }, // Silence Speaks or Shadow Moses — waiting for him
+];
+/** a duel is on screen this long; the pick lands at DUEL_PICK_MS into it */
+const DUEL_MS = 3400;
+const DUEL_PICK_MS = 1900;
+/** How far one answer moves two strengths — a Bradley–Terry-style step: the less
+ *  expected the win, the bigger the move. Illustrative; the product's own update
+ *  lives in the music miniapp. */
+const DUEL_STEP = 0.4;
+/** one row of the ranking, in px — the rows are placed by rank and slide when it changes */
+const RANK_ROW = 96;
 
-const Music = () => (
-  <Page icon="music" name="Music">
-    <div className="ww-ma__cols ww-ma__cols--wide">
-      <div className="ww-ma__col">
-        <div className="ww-ma__cols">
-          <div className="ww-ma__card">
-            <L>Listened · 3 weeks</L>
-            <span className="ww-ma__big">
-              186 tracks <L>12 h 6 min</L>
-            </span>
-            <Heat levels={PLAY_HEAT} first={26} today={19} />
-          </div>
+/** The ranking after the first `answered` duels. */
+function rankingAfter(answered: number) {
+  const songs = TOP_SONGS.map((song) => ({ ...song, strength: song.strength!, duels: song.duels! }));
+  DUELS.slice(0, answered).forEach((duel) => {
+    const [w, l] = duel.pick === 'a' ? [songs[duel.a], songs[duel.b]] : [songs[duel.b], songs[duel.a]];
+    const move = DUEL_STEP * (1 - 1 / (1 + Math.exp(l.strength - w.strength)));
+    w.strength += move;
+    l.strength -= move;
+    w.duels += 1;
+    l.duels += 1;
+  });
+  return [...songs].sort((x, y) => y.strength - x.strength);
+}
+
+const Music = ({ t = 0 }: { t?: number }) => {
+  // it plays once: three answers, then the fourth pair waits; export and the
+  // Spotify frame show that end state
+  const n = Math.min(Math.floor(t / DUEL_MS), DUELS.length - 1);
+  const duel = DUELS[n];
+  const picked = duel.pick && t - n * DUEL_MS >= DUEL_PICK_MS ? duel.pick : undefined;
+  const answered = n + (picked ? 1 : 0);
+  useAnimating(t < (DUELS.length - 1) * DUEL_MS);
+  const ranking = rankingAfter(answered);
+  const last = answered > 0 ? DUELS[answered - 1] : undefined;
+  const moved = last ? [TOP_SONGS[last.a].name, TOP_SONGS[last.b].name] : [];
+  const side = (key: 'a' | 'b') => TOP_SONGS[duel[key]];
+  return (
+    <Page icon="music" name="Music">
+      <div className="ww-ma__cols ww-ma__cols--music">
+        <div className="ww-ma__col">
+          <L>Songs · duel and top 30</L>
           <div className="ww-ma__card ww-ma__card--warn">
-            <span className="ww-ma__row">
-              <L tone="time">✕ Duel · songs from the top 20</L>
-              <L>listen</L>
-            </span>
+            <L tone="time">⚔ {answered > 0 ? `Duel · ${answered} in a row` : 'Duel'}</L>
             <span className="ww-jg__itemname">Which of these is better?</span>
-            <span className="ww-ma__duel ww-ma__duel--covers">
-              <span>
-                <span className="ww-jg__swatch ww-ma__cover ww-ma__cover--a" aria-hidden="true" />
-                Glory Box
-                <L>Portishead</L>
-              </span>
-              <span>
-                <span className="ww-jg__swatch ww-ma__cover ww-ma__cover--b" aria-hidden="true" />
-                Teardrop
-                <L>Massive Attack</L>
-              </span>
+            <span className="ww-ma__duel ww-ma__duel--covers ww-ma__duel--songs ww-jg__arrive" key={n}>
+              {(['a', 'b'] as const).map((key) => (
+                <span
+                  key={key}
+                  className={picked === key ? 'ww-ma__side--on' : picked ? 'ww-ma__side--off' : undefined}
+                >
+                  <img className="ww-ma__cover" src={side(key).cover} alt="" />
+                  {side(key).name}
+                  <L>{side(key).by}</L>
+                </span>
+              ))}
             </span>
-            <span className="ww-ma__button ww-ma__button--wide">A draw</span>
+            <span className="ww-ma__button ww-ma__button--wide">Draw</span>
           </div>
         </div>
-        <L>Top 100 · 96 on the playlist · updated 40 h ago</L>
-        <div className="ww-ma__card ww-ma__card--list">
-          {TOP.map((row, i) => (
-            <span key={row.track} className="ww-ma__row">
-              <span className="ww-ma__actions">
-                <L>{i + 1}</L>
-                <span className="ww-jg__itemtext">
-                  <span>{row.track}</span>
-                  <L>{row.by}</L>
+        <div className="ww-ma__col">
+          <L>Top 30</L>
+          <div className="ww-ma__card ww-ma__card--list ww-ma__card--clip">
+            <span className="ww-ma__rankbox" style={{ height: RANK_ROW * 8 }}>
+              {TOP_SONGS.map((song) => {
+                const at = ranking.findIndex((r) => r.name === song.name);
+                const now = ranking[at];
+                return (
+                  <span
+                    key={song.name}
+                    className={`ww-ma__row ww-ma__rankrow${moved.includes(song.name) ? ' ww-ma__rankrow--moved' : ''}`}
+                    style={{ height: RANK_ROW, transform: `translateY(${at * RANK_ROW}px)` }}
+                  >
+                    <span className="ww-ma__actions">
+                      <L>{at + 1}</L>
+                      <img className="ww-ma__rankcover" src={song.cover} alt="" />
+                      <span className="ww-jg__itemtext">
+                        <span>{song.name}</span>
+                        <L>{song.by}</L>
+                      </span>
+                    </span>
+                    <L>{now.strength.toFixed(2)}</L>
+                  </span>
+                );
+              })}
+            </span>
+          </div>
+        </div>
+      </div>
+    </Page>
+  );
+};
+
+/* Spotify on his phone: the two playlists the Music page keeps — reconstructed
+ * from the Spotify app's own layout, with his real playlists, covers, descriptions
+ * and their first songs. The frame plays by itself: Library → Top 100 → back →
+ * Top New 30. */
+const SPOTIFY_MS = [0, 2400, 7600, 9000] as const;
+/** the playlists themselves (music_playlist_details, 16.11.2026) — the QR codes on their pages */
+const TOP_100_URL = 'https://open.spotify.com/playlist/2PCMNo8412xujdUfDjtZbX';
+const TOP_NEW_30_URL = 'https://open.spotify.com/playlist/0EfRZSXJRovt4IHrJTl8JC';
+
+function SpotifyPhone({ phase }: { phase: number }) {
+  const open = phase === 1 ? 'top' : phase === 3 ? 'new' : null;
+  const list = open === 'top' ? TOP_SONGS.slice(0, 6) : TOP_NEW;
+  return (
+    <div className="ww-ma__phone ww-jg__arrive">
+      <div className="ww-jg--phone ww-spo">
+        <span className="ww-spo__status">
+          <span>9:41</span>
+          <span>●●● ▮</span>
+        </span>
+        {open === null ? (
+          <div className="ww-spo__page ww-jg__arrive" key={`lib${phase}`}>
+            <span className="ww-spo__h1">Your Library</span>
+            <span className="ww-spo__chips">
+              <span>Playlists</span>
+              <span>Albums</span>
+              <span>Artists</span>
+            </span>
+            <span className="ww-spo__libitem">
+              <span className="ww-spo__liked" aria-hidden="true">♥</span>
+              <span>
+                <strong>Liked Songs</strong>
+                <span className="ww-spo__dim">Playlist · 2,680 songs</span>
+              </span>
+            </span>
+            {[
+              { cover: top100Cover, name: "Yarik's Top 100", tap: phase === 0 },
+              { cover: topNew30Cover, name: "Yarik's Top New 30", tap: phase === 2 },
+            ].map((pl) => (
+              <span key={pl.name} className={`ww-spo__libitem${pl.tap ? ' ww-ma__tap' : ''}`}>
+                <img src={pl.cover} alt="" />
+                <span>
+                  <strong>{pl.name}</strong>
+                  <span className="ww-spo__dim">Playlist · Yaroslav Yermilov</span>
                 </span>
               </span>
-              <L>{row.score}</L>
+            ))}
+          </div>
+        ) : (
+          <div className="ww-spo__page ww-jg__arrive" key={open}>
+            <span className="ww-spo__herorow">
+              <img className="ww-spo__hero" src={open === 'top' ? top100Cover : topNew30Cover} alt="" />
+              <QrLink
+                className="ww-spo__qr"
+                value={open === 'top' ? TOP_100_URL : TOP_NEW_30_URL}
+                size={150}
+                level="M"
+                fgColor="var(--spo-ground)"
+                bgColor="var(--spo-ink)"
+                marginSize={2}
+                title={open === 'top' ? "QR code: Yarik's Top 100 on Spotify" : "QR code: Yarik's Top New 30 on Spotify"}
+              />
             </span>
-          ))}
-        </div>
-      </div>
-      <div className="ww-ma__col">
-        <L>The last 20</L>
-        <div className="ww-ma__card ww-ma__card--list">
-          {PLAYED.map((row) => (
-            <span key={row.track} className="ww-ma__row">
-              <span className="ww-jg__itemtext">
-                <span>{row.track}</span>
-                <L>{row.by}</L>
+            <span className="ww-spo__h1">{open === 'top' ? "Yarik's Top 100" : "Yarik's Top New 30"}</span>
+            <span className="ww-spo__dim">
+              {open === 'top'
+                ? 'Regularly updated playlist with one hundred of my favourite songs'
+                : 'Regularly updated playlist with my thirty favourite songs released in the last twelve months'}
+            </span>
+            <span className="ww-spo__by">
+              Yaroslav Yermilov
+              <span className="ww-spo__play" aria-hidden="true">▶</span>
+            </span>
+            {list.map((song) => (
+              <span key={song.name} className="ww-spo__track">
+                <img src={song.cover ?? top100Cover} alt="" />
+                <span>
+                  <strong>{song.name}</strong>
+                  <span className="ww-spo__dim">{song.by}</span>
+                </span>
               </span>
-              <L>{row.when}</L>
-            </span>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
-  </Page>
-);
-
+  );
+}
 /* ─── Family tree ─────────────────────────────────────────────────────────── */
 
 const FINDINGS = [
@@ -1953,54 +2220,392 @@ function HomeBirth({ moment, t }: { moment: number; t: number }) {
   );
 }
 
+/* ─── …and how Sleep and Health were born: two more real tasks ────────────── */
+
+/** One beat of a task thread replayed on the slide: a comment by Yarik or by the
+ *  agent. An agent beat with `stream` first shows the session in flight, then its
+ *  report. `status` is what the task card reads once the beat has landed. */
+type Beat = {
+  who: '@me' | 'Claude Code';
+  when: string;
+  tag?: string;
+  body: ReactNode;
+  stream?: string[];
+  status?: 'paused' | 'review';
+  /** scans the agent attached to its report — shown in the comment, as the page does */
+  scans?: { src: string; alt: string }[];
+};
+/** `stays`: the frame IS the task — no page opens after it (the family tree). */
+type TaskBirth = { id: string; title: string; created: string; priority: string; beats: Beat[]; stays?: true };
+
+/** Sleep's forecast came out of task 5dd88196, «Why is there no forecast for the next
+ *  sleep?», 26.10.2026, read on 16.11.2026 with `get_task_comments`. Real: the title,
+ *  id, dates, the order of the thread, his replies (translated, the third shortened),
+ *  the research's findings and sources (Galland 2012, Hammad et al.), her ~31–33 min
+ *  nap cycle, the rejected plan and his architecture, the shipped commit's content and
+ *  the backtest (night bedtime 23 vs 96 min). Compressed: his first comment was three
+ *  screenshots, and the reports are shortened to one line each. Tool lines are the
+ *  kind of calls it made, not a transcript. */
+const SLEEP_BIRTH: TaskBirth = {
+  id: '5dd88196',
+  title: 'Why is there no forecast for the next sleep?',
+  created: 'Oct 26',
+  priority: 'Medium',
+  beats: [
+    {
+      who: 'Claude Code',
+      when: 'Oct 26',
+      tag: 'Session report',
+      stream: ['sleep_get(Pavlyna, 14 days)', 'Bash(bslog query sleep.huckleberry)'],
+      body: (
+        <p>
+          The forecast is Huckleberry&apos;s own SweetSpot: the app writes it only while it is open. Nothing broke on our
+          side.
+        </p>
+      ),
+    },
+    {
+      who: '@me',
+      when: 'Oct 26',
+      body: (
+        <p>
+          <strong>Let&apos;s research the sleep cycle of infants by age</strong>, and design our own forecast of sleep and
+          waking as a fallback.
+        </p>
+      ),
+    },
+    {
+      who: 'Claude Code',
+      when: 'Oct 26',
+      tag: 'Plan',
+      status: 'review',
+      stream: [
+        'WebSearch(infant sleep cycle polysomnography by age)',
+        'WebSearch(wake windows infants evidence)',
+        'sleep_get(Pavlyna, 14 days)',
+        'Write(plan.md)',
+      ],
+      body: (
+        <p>
+          Science: «wake windows» are consultants&apos; heuristics, not research. An infant&apos;s sleep cycle is 50–60 min
+          (Hammad et al., 152 infants); 12.8 h a day on average (Galland 2012). Her own naps fit a 31–33 min cycle — not the
+          37–43 we use. Plan attached.
+        </p>
+      ),
+    },
+    {
+      who: '@me',
+      when: 'Oct 26',
+      tag: 'Plan rejected',
+      body: (
+        <p>
+          A loop task every couple of days <strong>analyses her history, adds the conclusions from the research</strong>{' '}
+          and sets the forecast parameters. Forecast the whole day, and correct it as the day goes.
+        </p>
+      ),
+    },
+    {
+      who: 'Claude Code',
+      when: 'Oct 26',
+      tag: 'Plan v2',
+      status: 'review',
+      stream: ['Write(plan-v2.md)'],
+      body: <p>Plan v2: a loop sets her parameters every 2 days; the server rebuilds the whole day every minute.</p>,
+    },
+    { who: '@me', when: 'Oct 26', tag: 'Plan approved', body: <p>Yes, let&apos;s do all of it.</p> },
+    {
+      who: 'Claude Code',
+      when: 'Oct 26',
+      tag: 'Session report',
+      stream: [
+        'Write(miniapps/sleep/src/forecast.ts)',
+        'Write(skills/sleep-forecast/SKILL.md)',
+        'sleep_forecast_backtest(Pavlyna, 14 days)',
+        'Edit(apps/web/src/routes/sleep.tsx)',
+        'Bash(railway up --ci)',
+      ],
+      body: (
+        <p>
+          Shipped: our own forecast for the whole day, and a loop that re-fits it every 2 days. Night bedtime is off by 23
+          min — the age table was off by 96.
+        </p>
+      ),
+    },
+  ],
+};
+
+/** Health's water card came out of task c735bd10, «Water miniapp», his first comment
+ *  11.11.2026, read on 16.11.2026 with `get_task_comments`. Real: the title, id,
+ *  dates, his replies (translated; the second shortened), the research's sources
+ *  (Valtin 2002, EFSA 2010, Yamada et al. 2022 in Science), five rejected plans and
+ *  what each one added, approval of v6, what shipped in c4a9c7a1. Compressed: the
+ *  five rejections are one comment here (they were five, 12–13 Nov), the plans one. */
+const WATER_BIRTH: TaskBirth = {
+  id: 'c735bd10',
+  title: 'Water miniapp',
+  created: 'Nov 8',
+  priority: 'Medium',
+  beats: [
+    {
+      who: '@me',
+      when: 'Nov 11',
+      body: (
+        <p>
+          I want a miniapp to track my hydration. <strong>Start with research, to ground it in scientific studies.</strong>
+        </p>
+      ),
+    },
+    {
+      who: 'Claude Code',
+      when: 'Nov 11',
+      tag: 'Session report',
+      stream: [
+        'WebSearch(EFSA adequate intake water 2010)',
+        'WebSearch(Valtin 2002 eight glasses)',
+        'WebSearch(Yamada 2022 Science water turnover)',
+        'health_today()',
+      ],
+      body: (
+        <p>
+          «8 glasses» has no evidence (Valtin 2002). EFSA: 2.5 L a day for a man, food included — ≈2 L from drinks. Water
+          turnover moves with body mass, activity and climate (Yamada et al. 2022, Science) — so the goal must be yours, and
+          move with them.
+        </p>
+      ),
+    },
+    {
+      who: '@me',
+      when: 'Nov 11',
+      body: <p>2 L is enough. One tap for a sip of water or a cup of coffee. Count the weather and my workouts.</p>,
+    },
+    {
+      who: 'Claude Code',
+      when: 'Nov 12',
+      tag: 'Plan',
+      status: 'review',
+      stream: ['Read(miniapps/routes/src/destination-forecast.ts)', 'Write(plan.md)'],
+      body: <p>Plan: the day&apos;s goal = 2 L + heat + workouts, computed on the server.</p>,
+    },
+    {
+      who: '@me',
+      when: 'Nov 12–13',
+      tag: 'Plan rejected ×5',
+      body: (
+        <p>
+          Not Kyiv — where I am. Count sips, not cups. When I sleep? The bedroom at night. Home sensors when I am home.
+          Humidity — and push reminders.
+        </p>
+      ),
+    },
+    { who: '@me', when: 'Nov 13', tag: 'Plan v6 approved', body: <p>Proceed with the implementation.</p> },
+    {
+      who: 'Claude Code',
+      when: 'Nov 13',
+      tag: 'Session report',
+      stream: [
+        'Write(miniapps/water/src/compute.ts)',
+        'Write(miniapps/water/src/weather.ts)',
+        'Write(miniapps/water/src/notification-job.ts)',
+        'Edit(apps/web/src/routes/medical.tsx)',
+        'Bash(railway up --ci)',
+      ],
+      body: (
+        <p>
+          Shipped, in Health: one tap per sip. Today&apos;s goal = 2 L + the heat around you (home sensors, or the weather
+          where you are) + dry air + the bedroom at night + workouts. A push when you fall behind.
+        </p>
+      ),
+    },
+  ],
+};
+
+/** The family tree's frame is not a page but one research task, replayed: task
+ *  2655bf75, «Family tree: page through Volovodivka's online files and Obidne's
+ *  civil acts — look for the Husaks and close the question of Arsenivka's parish»,
+ *  13.09–13.10.2026, read on 16.11.2026 with `get_task_comments` and
+ *  `rodovid_findings_list`. Real: the title (shortened), id, dates, his three replies
+ *  (translated), each finding and its archive reference, the three scans (the
+ *  findings' own files, saved into src/assets/rodovid/). Compressed: the thread has 28
+ *  comments and nine runs; each report here is one line of a long one. His
+ *  ancestors are a century back — no living relative's name is on it. */
+const TREE_BIRTH: TaskBirth = {
+  id: '2655bf75',
+  title: 'Family tree: page through the archives of Volovodivka and Obidne — look for the Husaks',
+  created: 'Sep 13',
+  priority: 'Low',
+  stays: true,
+  beats: [
+    {
+      who: 'Claude Code',
+      when: 'Sep 13',
+      tag: 'Session report',
+      stream: ['Read(Sitsinsky 1901, «Parishes of the Podolian eparchy», 1,267 pages)', 'Grep(Арсен*)'],
+      body: (
+        <p>
+          «Arsenivka» did not exist in 1901: it is in no parish of the 1,401 the Podolian eparchy listed. Your hamlet is
+          younger than that.
+        </p>
+      ),
+    },
+    { who: '@me', when: 'Sep 17', body: <p>Keep researching.</p> },
+    {
+      who: 'Claude Code',
+      when: 'Sep 19',
+      tag: 'Session report',
+      stream: ['Bash(curl upload.wikimedia.org … ДАВіО Р-6129-8-31.pdf)', 'Read(death acts 1925, 92 acts)'],
+      body: (
+        <p>
+          Paged through 92 death acts of 1925. The first documented Husak: <strong>Semen Maksymiv Husak</strong>, 46, a
+          farmer of Volovodivka, died 4 August 1925.
+        </p>
+      ),
+    },
+    { who: '@me', when: 'Sep 25', body: <p>I&apos;ve logged in to FamilySearch.</p> },
+    {
+      who: 'Claude Code',
+      when: 'Sep 26',
+      tag: 'Session report',
+      stream: ['FamilySearch(film 119479016, Volovodivka 1917, 44 images)', 'Bash(crop images 22, 23, 31)'],
+      body: (
+        <p>
+          Volovodivka&apos;s book for 1917: the parish is one village, no Arsenivka — the hamlet came after the revolution.
+          And two Husak children who died that year:
+        </p>
+      ),
+      scans: [
+        { src: volovodivkaDeaths1917, alt: 'Volovodivka 1917, deaths: the son and the daughter of Efrem Trofymov Husak' },
+        { src: volovodivkaRegister1917, alt: 'Volovodivka 1917, the yearly register: one place, «Село Воловодовка»' },
+      ],
+    },
+    { who: '@me', when: 'Oct 12', body: <p>Check — another family-tree task found traces of Arsenivka.</p> },
+    {
+      who: 'Claude Code',
+      when: 'Oct 13',
+      tag: 'Session report',
+      stream: ['rodovid_search(Котик)', 'Read(ДАВіО Р-6129-8-27, birth act 36)'],
+      body: (
+        <p>
+          Found her: <strong>Lukeria, born Husak</strong>, 23, married to Pavlo Kotyk — hamlet Arsenivka, 8 April 1925, at
+          the birth of their daughter Lida. I had read this act on 22 Sep and missed her married name.
+        </p>
+      ),
+      scans: [{ src: kotykAct1925, alt: 'Birth act № 36, 8 April 1925: Kotyk Lida; parents Pavlo and Lykera, hamlet Arsenivka' }],
+    },
+  ],
+};
+
+const BIRTHS: Record<string, TaskBirth> = { Sleep: SLEEP_BIRTH, Health: WATER_BIRTH, 'Family tree': TREE_BIRTH };
+
+/** When each beat starts streaming (`streamAt`) and lands (`at`), and when the page
+ *  opens (`born`): a stream takes its lines, a beat is left on screen to be read. */
+function birthTimeline(birth: TaskBirth) {
+  let t = 900;
+  const beats = birth.beats.map((beat) => {
+    const streamAt = t;
+    if (beat.stream) t += (beat.stream.length + 1) * STREAM_MS;
+    const at = t;
+    t += beat.who === '@me' ? 2600 : beat.scans ? 4200 : 3000;
+    return { streamAt, at };
+  });
+  // a task that stays never opens a page: it has played out once its last beat is read
+  return { beats, born: birth.stays ? Number.POSITIVE_INFINITY : t, end: t };
+}
+const BIRTH_TIMES: Record<string, ReturnType<typeof birthTimeline>> = Object.fromEntries(
+  Object.entries(BIRTHS).map(([name, birth]) => [name, birthTimeline(birth)]),
+);
+
+function TaskReplay({ birth, times, t }: { birth: TaskBirth; times: ReturnType<typeof birthTimeline>; t: number }) {
+  const landed = times.beats.filter((b) => t >= b.at).length;
+  const streaming = birth.beats.findIndex((beat, i) => !!beat.stream && t >= times.beats[i].streamAt && t < times.beats[i].at);
+  const last = birth.beats[landed - 1];
+  // the agent holds the task while it works, and after each of his replies
+  const agentHasIt = streaming >= 0 || !last || last.who === '@me';
+  const status = agentHasIt
+    ? { label: 'Status', value: 'In progress', tone: 'time' as const }
+    : last.status === 'review'
+      ? { label: 'Status', value: 'Plan review', tone: 'hold' as const }
+      : { label: 'Status', value: 'Paused', tone: 'hold' as const };
+  return (
+    <div className="ww-jg__page ww-ma__task">
+      <span className="ww-jg__title">{birth.title}</span>
+      <span className="ww-jg__label">ID {birth.id}</span>
+      <Fields
+        fields={[
+          status,
+          { label: 'Priority', value: birth.priority },
+          { label: 'Assignee', value: agentHasIt ? 'Claude Code' : '@me' },
+          { label: 'Created', value: birth.created },
+        ]}
+      />
+      <div className="ww-jg__timeline ww-jg__timeline--fade">
+        {streaming >= 0 && (
+          <InFlight key={`flight${streaming}`} lines={birth.beats[streaming].stream!} since={times.beats[streaming].streamAt} t={t} />
+        )}
+        {birth.beats
+          .slice(0, landed)
+          .map((beat, i) => (
+            <div className="ww-jg__arrive" key={i}>
+              <Comment who={beat.who} tag={beat.tag} when={beat.when} plain={beat.who === '@me'}>
+                {beat.body}
+                {beat.scans && (
+                  <span className="ww-ma__scans">
+                    {beat.scans.map((scan) => (
+                      <img key={scan.src} className="ww-ma__scan" src={scan.src} alt={scan.alt} />
+                    ))}
+                  </span>
+                )}
+              </Comment>
+            </div>
+          ))
+          .reverse()}
+      </div>
+    </div>
+  );
+}
+
 /* ─── The slide ───────────────────────────────────────────────────────────── */
 
 type Miniapp = {
   name: string;
   icon: IconName;
   path: string;
-  section: string;
   page: (props: { sub?: number; phone?: number; silpo?: number; t?: number }) => JSX.Element;
   /** subpages the page walks through by itself before settling back on its overview */
   tour?: { path: string }[];
 };
 /** In the order they are revealed — which is also the order of the sidebar here,
- *  so every click appends a row at its foot. The sections are the product's own. */
+ *  so every click appends a row at its foot. */
 const MINIAPPS: Miniapp[] = [
-  { name: 'Coffee', icon: 'coffee', path: 'coffee', section: 'Daily', page: Coffee },
-  { name: 'Money', icon: 'money', path: 'money', section: 'Daily', page: Money, tour: MONEY_TOUR },
-  { name: 'Supplies', icon: 'supplies', path: 'supplies', section: 'Daily', page: Supplies },
-  { name: 'Books', icon: 'books', path: 'books', section: 'Daily', page: Books },
-  { name: 'Movies', icon: 'movies', path: 'movies', section: 'Daily', page: Movies },
-  { name: 'Health', icon: 'health', path: 'health', section: 'Daily', page: Health },
-  { name: 'Threat forecast', icon: 'alert', path: 'threats', section: 'Miniapps', page: Threat },
-  { name: 'Home', icon: 'home', path: 'home', section: 'Miniapps', page: Home },
-  { name: 'Routes', icon: 'routes', path: 'routes', section: 'Miniapps', page: Routes },
-  { name: 'Sleep', icon: 'sleep', path: 'sleep', section: 'Miniapps', page: Sleep },
-  { name: 'Sport', icon: 'sport', path: 'sport', section: 'Miniapps', page: Sport },
-  { name: 'Music', icon: 'music', path: 'music', section: 'Miniapps', page: Music },
-  { name: 'Family tree', icon: 'tree', path: 'family-tree', section: 'Reference', page: Tree },
+  { name: 'Coffee', icon: 'coffee', path: 'coffee', page: Coffee },
+  { name: 'Money', icon: 'money', path: 'money', page: Money, tour: MONEY_TOUR },
+  { name: 'Supplies', icon: 'supplies', path: 'supplies', page: Supplies },
+  { name: 'Books', icon: 'books', path: 'books', page: Books },
+  { name: 'Movies', icon: 'movies', path: 'movies', page: Movies },
+  { name: 'Threat forecast', icon: 'alert', path: 'threats', page: Threat },
+  { name: 'Home', icon: 'home', path: 'home', page: Home },
+  { name: 'Sleep', icon: 'sleep', path: 'sleep', page: Sleep },
+  { name: 'Health', icon: 'health', path: 'health', page: Health },
+  { name: 'Sport', icon: 'sport', path: 'sport', page: Sport },
+  { name: 'Music', icon: 'music', path: 'music', page: Music },
+  { name: 'Family tree', icon: 'tree', path: 'family-tree', page: Tree },
 ];
 
 /** The slide's frames: one per miniapp — and Supplies has a second, on a phone. */
-const FRAMES: { app: number; mobile?: true; silpo?: true }[] = MINIAPPS.flatMap((app, i) =>
+const FRAMES: { app: number; mobile?: true; silpo?: true; spotify?: true }[] = MINIAPPS.flatMap((app, i) =>
   app.name === 'Supplies'
     ? [{ app: i }, { app: i, mobile: true as const }, { app: i, silpo: true as const }]
-    : [{ app: i }],
+    : app.name === 'Music'
+      ? [{ app: i }, { app: i, spotify: true as const }]
+      : [{ app: i }],
 );
 
-/** The sidebar with the first `count` miniapps in it. */
+/** The sidebar with the first `count` miniapps in it: Tasks, a divider, then the
+ *  miniapps in reveal order — no sections (his call, 16.11.2026). */
 function navOf(count: number): NavGroup[] {
-  const groups: NavGroup[] = [{ section: 'Tasks & agents', items: [{ name: 'Tasks', icon: 'tasks' }] }];
-  MINIAPPS.slice(0, count).forEach((app) => {
-    let group = groups.find((g) => g.section === app.section);
-    if (!group) {
-      group = { section: app.section, items: [] };
-      groups.push(group);
-    }
-    group.items.push({ name: app.name, icon: app.icon });
-  });
-  return groups;
+  return [
+    { items: [{ name: 'Tasks', icon: 'tasks' }] },
+    { items: MINIAPPS.slice(0, count).map((app) => ({ name: app.name, icon: app.icon })) },
+  ];
 }
 
 function Scene({ stage }: { stage: number }) {
@@ -2019,20 +2624,32 @@ function Scene({ stage }: { stage: number }) {
   // the mobile frame plays on the same per-frame clock
   const phone = frame.mobile ? PHONE_MS.reduce<number>((m, at, i) => (tStage >= at ? i : m), 0) : undefined;
   const silpo = frame.silpo ? SILPO_MS.reduce<number>((m, at, i) => (tStage >= at ? i : m), 0) : undefined;
+  const spotify = frame.spotify ? SPOTIFY_MS.reduce<number>((m, at, i) => (tStage >= at ? i : m), 0) : undefined;
   // Home is the second page with a birth: its frame replays the real task it grew
   // out of, on the per-frame clock, and only then opens the page and walks its cards
   const homeBirth = current.name === 'Home';
   const hMoment = HOME_BIRTH_MS.reduce<number>((m, at, i) => (tStage >= at ? i : m), 0);
-  const hBorn = !homeBirth || tStage >= HOME_BORN_MS;
+  // Sleep and Health replay theirs the same way (TaskReplay)
+  const birth = BIRTHS[current.name];
+  const bTimes = BIRTH_TIMES[current.name];
+  const bornAt = homeBirth ? HOME_BORN_MS : bTimes ? bTimes.born : 0;
+  const hBorn = tStage >= bornAt;
   useAnimating(
     (stage === 1 && !born) ||
       (silpo !== undefined && silpo < SILPO_MS.length - 1) ||
       (!!current.tour && step <= current.tour.length) ||
       (homeBirth && tStage < HOME_BORN_MS + HOME_WALK_MS) ||
-      (phone !== undefined && phone < PHONE_MS.length - 1),
+      (!!bTimes && tStage < bTimes.end) ||
+      (phone !== undefined && phone < PHONE_MS.length - 1) ||
+      (spotify !== undefined && spotify < SPOTIFY_MS.length - 1),
   );
   // the row exists from the moment the agent reports it built the page
-  const rows = stage === 1 && moment < 5 ? 0 : homeBirth && hMoment < 7 ? frame.app : frame.app + 1;
+  const rows =
+    stage === 1 && moment < 5
+      ? 0
+      : (homeBirth && hMoment < 7) || (bTimes && tStage < bTimes.beats[bTimes.beats.length - 1].at)
+        ? frame.app
+        : frame.app + 1;
   const onPage = (stage > 1 || born) && hBorn;
   return (
     <>
@@ -2042,12 +2659,14 @@ function Scene({ stage }: { stage: number }) {
             ? `myclaw.app/${sub > 0 && current.tour ? current.tour[sub - 1].path : current.path}`
             : homeBirth
               ? 'myclaw.app/tasks/6a0e0cfa'
-              : 'myclaw.app/tasks/91c4e7a0'
+              : birth
+                ? `myclaw.app/tasks/${birth.id}`
+                : 'myclaw.app/tasks/91c4e7a0'
         }
       >
         <App
           active={onPage ? current.name : 'Tasks'}
-          fresh={frame.mobile || frame.silpo ? undefined : current.name}
+          fresh={frame.mobile || frame.silpo || frame.spotify ? undefined : current.name}
           lit={onPage ? [] : [current.name]}
           nav={navOf(rows)}
           dense
@@ -2058,10 +2677,12 @@ function Scene({ stage }: { stage: number }) {
               sub={sub}
               phone={phone}
               silpo={silpo}
-              t={homeBirth ? Math.max(0, tStage - HOME_BORN_MS) : tStage}
+              t={frame.spotify ? Number.MAX_SAFE_INTEGER : homeBirth || bTimes ? Math.max(0, tStage - bornAt) : tStage}
             />
           ) : homeBirth ? (
             <HomeBirth moment={hMoment} t={tStage} />
+          ) : birth && bTimes ? (
+            <TaskReplay birth={birth} times={bTimes} t={tStage} />
           ) : (
             <CoffeeBirth moment={moment} t={t} />
           )}
@@ -2069,6 +2690,7 @@ function Scene({ stage }: { stage: number }) {
       </Browser>
       {phone !== undefined && <Phone phase={phone} />}
       {silpo !== undefined && <SilpoPhone phase={silpo} />}
+      {spotify !== undefined && <SpotifyPhone phase={spotify} />}
     </>
   );
 }
@@ -2137,15 +2759,12 @@ export const MiniappsSlide: SlideDefinition = {
     + 'ratings, names the risk, and I answer with one button — Add or Not this. Honest: the card is '
     + 'the product\'s, but these two titles are MY recommendations to you — The Rehearsal and You Can '
     + 'See Everything, both Nathan Fielder — and the pitches are written for this slide. '
-    + '[6] Health — only my own corner of it: the pills I take and whether I took them today, and '
-    + 'water — sips against the pace for 2 L a day, split into water, sweet and coffee. Real, as '
-    + 'of the evening of 14 November. (The family\'s profiles are on the real page and not here.) '
-    + '[7] Threat forecast — Kyiv exactly as my page showed it on the evening of 14 November: no '
+    + '[6] Threat forecast — Kyiv exactly as my page showed it on the evening of 14 November: no '
     + 'alert for ten hours, 21 days of alerts as a ribbon, and the next 24 hours per weapon class — '
     + 'twelve of them, two shown — each with the agent\'s reasoning from the channels it reads, and '
     + 'a button to disagree with the level. (Rationales translated and shortened.) The map is a '
     + 'screenshot of that evening: Chernihiv region under alert with a drone in it, Kyiv clear. '
-    + '[8] Home — and this one shows where it came from, like Coffee did. The frame first replays '
+    + '[7] Home — and this one shows where it came from, like Coffee did. The frame first replays '
     + 'the real task, about twenty seconds: on 31 August I asked one question — «can you list all '
     + 'devices connected to my home WiFi?». It scanned: 14 devices, five it could not name. I asked '
     + 'what each of them can tell us; then «let\'s set up Home Assistant on Railway». Two weeks, one '
@@ -2156,16 +2775,49 @@ export const MiniappsSlide: SlideDefinition = {
     + 'hours without the grid. Real readings, the evening of 14 November. Honest: the task is real '
     + '— its title, dates and my replies (translated) — but compressed: the thread has fifty-odd '
     + 'comments, and the cards were built over later tasks too. '
-    + '[9] Routes — the next 24 hours: when to leave, by what, in what weather. '
-    + '[10] Sleep — regularity and a score per night. '
-    + '[11] Sport — steps, three weeks, workouts (say it: one in eight weeks). '
-    + '[12] Music — what I listen to, and duels that rank my top hundred. '
-    + '[13] Family tree — what the agents dug up in the archives this month. '
+    + 'And these two show where they came from too. [8] Sleep — the frame first replays the real '
+    + 'task, about thirty seconds: in October Pavlyna\'s next-sleep forecast went blank, and I '
+    + 'asked the agent to research how infants sleep by age and design our own. It came back with '
+    + 'the science — wake windows are not research, an infant\'s sleep cycle is 50–60 minutes — and '
+    + 'with her own data: her naps fit a 31-minute cycle. I rejected its plan with my architecture: '
+    + 'a loop that every two days reads her history, adds the research, and sets the parameters. '
+    + 'Approved, shipped the same night. Then the page: it goes round by itself, a tab every six '
+    + 'seconds: me, then my kids, Martyn and Pavlyna. Mine is the watch: regularity and a score per '
+    + 'night. The kids\' come from the baby-tracking app we log in — every nap, and today\'s forecast. '
+    + 'Real nights, 2–15 November. '
+    + '[9] Health — the same, for water: on 11 November I asked for a hydration miniapp, grounded in '
+    + 'research first. The research: «8 glasses» has no evidence; about 2 L from drinks; the need moves '
+    + 'with activity and climate. Then I rejected five plans in a row — where I am, sips not cups, '
+    + 'the bedroom at night, home sensors, humidity and reminders — approved the sixth, and it shipped. '
+    + 'The page: the pills I take and whether I took them today, and water — sips against the pace '
+    + 'for 2 L a day, split into water, sweet and coffee. Real, as of the evening of 14 November. '
+    + '(The family\'s profiles are on the real page and not here.) Honest: both tasks are real — '
+    + 'titles, dates, my replies (translated, shortened) — but compressed to a line a report, and the '
+    + 'five rejections are one comment on the slide. '
+    + '[10] Sport — steps, three weeks, workouts (say it: one in eight weeks). '
+    + '[11] Music — 2,680 liked songs, and no way to say which I like most — so the page asks me, '
+    + 'one duel at a time: which of these two is better? It plays three by itself, and every '
+    + 'answer moves the ranking on the right — watch Prisoner climb from ninth to fourth. The '
+    + 'starting ranking is my real one, with each song\'s strength. Honest: the pairs and the picks '
+    + 'are staged for the slide, and the step each answer makes is illustrative. [click] And it syncs into my Spotify. '
+    + 'Every day the agent writes the ranking into two playlists — my top 100, and the top 30 of '
+    + 'songs out in the last twelve months — with covers it makes itself. Watch the phone: my '
+    + 'library, the top 100, back, the new 30. Real playlists, real order, as of 15 November; the '
+    + 'Spotify screen is redrawn after the app. '
+    + '[12] Family tree — and the last one is not a page at all: it is a research task that runs '
+    + 'for a month. My great-great-grandparents, the Husaks, came from a hamlet called Arsenivka, '
+    + 'and nobody knew which parish kept its books. The agent reads century-old archives for me: a '
+    + '1901 church directory — the hamlet did not exist yet; ninety-two death acts of 1925 — the '
+    + 'first Husak; I log in to FamilySearch for it, and it pages through a 1917 parish book and '
+    + 'SHOWS me what it found — the scans, cropped to the line. And when another task finds a '
+    + 'trace, it goes back and finds my great-great-grandmother Lukeria under her married name. '
+    + 'Real task, real archive references and real scans; the reports are one line each of long '
+    + 'ones (the thread has 28 comments). '
     + 'There are more: the nanny\'s hours, work hours, important dates, my sole-proprietor books, a wall display. '
     + 'None of them is a chat. Every one of them started as a task. So chat is no longer the only '
     + 'UX — it is the one I use when nothing better exists yet. '
     + 'Honest about the picture: recreations of the real pages — their sections and controls are the '
-    + 'real ones. Coffee, Supplies, Books, Health, the Threat forecast and Home carry my real data (Coffee\'s verdicts are '
+    + 'real ones. Coffee, Supplies, Books, Health, the Threat forecast, Home and Sleep carry my real data (Coffee\'s verdicts are '
     + 'sharpened — in real life I have mostly said «OK»; Health shows only my own card); Movies is '
     + 'my two picks in the product\'s card; the rest have invented data, because the real ones hold '
     + 'my real life. The birth of Coffee is staged; the real page was built the same way, over more '

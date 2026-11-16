@@ -8,7 +8,8 @@ import portrait from '../assets/about/yaroslav.jpg';
  * read off the running app and its design tokens on 13.11.2026:
  *   - «Studio Ledger»: warm paper, ink, Fraunces for titles, DM Sans for prose,
  *     JetBrains Mono in small caps for every label;
- *   - the shell: a sidebar of pages in labelled sections, the task views behind a
+ *   - the shell: a sidebar of pages (the tasks, a divider, the miniapps — the product
+ *     labels its sections; the deck drops the labels), the task views behind a
  *     «+ NEW TASK» button and an INBOX / BOARD / LOOP switch;
  *   - a task card: a dark bar on its left edge, the title in serif, then one mono
  *     row — status · who has it · priority · age;
@@ -66,32 +67,26 @@ export function Ico({ name }: { name: IconName }) {
 
 /* ─── The shell ───────────────────────────────────────────────────────────── */
 
-export type NavGroup = { section: string; items: { name: string; icon: IconName }[] };
+/** A group of sidebar rows. The sidebar is two groups and no headings: the tasks,
+ *  a divider, then every miniapp in the order the deck shows them (Yarik, 16.11.2026). */
+export type NavGroup = { items: { name: string; icon: IconName }[] };
 const NAV: NavGroup[] = [
   {
-    section: 'Tasks & agents',
     items: [
       { name: 'Tasks', icon: 'tasks' },
       { name: 'Agents', icon: 'agents' },
     ],
   },
   {
-    section: 'Daily',
     items: [
+      { name: 'Coffee', icon: 'coffee' },
       { name: 'Money', icon: 'money' },
       { name: 'Supplies', icon: 'supplies' },
       { name: 'Books', icon: 'books' },
       { name: 'Movies', icon: 'movies' },
-      { name: 'Health', icon: 'health' },
-      { name: 'Coffee', icon: 'coffee' },
-    ],
-  },
-  {
-    // the product's own word, and its own section of the sidebar
-    section: 'Miniapps',
-    items: [
       { name: 'Threat forecast', icon: 'alert' },
       { name: 'Home', icon: 'home' },
+      { name: 'Health', icon: 'health' },
     ],
   },
 ];
@@ -99,7 +94,7 @@ const NAV: NavGroup[] = [
 /** The app: the sidebar of pages, and whatever the page is. `lit` marks several
  *  sidebar rows at once — the pages slide lights the ones it is showing. `pages`
  *  narrows the sidebar to the pages the story has reached (the deck reveals the
- *  app gradually); a section left with no page is not drawn. `fresh` is the row
+ *  app gradually); a group left with no page is not drawn. `fresh` is the row
  *  that has just been added: it eases in. `nav` replaces the sidebar's groups
  *  outright (the miniapps slide lists them in the order it reveals them) and
  *  `dense` draws its rows small, for a sidebar of fifteen. */
@@ -131,9 +126,8 @@ export function App({
           <img className="ww-jg__avatar" src={portrait} alt="" />
           <span className="ww-jg__name">Yaroslav Yermilov</span>
         </div>
-        {nav.map((group) => (
-          <div key={group.section} className="ww-jg__navgroup">
-            <span className="ww-jg__label">{group.section}</span>
+        {nav.map((group, i) => (
+          <div key={i} className="ww-jg__navgroup">
             {group.items.map((item) => (
               <span
                 key={item.name}
