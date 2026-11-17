@@ -56,6 +56,7 @@ src/
 │   ├── factory.tsx               # the ARCHITECTURE drawing (three slides, one `Scene` each) + the finale: «It builds / learns / repairs itself», the loop tasks, the Ford photo
 │   ├── FactoryFloorSlide.tsx     # the factory everyone imagines, from above — a self-playing animation; also exports the belt, figures and clock
 │   ├── EngineersFactorySlide.tsx # the factory by his philosophy: one belt through five engineers' sections, in the same world
+│   ├── BehindScenes.tsx          # the encore on the closing slide: a film of real prompts and replies (data in behindScenesData.ts)
 │   ├── AgendaSlide.tsx           # template p.3 — exports AGENDA (the four words)
 │   ├── sectionSlide.tsx          # factory for section openers (template p.11/18)
 │   ├── sections.tsx              # one opener per AGENDA word
@@ -396,7 +397,21 @@ add a task to the queue»; that cut the miniapps run once more (`THREAT_FRAME`, 
   lamps, body shape, paint, extras), so no two cars are the same; the machines do the assembly while
   the engineers customise, mend and keep adding to their stretches. It is ONE belt — his correction
   to a first take with five separate lines: «треба щоб всі лінії були зєднані в одну» — a serpentine
-  through five sections with one clock (`lineClock`). No words on it either.
+  through five sections with one clock (`lineClock`). When a main machine breaks nobody waits (his
+  addition): the belt halts only while the neighbours above and below lay a bypass round it, runs
+  through the bypass while its own engineer mends it and the neighbours fit the missing piece by
+  hand, and halts once more while the bypass comes down. Section 0 never breaks — the bypass swings
+  into the walkway above, and it has none. No words on it either.
+- **The encore on the closing slide is a film of how the deck was made** (`BehindScenes.tsx`,
+  `behindScenesData.ts`, thumbnails in `src/assets/bts/`) — his ask, 17.11.2026: his REAL prompts
+  and the model's REAL replies, from the task's sessions, 3–5 minutes. So nothing in the data is
+  written for the slide: a beat is a prompt he typed (a comment on the task page, or in a Claude
+  Code pane), the start of the answer, and the PDF page of the slide it produced. Allowed edits
+  only: markdown stripped, replies cut at a sentence end, the dev-server address shortened,
+  «myclaw» for the assistant's name. The privacy rule applies to every string in it. The film is
+  laid out for 16:9, where the middle of that slide is only ~800px wide — check it in the PDF
+  (page 71), not in a wide browser window. To refresh a thumbnail: `bun run pdf`, then
+  `pdftoppm -jpeg -scale-to-x 560 -scale-to-y 315 -f N -l N dist/….pdf` into `src/assets/bts/p-NN.jpg`.
 - **A picture shown again under a title goes inside `.ww-self`.** `.slide--titled > *` forces
   `position: relative` on every direct child, so an absolutely placed diagram (`.ww-arch`, `.ww-gb`)
   put straight into a titled slide loses its place. `.ww-self` is the positioned box; the

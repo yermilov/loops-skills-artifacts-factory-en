@@ -3,6 +3,7 @@ import { SlideDefinition } from '../types/slides';
 import { CornerRings } from '../components/wawtech';
 import { ThankStickers } from '../components/HelloStickers';
 import portrait from '../assets/about/yaroslav.jpg';
+import { BehindScenes } from './BehindScenes';
 
 const LINKEDIN_URL = 'https://www.linkedin.com/in/yarik-yermilov/';
 const SLIDES_URL = 'https://yermilov.github.io/loops-skills-artifacts-factory-en/';
@@ -11,8 +12,8 @@ const SLIDES_URL = 'https://yermilov.github.io/loops-skills-artifacts-factory-en
  *  а справа стаб де я буду показувати наче на біс How I prepared this talk»). Then, same day: «зліва мій код,
  *  справа слайди, а по центру як я робив цю презентацію». Left: me on LinkedIn (the about-me
  *  stand: photo, handle, blue QR). Right: these slides (QR only; the URL is too long to read
- *  off a screen). Centre: a STUB for the encore — only the
- *  title is his, what is shown there is not designed yet. «Thank you» stickers — the about-me
+ *  off a screen). Centre: the encore — a film of how this deck was made, cut from the
+ *  task's real sessions (`BehindScenes.tsx`). «Thank you» stickers — the about-me
  *  slide's «hello» pack — run across the top and the bottom. */
 export const FinalSlide: SlideDefinition = {
   id: 'final',
@@ -43,8 +44,7 @@ export const FinalSlide: SlideDefinition = {
           </div>
 
           <div className="ww-final__encore">
-            <div className="ww-final__encoretitle" role="heading" aria-level={2}>How I prepared this talk</div>
-            <span className="ww-final__todo">draft · the encore, to be designed</span>
+            <BehindScenes />
           </div>
 
           <div className="ww-final__stand">
@@ -70,6 +70,8 @@ export const FinalSlide: SlideDefinition = {
   notes:
     'Closing slide. 45-minute slot, no Q&A. Thank you — on the left, me on LinkedIn; on the right, '
     + 'these slides, everything in them is live. And while you scan, an encore in the middle: how I '
-    + 'prepared this talk — with the same assistant. DRAFT — the encore is a stub, what to show '
-    + 'there is not designed yet.',
+    + 'prepared this talk — with the same assistant. It is a film that plays by itself and loops, '
+    + 'about four minutes: every prompt in it is one I really typed — on the task page in myclaw '
+    + 'or in a Claude Code pane — and every answer is what the model really said, with the slide '
+    + 'that came out of it. Leave it running while people scan.',
 };

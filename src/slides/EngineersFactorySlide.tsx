@@ -23,9 +23,14 @@ import { Belt, Engine, K, Key, P, Person, SHADE, SPARK, VIEW, Wheels, along, eas
  * its own, hand-customised piece: rims, lamps, the shape of the body, the paint,
  * the extras.
  *
- * One belt, so one clock for it, which a breakdown holds still (`lineClock`); the
- * section that broke is mended by its engineer while the other four carry on at
- * their benches. People walking and cars on the road are on the real clock.
+ * And when a machine breaks nobody waits (his addition: «інші інженери будують
+ * тимчасовий обхід стрічки і доробляють вручну недостатні деталі»): the belt
+ * stands only while the two neighbours lay a bypass round the dead machine, then
+ * runs through it; its own engineer mends the machine, and the neighbours put the
+ * missing piece on each passing car by hand, until the bypass comes down again.
+ *
+ * One belt, so one clock for it, which those two short halts hold still
+ * (`lineClock`). People walking and cars on the road are on the real clock.
  * Everything is derived from the clock — no state, no dice. No words on the
  * picture, as on the one before. Styles are the `.ww-tf…` of that slide, plus the
  * paints and add-ons.
@@ -39,12 +44,23 @@ const DRIVE = 0.3;
 /** The belt: px per ms, and how far apart the cars ride. */
 const SPEED = 0.24;
 const GAP = 360;
-/** Breakdowns, in the belt's own time: the first, how long between, how long one lasts. */
-const BREAK = { first: 14000, every: 21000, stop: 4800 };
+/**
+ * A breakdown, start to finish: the belt halts while the neighbours `build` a way round the dead
+ * machine, then `run`s again through that bypass while its own engineer mends it (done `mended`
+ * ms in), then halts once more to `clear` the bypass away. `first` and `every` are in the belt's
+ * own time, the rest is real.
+ */
+const BREAK = { first: 14000, every: 21000, build: 2600, run: 8000, clear: 1400, mended: 9800 };
+/** The bypass: how far either side of the machine it leaves and rejoins the belt, how far off it swings, and where the missing piece is put on by hand. */
+const DETOUR = { half: 90, rise: 66, fit: 170, lead: 40 };
+const DETOUR_LENGTH = 2 * DETOUR.half + 2 * DETOUR.rise;
+/** The last moment a car may still turn into the bypass: late enough ones would reach the hand-fitting spot after the helpers have gone. */
+const DETOUR_SHUT = BREAK.build + BREAK.run - (DETOUR.half + DETOUR.fit) / SPEED;
+const HURRY = 0.5; // px per ms, a neighbour coming over to help
 const IMPROVE = 3600; // an improvement, from leaving the bench to the new thing standing
 const PAINTS = 8;
 const ROW = 160;
-const EXPORT_AT = 82000;
+const EXPORT_AT = 78500;
 
 type Machine = { x: number; kind: 'source' | 'main' | 'check' };
 type Section = {
@@ -77,11 +93,11 @@ type Section = {
 };
 
 const RAW = [
-  { from: 110, to: 1200, machines: [{ x: 110, kind: 'source' }, { x: 620, kind: 'main' }, { x: 960, kind: 'check' }], box: 96, rx: 14, teeth: 9, slots: [440, 800, 300, 1090], tune: 5200, tuneEvery: 17000 },
+  { from: 110, to: 1200, machines: [{ x: 110, kind: 'source' }, { x: 500, kind: 'main' }, { x: 880, kind: 'check' }], box: 96, rx: 14, teeth: 9, slots: [300, 700, 1060], tune: 5200, tuneEvery: 17000 },
   { from: 1200, to: 130, machines: [{ x: 780, kind: 'main' }, { x: 400, kind: 'check' }], box: 88, rx: 24, teeth: 7, slots: [580, 1050, 250, 930], tune: 9000, tuneEvery: 14500 },
-  { from: 130, to: 1150, machines: [{ x: 380, kind: 'check' }, { x: 740, kind: 'main' }], box: 104, rx: 6, teeth: 11, slots: [540, 900, 240, 1040], tune: 3000, tuneEvery: 19000 },
-  { from: 1150, to: 190, machines: [{ x: 850, kind: 'main' }, { x: 480, kind: 'check' }], box: 92, rx: 18, teeth: 8, slots: [660, 1010, 340], tune: 12500, tuneEvery: 15500 },
-  { from: 190, to: 1250, machines: [{ x: 560, kind: 'main' }, { x: 900, kind: 'check' }], box: 100, rx: 10, teeth: 10, slots: [730, 330, 1060, 1160], tune: 15500, tuneEvery: 16500 },
+  { from: 130, to: 1150, machines: [{ x: 420, kind: 'main' }, { x: 800, kind: 'check' }], box: 104, rx: 6, teeth: 11, slots: [700, 950, 250, 1050], tune: 3000, tuneEvery: 19000 },
+  { from: 1150, to: 190, machines: [{ x: 850, kind: 'main' }, { x: 480, kind: 'check' }], box: 92, rx: 18, teeth: 8, slots: [600, 1010, 340], tune: 12500, tuneEvery: 15500 },
+  { from: 190, to: 1250, machines: [{ x: 560, kind: 'main' }, { x: 900, kind: 'check' }], box: 100, rx: 10, teeth: 10, slots: [800, 330, 1060, 1160], tune: 15500, tuneEvery: 16500 },
 ] as const;
 
 /** The whole belt as one path: along a section, down to the next, back along that one. */
@@ -132,42 +148,77 @@ const SECTIONS: Section[] = RAW.map((raw, i) => {
 const START = Math.max(...SECTIONS.map((section) => section.back)) + 400;
 
 // ── the belt's own clock ────────────────────────────────────────────────────
-const PERIOD = BREAK.every + BREAK.stop;
+const PERIOD = BREAK.every + BREAK.build + BREAK.clear;
 /** Which breakdown this is and how long ago it began; `tau` is real ms since the belt started. */
 function breakdown(tau: number): { n: number; since: number } {
   if (tau < BREAK.first) return { n: -1, since: 0 };
   const n = Math.floor((tau - BREAK.first) / PERIOD);
   return { n, since: tau - BREAK.first - n * PERIOD };
 }
+/** The belt stands twice in a breakdown: while the bypass goes up, and while it comes down. */
+const halted = (since: number) => since < BREAK.build || (since >= BREAK.build + BREAK.run && since < BREAK.build + BREAK.run + BREAK.clear);
 function lineClock(tau: number): number {
   if (tau <= 0) return 0;
   const { n, since } = breakdown(tau);
-  return n < 0 ? tau : BREAK.first + n * BREAK.every + Math.max(0, since - BREAK.stop);
+  if (n < 0) return tau;
+  const base = BREAK.first + n * BREAK.every;
+  if (since < BREAK.build) return base;
+  if (since < BREAK.build + BREAK.run) return base + since - BREAK.build;
+  if (since < BREAK.build + BREAK.run + BREAK.clear) return base + BREAK.run;
+  return base + since - BREAK.build - BREAK.clear;
 }
 /** The real moment (since the start) the belt reaches `lt` of its own time. */
-const realOf = (lt: number) => (lt <= BREAK.first ? lt : lt + BREAK.stop * (Math.floor((lt - BREAK.first) / BREAK.every) + 1));
-/**
- * Breakdown n: whose section, and which machine in it. Never the same section twice running, the
- * first one early on the belt (cars are already there), and never the machine over the bench —
- * its engineer stands beside that one all day, and a mend has to be a walk to be seen.
- */
-const brokenSection = (n: number) => (n * 2 + Math.floor(noise(n, 5) * 2)) % SECTIONS.length;
-function brokenMachine(n: number): number {
-  const { machines } = SECTIONS[brokenSection(n)];
-  const away = machines.map((machine, q) => (machine.kind === 'main' ? -1 : q)).filter((q) => q >= 0);
-  return away[Math.floor(noise(n, 6) * away.length) % away.length];
+function realOf(lt: number): number {
+  if (lt <= BREAK.first) return lt;
+  const k = Math.floor((lt - BREAK.first) / BREAK.every);
+  const into = lt - BREAK.first - k * BREAK.every;
+  return BREAK.first + k * PERIOD + BREAK.build + into + (into >= BREAK.run ? BREAK.clear : 0);
 }
+/**
+ * Breakdown n: whose section — always its main machine, the one that puts that engineer's piece
+ * on, so that a piece really is missing. Never the same section twice running, and never the
+ * first: the bypass swings up into the walkway of the section above, and the first has none.
+ */
+const brokenSection = (n: number) => 1 + ((n * 2 + Math.floor(noise(n, 5) * 2)) % (SECTIONS.length - 1));
 const standAt = (section: Section, q: number): P => (section.machines[q].kind === 'main' ? section.bench : [section.machines[q].x, section.walkY]);
 
-/** Improvement j starts at this real moment; it is skipped when a breakdown of this section is in its way. */
+/**
+ * The bypass round a section's main machine: off the belt, along beside it, back on — with a
+ * short run of the belt itself at either end, so that a car turns into it and out of it.
+ */
+const detourPath = (section: Section): P[] => [
+  [section.main - (DETOUR.half + DETOUR.lead) * section.dir, section.y],
+  [section.main - DETOUR.half * section.dir, section.y],
+  [section.main - DETOUR.half * section.dir, section.y - DETOUR.rise],
+  [section.main + DETOUR.half * section.dir, section.y - DETOUR.rise],
+  [section.main + DETOUR.half * section.dir, section.y],
+  [section.main + (DETOUR.half + DETOUR.lead) * section.dir, section.y],
+];
+/** How far along `detourPath` a car is when it is `past` the machine along the belt. */
+function detourAt(past: number): number {
+  if (past < -DETOUR.half) return past + DETOUR.half + DETOUR.lead;
+  if (past > DETOUR.half) return DETOUR.lead + DETOUR_LENGTH + past - DETOUR.half;
+  return DETOUR.lead + ((past + DETOUR.half) / (2 * DETOUR.half)) * DETOUR_LENGTH;
+}
+/** Did car c go round this section's machine? It did if it got there while the bypass was open. */
+function wentRound(section: Section, c: number): boolean {
+  if (section.i === 0) return false;
+  const arrives = realOf((section.mainAt - DETOUR.half + c * GAP) / SPEED);
+  if (arrives < BREAK.first) return false;
+  const n = Math.floor((arrives - BREAK.first) / PERIOD);
+  const since = arrives - BREAK.first - n * PERIOD;
+  return brokenSection(n) === section.i && since >= BREAK.build && since < DETOUR_SHUT;
+}
+
+/** Improvement j starts at this real moment; it is skipped when a breakdown this engineer is busy with — their own, or a neighbour's — is in its way. */
 const tuneAt = (section: Section, j: number) => section.tune + j * section.tuneEvery;
 function skipped(section: Section, j: number): boolean {
   const a = tuneAt(section, j);
   const near = Math.floor((a - BREAK.first) / PERIOD);
   for (const n of [near - 1, near, near + 1]) {
-    if (n < 0 || brokenSection(n) !== section.i) continue;
+    if (n < 0 || Math.abs(brokenSection(n) - section.i) > 1) continue;
     const b = BREAK.first + n * PERIOD;
-    if (a + IMPROVE + 2600 > b - 300 && a < b + BREAK.stop + 2600) return true;
+    if (a + IMPROVE + 2600 > b - 300 && a < b + BREAK.build + BREAK.run + BREAK.clear + 2600) return true;
   }
   return false;
 }
@@ -429,21 +480,48 @@ function Site() {
   const tau = t - START;
   const running = tau >= 0;
   const stopped = running ? breakdown(tau) : { n: -1, since: 0 };
-  const down = stopped.n >= 0 && stopped.since < BREAK.stop;
+  const { since } = stopped;
+  /** Whose section is in trouble right now (from the halt until the bypass is cleared away), if anybody's. */
+  const broken = stopped.n >= 0 && since < BREAK.build + BREAK.run + BREAK.clear + 3000 ? SECTIONS[brokenSection(stopped.n)] : null;
+  const down = stopped.n >= 0 && halted(since);
+  const dead = broken && since < BREAK.mended ? broken.i : -1;
   const lt = lineClock(tau);
   const run = SPEED * lt;
-  /** The machine that is down right now: whose section, and which one in it. */
-  const dead = down && stopped.since < BREAK.stop - 400 ? { section: brokenSection(stopped.n), q: brokenMachine(stopped.n) } : null;
 
-  // ── the cars on the belt: car c is `run − c·GAP` along it ──
+  // ── the cars on the belt: car c is `run − c·GAP` along it, round a dead machine if it met one ──
   const cars = [];
   if (running) {
     for (let c = Math.max(0, Math.ceil((run - TOTAL) / GAP)); c * GAP <= run; c++) {
       const at = run - c * GAP;
-      const pos = follow(PATH, at, 60);
-      const stage = SECTIONS.filter((section) => at > section.mainAt).length;
+      let pos = follow(PATH, at, 60);
+      let stage = 0;
+      for (const section of SECTIONS) {
+        const round = wentRound(section, c);
+        const past = at - section.mainAt;
+        if (round && Math.abs(past) < DETOUR.half + DETOUR.lead) pos = follow(detourPath(section), detourAt(past), 40);
+        // a car that went round gets this piece a little further on, by hand
+        if (past > (round ? DETOUR.fit : 0)) stage++;
+      }
       cars.push(<Auto key={c} x={pos.p[0]} y={pos.p[1]} angle={pos.angle} stage={stage} variant={variantOf(c)} />);
     }
+  }
+
+  // ── the bypass itself: up while the belt stands, away when the machine runs again ──
+  let bypass = null;
+  if (broken && since < BREAK.build + BREAK.run + BREAK.clear) {
+    const [, a, b, c] = detourPath(broken);
+    const lengths = [DETOUR.rise, 2 * DETOUR.half, DETOUR.rise];
+    const starts = [0, DETOUR.rise, DETOUR.rise + 2 * DETOUR.half];
+    const laid = (p: number, k: number) => clamp01((p * DETOUR_LENGTH - starts[k]) / lengths[k]);
+    const plan = seg(since, 300, 900);
+    const built = seg(since, 1100, 1100);
+    bypass = (
+      <g opacity={(1 - seg(since, BREAK.build + BREAK.run + 150, 900)).toFixed(2)}>
+        <Belt x={a[0]} y={a[1]} len={lengths[0]} w={56} turn={-90} plan={laid(plan, 0)} built={laid(built, 0)} off={run} />
+        <Belt x={c[0]} y={c[1]} len={lengths[2]} w={56} turn={90} plan={laid(plan, 2)} built={laid(built, 2)} off={run} />
+        <Belt x={b[0]} y={b[1]} len={lengths[1]} w={56} turn={broken.dir > 0 ? 0 : 180} plan={laid(plan, 1)} built={laid(built, 1)} off={run} />
+      </g>
+    );
   }
 
   // ── the cars that have left it: to a bay while there is one, then off the picture ──
@@ -466,8 +544,10 @@ function Site() {
 
     // ── the engineer: laying the section, then at the bench unless something calls ──
     let who: { p: P; angle: number; moving: boolean; walked: number };
-    let work: 'none' | 'bench' | 'mend' | 'improve' = 'none';
+    let work: 'none' | 'bench' | 'mend' | 'improve' | 'fit' = 'none';
     let workAt: P = section.bench;
+    /** which side of the engineer the work is: −1 up the picture, 1 down it */
+    let side = -1;
     if (!running) {
       const walk = along(section.build, t);
       who = { ...walk, angle: walk.moving ? walk.angle : 0 };
@@ -475,16 +555,41 @@ function Site() {
       who = { p: section.bench, angle: 0, moving: false, walked: 0 };
       work = 'bench';
       let away = null;
-      if (stopped.n >= 0 && brokenSection(stopped.n) === section.i) {
-        const spot = standAt(section, brokenMachine(stopped.n));
-        away = visit(section.bench, spot, 0, BREAK.stop - 400, stopped.since);
-        if (away) {
+      let busy = false;
+      if (broken && section.i === broken.i && since < BREAK.mended) {
+        // their own machine, right beside the bench
+        busy = true;
+        work = 'mend';
+        who = { ...who, angle: -40 };
+      } else if (broken && Math.abs(section.i - broken.i) === 1) {
+        // A neighbour comes over to the far end of the bypass, to put the missing piece on by hand.
+        // The one above shares this walkway and stands on its side of the belt; the one below
+        // crosses their own belt while it stands, and goes back when it stands again.
+        const above = section.i < broken.i;
+        const spot: P = [broken.main + DETOUR.fit * broken.dir, broken.y + (above ? -70 : 70)];
+        const across = Math.abs(section.walkY - spot[1]) / HURRY;
+        const beside = Math.abs(spot[0] - section.bench[0]) / HURRY;
+        const back = BREAK.build + BREAK.run + 100;
+        const keys: Key[] = [
+          { at: 0, p: section.bench },
+          { at: 200, p: section.bench },
+          { at: 200 + beside, p: [spot[0], section.walkY] },
+          { at: 200 + beside + across, p: spot },
+          { at: back, p: spot },
+          { at: back + across, p: [spot[0], section.walkY] },
+          { at: back + across + beside, p: section.bench },
+        ];
+        if (since < keys[keys.length - 1].at) {
+          const walk = along(keys, since);
+          const working = since >= keys[3].at && since < back;
+          away = { p: walk.p, angle: walk.moving ? walk.angle : working ? (above ? 90 : -90) : 0, moving: walk.moving, walked: walk.walked, working };
           workAt = spot;
-          work = away.working ? 'mend' : 'none';
+          side = above ? 1 : -1;
+          work = working ? 'fit' : 'none';
         }
       }
       const j = Math.floor((tau - section.tune) / section.tuneEvery);
-      if (!away && j >= 0 && !skipped(section, j)) {
+      if (!away && !busy && j >= 0 && !skipped(section, j)) {
         const spot = tuneSpot(section, j);
         away = visit(section.bench, spot, tuneAt(section, j), IMPROVE, tau);
         if (away) {
@@ -494,9 +599,12 @@ function Site() {
       }
       if (away) {
         // round the bench rather than through it
-        const round = away.moving ? 36 * clamp01(1 - Math.abs(away.p[0] - section.main) / 74) : 0;
+        const onRow = Math.abs(away.p[1] - section.walkY) < 1;
+        const round = away.moving && onRow ? 36 * clamp01(1 - Math.abs(away.p[0] - section.main) / 74) : 0;
         who = { ...away, p: [away.p[0], away.p[1] + round] };
       }
+      // the hands only work while there is something coming past
+      if (work === 'fit' && halted(since)) work = 'none';
     }
 
     // ── the section's belt, laid behind its engineer, and the drop to the next ──
@@ -512,7 +620,7 @@ function Site() {
     const pr = ahead >= 0 ? ahead - Math.floor(ahead) : clamp01(1 + ahead);
     const nextVariant = variantOf(next);
     const benchUp = pop(seg(t, section.enter + Math.abs(section.main - section.build[0].p[0]) / WALK + 500, 400));
-    const made = running ? pop(seg(pr, 0.03, 0.08)) * (1 - seg(pr, 0.985, 0.015)) : 0;
+    const made = running && dead !== section.i ? pop(seg(pr, 0.03, 0.08)) * (1 - seg(pr, 0.985, 0.015)) : 0;
 
     // ── what has been added so far ──
     const addOns = section.slots.map((x, j) => {
@@ -546,7 +654,7 @@ function Site() {
           {section.machines.map((machine, q) => {
             const up = pop(seg(t, section.enter + Math.abs(machine.x - section.build[0].p[0]) / WALK + 300, 450));
             if (up <= 0) return null;
-            const isDead = dead?.section === section.i && dead.q === q;
+            const isDead = dead === section.i && machine.kind === 'main';
             const lit = isDead ? Math.floor(t / 260) % 2 === 0 : running && !down && Math.floor(t / 420 + q + section.i) % 2 === 0;
             const half = section.box / 2;
             const side = q % 2 === 0 ? 1 : -1;
@@ -586,14 +694,14 @@ function Site() {
             />
           )}
           {/* sparks where a tool meets a machine; drops of the car's own paint at the bench */}
-          {(work === 'mend' || work === 'improve') &&
+          {(work === 'mend' || work === 'improve' || work === 'fit') &&
             [0, 1, 2].map((j) =>
               noise(section.i, j, tick) < 0.4 ? null : (
                 <path
                   key={j}
                   className="ww-tf__spark"
                   d={SPARK}
-                  transform={`translate(${(workAt[0] + (workAt === section.bench ? 34 : -22 + 44 * noise(j, tick, 1))).toFixed(1)} ${(workAt[1] - 40 + 16 * noise(tick, j, 2)).toFixed(1)}) scale(${(0.6 + 0.8 * noise(tick, j, 3)).toFixed(2)})`}
+                  transform={`translate(${(workAt[0] + (workAt === section.bench ? 34 : -22 + 44 * noise(j, tick, 1))).toFixed(1)} ${(workAt[1] + (side > 0 ? 30 : -46) + 16 * noise(tick, j, 2)).toFixed(1)}) scale(${(0.6 + 0.8 * noise(tick, j, 3)).toFixed(2)})`}
                 />
               ),
             )}
@@ -624,6 +732,7 @@ function Site() {
     >
       <g clipPath="url(#ww-te-site)">
         {scenes.map((scene) => scene.belt)}
+        {bypass}
         {cars}
         {scenes.map((scene) => scene.bench)}
         {scenes.map((scene) => scene.over)}
@@ -650,6 +759,8 @@ export const EngineersFactorySlide: SlideDefinition = {
     + 'comes out with one more piece on. So what does the engineer do all day? Three things. '
     + 'Customises — at the bench, by hand: one does the rims, one the lamps, one the shape of the '
     + 'body, one the paint, one the extras; that is why no two cars in that car park are the same. '
-    + 'Mends — when a section breaks, its own engineer walks over and fixes it. And improves — every '
+    + 'Mends — and watch what happens when a machine breaks: nobody waits. The neighbours come over, '
+    + 'lay a bypass round the dead machine in a couple of seconds and put the missing piece on every '
+    + 'passing car by hand, while its own engineer fixes it; then the bypass comes down. And improves — every '
     + 'so often they add something new to their section, so tomorrow it needs them a little less.',
 };
