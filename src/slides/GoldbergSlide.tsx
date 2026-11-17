@@ -537,7 +537,8 @@ function useLoopClock(): number {
   return t;
 }
 
-function Machine() {
+/** Exported: «It learns from itself» shows the machine again (factory.tsx). */
+export function Machine() {
   // a fresh roll of the dice every time the slide comes up; the PDF's is fixed
   const w = useMemo(() => new World(EXPORT_MODE ? EXPORT_SEED : (Math.random() * 2 ** 32) >>> 0), []);
   const g = useLoopClock();

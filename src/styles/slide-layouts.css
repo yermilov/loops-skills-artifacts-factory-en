@@ -6674,3 +6674,20 @@
   border-radius: 6px 6px 20px 20px;
   background: var(--ww-text-muted);
 }
+
+/* «It builds itself» / «It learns from itself»: a picture the deck has already drawn,
+ * shown again under a title. The body climbs into the title band's spare room, and the
+ * architecture is one object, zoomed to fit. */
+.ww-self {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin-top: -72px;
+}
+.ww-self .ww-arch { zoom: 0.85; }
+.ww-self .ww-gb { inset: 0; }
+/* the build plays its rounds faster than the journey: the lines keep up */
+.ww-arch--fast .ww-arch__beam,
+.ww-arch--fast .ww-arch__token {
+  animation-duration: 700ms;
+}

@@ -2,7 +2,10 @@ import { SlideDefinition } from '../types/slides';
 import { CornerRings } from '../components/wawtech';
 import { useAnimating } from '../components/frameSettled';
 import { useClock } from './BootstrapSlide';
+import { Machine } from './GoldbergSlide';
 import herdrLogo from '../assets/herdr/logo.svg';
+import factorioClip from '../assets/factory/factorio-factory.mp4';
+import factorioStill from '../assets/factory/factorio-factory.jpg';
 
 /**
  * SCHEMATIC — the flow after «How do we improve it?», parked as three
@@ -13,9 +16,10 @@ import herdrLogo from '../assets/herdr/logo.svg';
  *   0. the architecture — DRAWN 16.11.2026 (ArchitectureSlide below). It now stands
  *      right after the assistant's session and before the runner: the plan (Yarik,
  *      same day) is to build it up element by element, as the system grew
- *   1. loop tasks that hunt problems — in logs, sloppy code, performance
+ *   1. looks like we've built a software factory! — moved 17.11.2026 to stand right
+ *      after the miniapps tree (Yarik), so the hunters now come AFTER the turn
  *   2. (was: examples of cool stuff — dropped 14.11.2026, the miniapps slide shows them)
- *   3. looks like we've built a software factory!
+ *   3. loop tasks that hunt problems — in logs, sloppy code, performance
  *   4. my philosophy of a software factory
  *
  * Leads for when the real slides get written (not on the slides, unverified
@@ -577,24 +581,58 @@ const SCENE_NOW: Scene = {
 };
 
 /** The scenes in the order the slide reveals them. */
+/** «It builds itself»: the same scenes in the order the deck showed them, and in the
+ *  queue the task that builds the next one. The second laptop keeps its own errands. */
+const BUILD_MS = 750;
+const BUILD_TASKS: [queued: string, short: string][] = [
+  ['add a second laptop', 'laptop'],
+  ['build a web page', 'web'],
+  ['host the miniapps', 'miniapps'],
+  ['build the mobile app', 'mobile'],
+  ['read the home devices', 'home'],
+  ['sync Google Health', 'health'],
+  ['integrate Spotify', 'Spotify'],
+  ['build the next thing', 'next'],
+];
+const BUILD_SCENES: Scene[] = [
+  { ...SCENE_DAEMON, fresh: [] },
+  SCENE_TWO,
+  SCENE_WEB,
+  SCENE_APPS,
+  SCENE_MOBILE,
+  SCENE_HOME,
+  SCENE_HEALTH,
+  SCENE_SERVICES,
+].map((scene) => ({
+  ...scene,
+  laptops: scene.laptops.map((laptop, owner) => (owner === 0 ? { ...laptop, tasks: BUILD_TASKS } : laptop)),
+}));
+
 const SCENES = [SCENE_FIRST, SCENE_NOW];
 /** How many of them the slide shows. Today's picture (SCENE_NOW) is parked: the slide will
  *  get there one scene at a time (Yarik, 16.11.2026), so for now only the first is a frame. */
 const SCENES_SHOWN = 1;
 
-function Architecture({ scene }: { scene: Scene }) {
+/** `build` plays a list of scenes one after another, one round of the journey each:
+ *  the first laptop's task in round N is «build what scene N+1 adds», and when it
+ *  reports, the picture becomes that scene («It builds itself», Yarik, 17.11.2026). */
+function Architecture({ scene: given, build }: { scene: Scene; build?: Scene[] }) {
+  const t = useClock(0);
+  const ms = build ? BUILD_MS : STEP_MS;
+  const scene = build
+    ? build[Math.min(t >= Number.MAX_SAFE_INTEGER ? build.length - 1 : Math.floor(t / (ms * STEP_COUNT)), build.length - 1)]
+    : given;
   const links = linksOf(scene);
   // the first days: nothing but the laptop talks to the server, so steps 1 and 6 stay on it
   const local = !scene.screens.some((screen) => screen.asks);
-  const t = useClock(0);
   // the journey plays once for the ready mark, then keeps going round; the export
   // (t at its maximum) shows every step lit
   const all = t >= Number.MAX_SAFE_INTEGER;
-  const step = all ? 0 : (Math.floor(t / STEP_MS) % STEP_COUNT) + 1;
-  useAnimating(!all && t < STEP_COUNT * STEP_MS);
+  const step = all ? 0 : (Math.floor(t / ms) % STEP_COUNT) + 1;
+  useAnimating(!all && t < (build ? build.length : 1) * STEP_COUNT * ms);
   const on = (...ns: number[]) => all || ns.includes(step);
   // each laptop keeps its own time: `shift` steps behind the first, a new task each round
-  const tick = all ? 0 : Math.floor(t / STEP_MS);
+  const tick = all ? 0 : Math.floor(t / ms);
   const localTick = (owner: number) => tick - (scene.laptops[owner]?.shift ?? 0);
   const stepOf = (owner = 0) => (all || localTick(owner) < 0 ? 0 : (localTick(owner) % STEP_COUNT) + 1);
   const onFor = (owner: number | undefined, ...ns: number[]) => all || ns.includes(stepOf(owner ?? 0));
@@ -602,12 +640,14 @@ function Architecture({ scene }: { scene: Scene }) {
     const tasks = scene.laptops[owner]?.tasks;
     if (!tasks) return undefined;
     const round = all ? 0 : Math.max(0, Math.floor(localTick(owner) / STEP_COUNT));
+    // the build list is not a loop: it ends on its last task and stays there
+    if (build && owner === 0) return tasks[Math.min(all ? tasks.length - 1 : round + ahead, tasks.length - 1)];
     return tasks[(round + ahead) % tasks.length];
   };
   const someone = (...ns: number[]) => scene.laptops.some((_, owner) => onFor(owner, ...ns));
   const fresh = (key: string) => (scene.fresh?.includes(key) ? ' ww-arch--new' : '');
   return (
-    <div className="ww-arch">
+    <div className={build ? 'ww-arch ww-arch--fast' : 'ww-arch'}>
       <svg className="ww-arch__beams" viewBox="0 0 1696 904" aria-hidden="true">
         <defs>
           <marker id="ww-arch-tip" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="3.4" markerHeight="3.4" orient="auto-start-reverse">
@@ -1048,9 +1088,116 @@ export const ArchitectureServicesSlide: SlideDefinition = {
     + 'mine sends it, or the server fetches it itself.',
 };
 
+/** PDF capture has no video playback: export shows the last frame as a still. */
+const EXPORT_MODE =
+  typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('export') === '1';
+
+/**
+ * «Looks like we have built a software factory!» — the turn, full bleed, in the
+ * same treatment as «Our barebones AI assistant is ready» (AssistantReadySlide,
+ * whose `ww-ready` classes it reuses): one silent shot, played once, holding on its
+ * last frame, the title over it. Yarik, 17.11.2026: «what about factorio game?» —
+ * the game's arc is the talk's arc (craft by hand, automate a step, automate the
+ * thing that automates), and the room knows «the factory must grow».
+ *
+ * Clip: the LAST shot of the official «Factorio 1.0 Launch Trailer» (Wube Software,
+ * YouTube BqaAjgpsoW8, 1080p — the one embedded in factorio.com/presskit), 5.3 s,
+ * silent: the camera drifts over the finished base, a rocket lifts off, and the
+ * crashed ship the trailer opened on comes into frame, now surrounded by factory.
+ * Recorded off the playing video on 17.11.2026; cut after the wipe that opens the
+ * shot and before the logo fades in. The poster / export still is its last frame.
+ * Shown in a talk as commentary, like the film clips.
+ */
+const FACTORY_ALT =
+  'Factorio 1.0 launch trailer: a sprawling automated factory, a rocket lifting off beside the crashed ship it all started from';
+
+export const FactoryRevealSlide: SlideDefinition = {
+  id: 'factory-reveal',
+  content: (
+    <div className="ww-ready">
+      {EXPORT_MODE ? (
+        <img className="ww-ready__img" src={factorioStill} alt={FACTORY_ALT} />
+      ) : (
+        <video
+          className="ww-ready__img"
+          src={factorioClip}
+          poster={factorioStill}
+          aria-label={FACTORY_ALT}
+          autoPlay
+          muted
+          playsInline
+          preload="auto"
+        />
+      )}
+      <div className="ww-ready__title" role="heading" aria-level={2}>
+        Looks like we have built a software factory!
+      </div>
+    </div>
+  ),
+  notes:
+    'The turn. A queue, agents that work it, a human queue, artifacts, a daemon, and a tree of '
+    + 'miniapps that grew out of it. (Let the clip play — five seconds.) Anyone who has played '
+    + 'Factorio knows this picture: you start by crafting things by hand next to a crashed ship, '
+    + 'then you automate one step, then you automate the thing that automates — and the factory '
+    + 'must grow. Looks like we have built a software factory — the fourth word of the title. '
+    + '(Factorio 1.0 launch trailer, Wube Software.)',
+};
+
+/** A reminder, not a slide yet (Yarik, 17.11.2026: «пустий стаб слайду як мені
+ *  нагадування: мініапп може створювати задачі в чергу»). Stands after the miniapps tree. */
+export const MiniappTasksSlide: SlideDefinition = {
+  id: 'improve-miniapp-tasks',
+  title: 'A miniapp can create tasks in the queue',
+  content: (
+    <>
+      <CornerRings corner="top-right" />
+      <Draft />
+    </>
+  ),
+  notes: 'DRAFT — a reminder only. A miniapp can create tasks in the queue: to be written.',
+};
+
+/** After the reveal, three slides say what kind of factory it is — it builds itself, it
+ *  learns from itself, it repairs itself (Yarik, 17.11.2026). The first two show a
+ *  picture the deck has already drawn, again, under a title: `ww-self` holds it. */
+export const BuildsItselfSlide: SlideDefinition = {
+  id: 'factory-builds-itself',
+  title: 'It builds itself',
+  content: () => (
+    <div className="ww-self">
+      <Architecture scene={BUILD_SCENES[0]} build={BUILD_SCENES} />
+    </div>
+  ),
+  notes:
+    'No clicks — it plays by itself, talk over it. It builds itself. Start from the simplest '
+    + 'picture: one laptop, a daemon, a queue on the server. Now watch the queue: every task in '
+    + 'it is «build the next piece of this very system». The agent takes it, does the work, '
+    + 'reports — and the piece appears, in mint: a second laptop, a web page, the miniapps on '
+    + 'the server, the mobile app, the home devices, Google Health, Spotify and the other '
+    + 'services. Every element of the architecture you saw was a task in its own queue.',
+};
+
+export const LearnsItselfSlide: SlideDefinition = {
+  id: 'factory-learns-itself',
+  title: 'It learns from itself',
+  content: () => (
+    <div className="ww-self">
+      <div className="ww-gb">
+        <Machine />
+      </div>
+    </div>
+  ),
+  notes:
+    'No clicks — it runs by itself. It learns from itself. The machine from before: the agent '
+    + 'picks a task, pulls the skills it needs, does the work — and then looks back. A skill it '
+    + 'used goes back to the marketplace one version better; sometimes a brand-new skill appears. '
+    + 'Watch the version numbers on the right: they never stop climbing. Nobody schedules that — '
+    + 'it is the last step of every task.',
+};
+
 export const HuntersSlide: SlideDefinition = {
   id: 'factory-hunters',
-  title: 'Loop tasks that hunt problems',
+  title: 'It repairs itself',
   content: (
     <>
       <CornerRings corner="bottom-left" />
@@ -1066,27 +1213,9 @@ export const HuntersSlide: SlideDefinition = {
     </>
   ),
   notes:
-    'DRAFT — outline only. Loop tasks that hunt problems: recurring tasks nobody has to file. One '
+    'DRAFT — outline only. It repairs itself. Loop tasks that hunt problems: recurring tasks nobody has to file. One '
     + 'reads the logs, one looks for sloppy code, one watches performance — and each files what it '
     + 'finds as an ordinary task in the queue.',
-};
-
-export const FactoryRevealSlide: SlideDefinition = {
-  id: 'factory-reveal',
-  content: (
-    <>
-      <CornerRings corner="bottom-left" />
-      <CornerRings corner="top-right" />
-      <div className="ww-statement">
-        <div className="ww-block">Looks like we have built a software factory!</div>
-      </div>
-      <Draft />
-    </>
-  ),
-  notes:
-    'DRAFT — outline only. The turn: a queue, agents that work it, a human queue, artifacts, a '
-    + 'daemon, and now tasks that create tasks. Looks like we have built a software factory — the '
-    + 'fourth word of the title.',
 };
 
 export const FactoryPhilosophySlide: SlideDefinition = {

@@ -72,6 +72,7 @@ src/
 ├── styles/slide-layouts.css      # one `ww-…` block per layout
 ├── assets/wawtech/               # the template's own images: rings, logo, gradient, icons
 ├── assets/history/               # the history clips, rendered from video/
+├── assets/factory/               # the Factorio shot behind «Looks like we have built a software factory!»
 ├── assets/music/                 # album covers + songs.json for the 2024 slide's random track
 ├── hooks/                        # useSlideNavigation, useTouchNavigation
 ├── utils/preloadAssets.ts        # warms every src/assets/** file while the title is up
@@ -218,6 +219,11 @@ Chrome: seek the `<video>`, draw it on a canvas and download the PNG (a still), 
 frame inside each edit (`select='gt(scene,0.12)'` finds them). Chrome may leave the download as a
 hidden `~/Downloads/.com.google.Chrome.*` temp file — check its size and copy that. Look for a TRUE
 HD upload first: an «HD» clip that is an upscaled SD source stays soft however it is processed.
+Use the LOGGED-IN Chrome (the claude-in-chrome tools): in the chrome-devtools automation browser
+YouTube is signed out and its player dies with «Something went wrong» after a dozen seeks
+(17.11.2026). To choose a shot, seek the video every few seconds, draw the frames onto one canvas
+laid over the page and screenshot that contact sheet. A game trailer comes from the developer's own
+press-kit page, and read their video policy first (Factorio's allows videos, not extracted assets).
 
 **A slide that DRAWS Claude Code reuses the clips' own emulation.** `video/src/claudeTerminal.tsx`
 is the reference — it was built by reading the published packages, and it owns the shapes: the
@@ -342,6 +348,24 @@ architecture with the daemon (`ArchitectureDaemonSlide`) → with two laptops (`
 `ArchitectureMobileSlide` → `MiniappsMoreSlide` (Silpo … Home) → `ArchitectureHomeSlide` →
 `MiniappsLastSlide` (Sleep, Health, Sport) → `ArchitectureHealthSlide` → `MiniappsEndSlide` (Music,
 Spotify) → `ArchitectureServicesSlide` → `MiniappsTreeSlide`.
+
+After the tree (order as of 17.11.2026): `MiniappTasksSlide` (an empty reminder stub: a miniapp can
+create tasks in the queue) → `FactoryRevealSlide` («Looks like we have built a software factory!»,
+full bleed over a 5.3 s shot of the official Factorio 1.0 launch trailer, in the `ww-ready`
+treatment of the C-3PO slide) → three slides that say what kind of factory it is:
+`BuildsItselfSlide` («It builds itself») → `LearnsItselfSlide` («It learns from itself», the
+Goldberg `Machine` again) → `HuntersSlide` («It repairs itself», still a draft) →
+`FactoryPhilosophySlide` (draft).
+
+- **«It builds itself» is the architecture in `build` mode**: `<Architecture build={BUILD_SCENES}>`
+  plays the scenes daemon → … → services one round of the journey each (`BUILD_MS` a step), and the
+  first laptop's task in round N is `BUILD_TASKS[N]` — «build what the next scene adds». A new scene
+  in the chain needs a line in both lists, in the same place. The list does not loop: it stays on
+  its last task, and the export shows the last scene.
+- **A picture shown again under a title goes inside `.ww-self`.** `.slide--titled > *` forces
+  `position: relative` on every direct child, so an absolutely placed diagram (`.ww-arch`, `.ww-gb`)
+  put straight into a titled slide loses its place. `.ww-self` is the positioned box; the
+  architecture is zoomed to .85 in it.
 
 **The architecture is retold in pieces, each right after the slide that motivates it** (Yarik,
 16.11.2026 — every request was «after slide N add an architecture slide where X is added»). Two

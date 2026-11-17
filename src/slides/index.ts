@@ -56,7 +56,7 @@ import {
   FreeModelsSlide,
 } from './improve';
 import { MiniappBirthSlide, MiniappsSlide, MiniappsMoreSlide, MiniappsLastSlide, MiniappsEndSlide, MiniappsTreeSlide } from './MiniappsSlide';
-import { TalkPrepSlide, ArchitectureSlide, ArchitectureDaemonSlide, ArchitectureTwoSlide, ArchitectureWebSlide, ArchitectureAppsSlide, ArchitectureMobileSlide, ArchitectureHomeSlide, ArchitectureHealthSlide, ArchitectureServicesSlide, HuntersSlide, FactoryRevealSlide, FactoryPhilosophySlide } from './factory';
+import { TalkPrepSlide, ArchitectureSlide, ArchitectureDaemonSlide, ArchitectureTwoSlide, ArchitectureWebSlide, ArchitectureAppsSlide, ArchitectureMobileSlide, ArchitectureHomeSlide, ArchitectureHealthSlide, ArchitectureServicesSlide, HuntersSlide, FactoryRevealSlide, FactoryPhilosophySlide, MiniappTasksSlide, BuildsItselfSlide, LearnsItselfSlide } from './factory';
 
 /**
  * LAYOUT GALLERY — one example of every WAWTech layout, kept as reference code
@@ -141,8 +141,11 @@ export const slides = [
   MiniappsEndSlide,
   ArchitectureServicesSlide,
   MiniappsTreeSlide,
-  HuntersSlide,
+  MiniappTasksSlide,
   FactoryRevealSlide,
+  BuildsItselfSlide,
+  LearnsItselfSlide,
+  HuntersSlide,
   FactoryPhilosophySlide,
   TalkPrepSlide,
   FinalSlide,
