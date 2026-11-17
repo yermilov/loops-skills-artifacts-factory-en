@@ -71,7 +71,7 @@ export const FinalSlide: SlideDefinition = {
     'Closing slide. 45-minute slot, no Q&A. Thank you — on the left, me on LinkedIn; on the right, '
     + 'these slides, everything in them is live. And while you scan, an encore in the middle: how I '
     + 'prepared this talk — with the same assistant. It is a film that plays by itself and loops, '
-    + 'about four minutes: every prompt in it is one I really typed — on the task page in myclaw '
+    + 'about five minutes: every prompt in it is one I really typed — on the task page in myclaw '
     + 'or in a Claude Code pane — and every answer is what the model really said, with the slide '
     + 'that came out of it. Leave it running while people scan.',
 };

@@ -407,8 +407,15 @@ add a task to the queue»; that cut the miniapps run once more (`THREAT_FRAME`, 
   and the model's REAL replies, from the task's sessions, 3–5 minutes. So nothing in the data is
   written for the slide: a beat is a prompt he typed (a comment on the task page, or in a Claude
   Code pane), the start of the answer, and the PDF page of the slide it produced. Allowed edits
-  only: markdown stripped, replies cut at a sentence end, the dev-server address shortened,
-  «myclaw» for the assistant's name. The privacy rule applies to every string in it. The film is
+  only: everything Ukrainian translated into English, sentence for sentence — prompts and
+  replies alike (his calls: «переклади всі мої промпти англійською», then «everything should be
+  in english»), markdown stripped, replies cut at a sentence end, the dev-server
+  address shortened, «myclaw» for the assistant's name. No title and no counter on the film, and
+  beats are joined by a burst of white TV static (both his calls). Between the
+  prompt and the reply run the model's REAL tool calls for that exchange (`steps`, with `total`
+  and `minutes`), taken from the transcripts — never invented; an exchange answered without tools
+  has none. The two interfaces are the deck's own: `.ww-boot…` for Claude Code, `ledgerApp.tsx`
+  pieces for the task page. The privacy rule applies to every string in it. The film is
   laid out for 16:9, where the middle of that slide is only ~800px wide — check it in the PDF
   (page 71), not in a wide browser window. To refresh a thumbnail: `bun run pdf`, then
   `pdftoppm -jpeg -scale-to-x 560 -scale-to-y 315 -f N -l N dist/….pdf` into `src/assets/bts/p-NN.jpg`.

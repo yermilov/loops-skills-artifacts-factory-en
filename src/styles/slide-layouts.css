@@ -1092,7 +1092,7 @@
   min-height: 0;
   display: flex;
 }
-/* The film is laid out on a canvas of its own and shown at .55, so that at 16:9 — where the
+/* The film is laid out on a canvas of its own and shown at .62, so that at 16:9 — where the
    middle of this slide is only some 800px wide — a prompt of five lines, a reply of four and
    the slide under them all fit: the tiers stay the deck's four. */
 .ww-bts {
@@ -1105,113 +1105,44 @@
   background: var(--ww-white);
 }
 .ww-bts__film {
-  zoom: 0.55;
+  zoom: 0.62;
   position: absolute;
   inset: 0;
   display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  padding: var(--space-md) var(--space-lg) var(--space-lg);
+  padding: var(--space-md);
 }
-.ww-bts__head {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-md);
-  font-size: var(--font-size-code);
-  color: var(--ww-text-muted);
-}
-.ww-bts__title {
-  white-space: nowrap;
-  font-family: var(--font-tight);
-  font-size: var(--font-size-body);
-  font-weight: 600;
-  color: var(--ww-purple);
-}
-.ww-bts__count {
-  margin-left: auto;
-  white-space: nowrap;
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-}
-.ww-bts__bar {
-  height: 6px;
-  border-radius: var(--radius-pill);
-  background: var(--ww-lavender);
-  overflow: hidden;
-}
-.ww-bts__bar span {
-  display: block;
-  height: 100%;
-  background: var(--ww-magenta);
-}
-.ww-bts__pane {
+.ww-bts__film .ww-bts__term { box-shadow: none; }
+/* a full terminal scrolls: its lines keep their height and the oldest leave by the top —
+   without this the flex column squeezes every line instead, and the text is cut in half */
+.ww-bts__term .ww-boot__body > * { flex-shrink: 0; }
+/* the task page: the app's own paper, type and thread (`.ww-jg…`), without its sidebar */
+.ww-bts__web {
   flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  padding: var(--space-md) var(--space-lg) var(--space-lg);
-  border-radius: var(--radius-card);
+  min-width: 0;
+  padding: var(--space-lg);
+  border-radius: 14px;
   overflow: hidden;
+  background: var(--jg-paper);
+  color: var(--jg-ink);
+  font-family: var(--jg-sans);
+  font-size: var(--font-size-body);
+  line-height: 1.25;
+  text-align: left;
 }
-.ww-bts__pane--web {
-  background: var(--ww-card);
-  color: var(--ww-ink);
+.ww-bts__web .ww-bts__thread {
+  padding-left: 0;
+  border-left: 0;
+  animation: none;
 }
-.ww-bts__pane--code {
-  background: var(--term-bg);
-  color: var(--term-fg);
-  font-family: var(--font-mono);
-}
-.ww-bts__chrome {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  font-size: var(--font-size-code);
-}
-.ww-bts__avatar {
-  width: 52px;
-  height: 52px;
-  border-radius: var(--radius-pill);
-  object-fit: cover;
-}
-.ww-bts__dots {
-  display: flex;
-  gap: var(--space-xs);
-}
-.ww-bts__dots i {
-  width: 18px;
-  height: 18px;
-  border-radius: var(--radius-pill);
-  background: var(--term-dim);
-}
-.ww-bts__where {
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-caps);
-}
-.ww-bts__pane--web .ww-bts__where { color: var(--ww-magenta); }
-.ww-bts__pane--code .ww-bts__where { color: var(--term-green); }
-.ww-bts__path { opacity: 0.6; }
-.ww-bts__prompt,
-.ww-bts__reply {
-  margin: 0;
+.ww-bts__pre {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.ww-bts__prompt {
-  font-size: var(--font-size-body);
-  font-weight: 600;
-  line-height: var(--line-height-normal);
+.ww-bts__line {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.ww-bts__pane--code .ww-bts__prompt { color: var(--ww-white); }
-.ww-bts__mark {
-  margin-right: var(--space-sm);
-  color: var(--ww-magenta);
-}
-.ww-bts__pane--code .ww-bts__mark { color: var(--term-green); }
-.ww-bts__mark--agent { color: var(--ww-violet); }
-.ww-bts__pane--code .ww-bts__mark--agent { color: var(--term-yellow); }
 .ww-bts__caret {
   display: inline-block;
   width: 0.5em;
@@ -1220,34 +1151,30 @@
   vertical-align: text-bottom;
   background: currentColor;
 }
-.ww-bts__answer {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-}
-.ww-bts__reply {
-  font-size: var(--font-size-code);
-  line-height: var(--line-height-relaxed);
-}
-.ww-bts__pane--web .ww-bts__reply { color: var(--ww-text); }
-.ww-bts__pane--code .ww-bts__reply { color: var(--term-fg); }
-.ww-bts__pane--web .ww-bts__prompt { color: var(--ww-ink); }
 .ww-bts__slide {
-  flex: none;
-  margin: auto 0 0;
-  align-self: flex-end;
+  position: absolute;
+  right: var(--space-xl);
+  margin: 0;
   width: 440px;
   border-radius: 12px;
   overflow: hidden;
   border: 4px solid var(--ww-white);
   box-shadow: 0 12px 40px color-mix(in srgb, var(--ww-ink) 35%, transparent);
 }
+/* over what has scrolled by: a terminal fills from the bottom, a page from the top */
+.ww-bts__slide--code { top: 120px; }
+.ww-bts__slide--web { bottom: var(--space-xl); }
 .ww-bts__slide img {
   display: block;
   width: 100%;
 }
+.ww-bts__static {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.ww-bts__tear { fill: var(--ww-white); opacity: 0.55; }
 .ww-final__stand {
   display: flex;
   flex-direction: column;
