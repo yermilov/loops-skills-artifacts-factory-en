@@ -72,7 +72,7 @@ src/
 ├── styles/slide-layouts.css      # one `ww-…` block per layout
 ├── assets/wawtech/               # the template's own images: rings, logo, gradient, icons
 ├── assets/history/               # the history clips, rendered from video/
-├── assets/factory/               # the Factorio shot behind «Looks like we have built a software factory!»
+├── assets/factory/               # the Factorio shot behind the reveal slide, and the 1913 Ford photo
 ├── assets/music/                 # album covers + songs.json for the 2024 slide's random track
 ├── hooks/                        # useSlideNavigation, useTouchNavigation
 ├── utils/preloadAssets.ts        # warms every src/assets/** file while the title is up
@@ -349,19 +349,41 @@ architecture with the daemon (`ArchitectureDaemonSlide`) → with two laptops (`
 `MiniappsLastSlide` (Sleep, Health, Sport) → `ArchitectureHealthSlide` → `MiniappsEndSlide` (Music,
 Spotify) → `ArchitectureServicesSlide` → `MiniappsTreeSlide`.
 
-After the tree (order as of 17.11.2026): `MiniappTasksSlide` (an empty reminder stub: a miniapp can
-create tasks in the queue) → `FactoryRevealSlide` («Looks like we have built a software factory!»,
-full bleed over a 5.3 s shot of the official Factorio 1.0 launch trailer, in the `ww-ready`
-treatment of the C-3PO slide) → three slides that say what kind of factory it is:
-`BuildsItselfSlide` («It builds itself») → `LearnsItselfSlide` («It learns from itself», the
-Goldberg `Machine` again) → `HuntersSlide` («It repairs itself», still a draft) →
-`FactoryPhilosophySlide` (draft).
+After the tree (order as of the end of 17.11.2026): `FactoryRevealSlide` («Looks like we have built
+a software factory!», full bleed over a 5.3 s shot of the official Factorio 1.0 launch trailer, in
+the `ww-ready` treatment of the C-3PO slide) → three things it does to itself: `BuildsItselfSlide`
+(«It builds itself») → `LearnsItselfSlide` («It learns from itself», the Goldberg `Machine` again) →
+`RepairsItselfSlide` (the architecture with a cron in the cloud feeding the queue) →
+`RepairLoopsSlide` (seven real loop tasks, one per click) → `FordFactorySlide` («How everyone
+imagines a software factory», a 1913 public-domain photo) → `FactoryFloorSlide` (that factory as a
+self-playing machine, seen from above) → `FactoryPhilosophySlide` (draft) → `FinalSlide` (LinkedIn
+QR · a stub for the encore «How I prepared this talk» · slides QR). Earlier in the arc,
+`ArchitectureAppTaskSlide` stands after the Movies frame, whose headline is «✓ bonus miniapps can
+add a task to the queue»; that cut the miniapps run once more (`THREAT_FRAME`, `MiniappsHomeSlide`).
 
 - **«It builds itself» is the architecture in `build` mode**: `<Architecture build={BUILD_SCENES}>`
   plays the scenes daemon → … → services one round of the journey each (`BUILD_MS` a step), and the
   first laptop's task in round N is `BUILD_TASKS[N]` — «build what the next scene adds». A new scene
   in the chain needs a line in both lists, in the same place. The list does not loop: it stays on
   its last task, and the export shows the last scene.
+- **The server's cloud holds three rows and nothing wider than its waist:** the «server» line,
+  the queue, and ONE row of parts — icon over name — miniapps · database · cron (redrawn 17.11.2026,
+  his «переробити з нуля»). The cloud's SIDES did not move, because every line from a screen or a
+  laptop lands on them; its bottom corners are arcs tangent to the sides. A line that must be seen
+  INSIDE the cloud (a miniapp or the cron putting a task into the queue) is drawn in a second SVG
+  after it — the first one sits under the cloud's fill.
+- **A loop task is drawn as what it is: one sentence that names a skill.** `REPAIR_LOOPS` holds,
+  for each real series, a name the room can read, the real series title (for the notes), the real
+  skill, and that skill cut to four or five sentences of what it DOES — his correction: no
+  cautions («not a fixed 24 hours»), more of the steps. The brief on the card («The method of this
+  task is the skill X. Load it and run it.») is the series' real brief, translated.
+- **`FactoryFloorSlide` is the one slide with a world of its own** — earth and steel, `--tf-*` in
+  tokens.css — because he asked for a factory-builder game's feel and then «ще ближче». The genre
+  is borrowed (a site read like a map, belts, machines, shadows, grain); the drawing is ours and
+  nothing is copied from a game. No words on it at all («взагалі всі підписи позабирай»), two
+  engineers, and the cars DRIVE to their bays — no box, no counter. Its ground is a separate SVG
+  drawn once: the grain is a filter and must not be recomputed every frame. The first, side-view
+  take is kept unregistered in `ClassicFactorySlide.tsx` (`.ww-ff…`) for a rollback.
 - **A picture shown again under a title goes inside `.ww-self`.** `.slide--titled > *` forces
   `position: relative` on every direct child, so an absolutely placed diagram (`.ww-arch`, `.ww-gb`)
   put straight into a titled slide loses its place. `.ww-self` is the positioned box; the

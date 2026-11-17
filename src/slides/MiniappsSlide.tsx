@@ -2701,6 +2701,8 @@ function Scene({ stage }: { stage: number }) {
 function MiniappsFrame({ revealStage }: { revealStage: number }) {
     const stage = Math.min(Math.max(revealStage, 1), FRAMES.length);
     const mobile = !!FRAMES[stage - 1].mobile || !!FRAMES[stage - 1].silpo;
+    // Movies carries a headline of its own: «Add» on its card files a task (Yarik, 17.11.2026)
+    const bonus = MINIAPPS[FRAMES[stage - 1].app].name === 'Movies';
     return (
       <>
         <CornerRings corner="bottom-right" />
@@ -2708,10 +2710,10 @@ function MiniappsFrame({ revealStage }: { revealStage: number }) {
           <div className="ww-asst__claim ww-asst__claim--great">
             <span className="ww-asst__verdict">
               <span aria-hidden="true">✓</span>
-              fixed
+              {bonus ? 'bonus' : 'fixed'}
             </span>
-            <span key={mobile ? 'mobile' : 'miniapps'} className={mobile && FRAMES[stage - 1].silpo ? undefined : 'ww-jg__arrive'}>
-              {mobile ? 'also available as a mobile app' : 'artifacts that stay: miniapps'}
+            <span key={bonus ? 'bonus' : mobile ? 'mobile' : 'miniapps'} className={mobile && FRAMES[stage - 1].silpo ? undefined : 'ww-jg__arrive'}>
+              {bonus ? 'miniapps can add a task to the queue' : mobile ? 'also available as a mobile app' : 'artifacts that stay: miniapps'}
             </span>
           </div>
           <Scene stage={stage} />
@@ -2762,9 +2764,13 @@ export const MiniappsSlide: SlideDefinition = {
  *  (Yarik, 16.11.2026). */
 const SLEEP_FRAME = FRAMES.findIndex((frame) => MINIAPPS[frame.app].name === 'Sleep') + 1;
 
+/** The run is cut once more after Movies: an architecture slide follows it — a miniapp
+ *  putting a task into the queue — and Threat forecast and Home come after (Yarik, 17.11.2026). */
+const THREAT_FRAME = FRAMES.findIndex((frame) => MINIAPPS[frame.app].name === 'Threat forecast') + 1;
+
 export const MiniappsMoreSlide: SlideDefinition = {
   id: 'improve-miniapps-more',
-  maxRevealStages: SLEEP_FRAME - SILPO_FRAME,
+  maxRevealStages: THREAT_FRAME - SILPO_FRAME,
   initialRevealStage: 1,
   content: ({ revealStage }) => <MiniappsFrame revealStage={revealStage + SILPO_FRAME - 1} />,
   notes:
@@ -2789,7 +2795,17 @@ export const MiniappsMoreSlide: SlideDefinition = {
     + 'ratings, names the risk, and I answer with one button — Add or Not this. Honest: the card is '
     + 'the product\'s, but these two titles are MY recommendations to you — The Rehearsal and You Can '
     + 'See Everything, both Nathan Fielder — and the pitches are written for this slide. '
-    + '[6] Threat forecast — Kyiv exactly as my page showed it on the evening of 14 November: no '
+    + 'And the headline changes: a bonus. That «Add» button does not only save a row — a miniapp '
+    + 'can put a task into the queue, for the agent to pick up. The next slide draws it. ',
+};
+
+export const MiniappsHomeSlide: SlideDefinition = {
+  id: 'improve-miniapps-home',
+  maxRevealStages: SLEEP_FRAME - THREAT_FRAME,
+  initialRevealStage: 1,
+  content: ({ revealStage }) => <MiniappsFrame revealStage={revealStage + THREAT_FRAME - 1} />,
+  notes:
+    '[6] Threat forecast — Kyiv exactly as my page showed it on the evening of 14 November: no '
     + 'alert for ten hours, 21 days of alerts as a ribbon, and the next 24 hours per weapon class — '
     + 'twelve of them, two shown — each with the agent\'s reasoning from the channels it reads, and '
     + 'a button to disagree with the level. (Rationales translated and shortened.) The map is a '

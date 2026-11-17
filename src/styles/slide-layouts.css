@@ -1080,9 +1080,40 @@
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 1fr auto 1fr auto 1fr;
-  gap: var(--space-md);
+  /* LinkedIn stand | the encore, which takes the rest | slides stand */
+  grid-template-columns: auto 1fr auto;
+  gap: var(--space-xl);
   align-items: center;
+}
+/* the encore: a stub for now — a dashed placeholder with its title */
+.ww-final__encore {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+  border: 3px dashed var(--ww-violet);
+  border-radius: var(--radius-card);
+  text-align: center;
+}
+.ww-final__encoretitle {
+  font-family: var(--font-tight);
+  font-size: var(--font-size-heading);
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+  color: var(--ww-purple);
+}
+.ww-final__todo {
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-pill);
+  border: 3px dashed var(--ww-magenta);
+  color: var(--ww-magenta);
+  font-size: var(--font-size-code);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-caps);
 }
 .ww-final__stand {
   display: flex;
@@ -1105,8 +1136,8 @@
 }
 .ww-final__qr {
   display: block;
-  width: 420px;
-  height: 420px;
+  width: 300px;
+  height: 300px;
 }
 
 /* the sticker groups: a wrapped row on top, stacked columns in the gaps */
@@ -6440,9 +6471,9 @@
 }
 .ww-arch__api {
   left: 610px;
-  top: 222px;
+  top: 200px;
   width: 360px;
-  height: 410px;
+  height: 366px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -6691,3 +6722,212 @@
 .ww-arch--fast .ww-arch__token {
   animation-duration: 700ms;
 }
+
+/* «It repairs itself», second slide: the loops on the left, one per click; on the right the
+   current one as what it is — a task whose brief is «run this skill», and the skill in short */
+.ww-loops {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2xl);
+  margin-top: calc(-1 * var(--space-xl));
+}
+.ww-loops__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.ww-loops__name {
+  padding: var(--space-xs) var(--space-md);
+  border-left: 8px solid color-mix(in srgb, var(--ww-purple) 25%, transparent);
+  font-family: var(--font-tight);
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+  color: var(--ww-text-muted);
+  white-space: nowrap;
+}
+.ww-loops__name--on {
+  border-left-color: var(--ww-magenta);
+  color: var(--ww-purple);
+}
+.ww-loops__panel {
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  border-radius: var(--radius-card);
+  background: var(--ww-card);
+  font-size: var(--font-size-code);
+}
+.ww-loops__head {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-caps);
+  color: var(--ww-text-muted);
+}
+.ww-loops__brief {
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-tight);
+  color: var(--ww-purple);
+}
+.ww-loops__brief code {
+  padding: 2px 14px;
+  border-radius: 10px;
+  background: var(--ww-ink);
+  color: var(--ww-mint);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  white-space: nowrap;
+}
+.ww-loops__skillhead {
+  margin-top: var(--space-sm);
+  font-family: var(--font-mono);
+  color: var(--ww-text-muted);
+}
+.ww-loops__prompt {
+  padding-left: var(--space-md);
+  border-left: 6px solid var(--ww-mint);
+  line-height: var(--line-height-normal);
+}
+
+/* the server's parts: one row under the queue — icon over name, drawn a step smaller than
+   the «server» line so three of them fit the cloud's width with air on both sides */
+.ww-arch__parts {
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+  margin-top: 14px;
+}
+.ww-arch__part {
+  zoom: 0.72;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: color var(--transition-normal);
+}
+.ww-arch__part svg {
+  width: 60px;
+  height: 60px;
+  fill: var(--ww-white);
+  stroke: var(--ww-purple);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ww-arch__part.ww-arch--hot {
+  color: var(--ww-magenta);
+}
+.ww-arch__part.ww-arch--hot svg {
+  stroke: var(--ww-magenta);
+}
+/* one sentence a line: it is read from the room, not as a paragraph */
+.ww-loops__prompt span {
+  display: block;
+}
+
+/* a picture whose subject stands low in the frame: the Ford ramp, with the cars at its foot */
+.ww-ready__img--low {
+  object-position: 50% 72%;
+}
+
+/* ─── The classic factory (ClassicFactorySlide): the Goldberg canvas, its own marks ───── */
+.ww-ff__line { fill: none; stroke: var(--ww-purple); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.ww-ff__line--thin { stroke-width: 3; }
+.ww-ff__count { font-family: var(--font-mono); font-size: var(--font-size-code); font-weight: 600; fill: var(--ww-magenta); }
+.ww-ff__smoke { fill: var(--ww-lavender); }
+.ww-ff__board { fill: var(--ww-white); stroke: var(--ww-purple); stroke-width: 4; }
+.ww-ff__plan { fill: none; stroke: var(--ww-violet); stroke-width: 4; stroke-linecap: round; }
+.ww-ff__bulb { fill: var(--ww-mint); stroke: var(--ww-purple); stroke-width: 3; }
+/* the people */
+.ww-ff__limb { fill: none; stroke: var(--ww-purple); stroke-width: 10; stroke-linecap: round; }
+.ww-ff__limb--arm { stroke-width: 9; }
+.ww-ff__overall { fill: var(--ww-lavender); stroke: var(--ww-purple); stroke-width: 3; }
+.ww-ff__coat { fill: var(--ww-white); stroke: var(--ww-purple); stroke-width: 3; }
+.ww-ff__tie { stroke: var(--ww-magenta); stroke-width: 5; stroke-linecap: round; }
+.ww-ff__head { fill: var(--ww-white); stroke: var(--ww-purple); stroke-width: 3; }
+.ww-ff__cap { fill: var(--ww-purple); }
+.ww-ff__hat { fill: var(--ww-magenta); stroke: var(--ww-purple); stroke-width: 2.5; stroke-linejoin: round; }
+.ww-ff__glass { fill: var(--ww-white); stroke: var(--ww-purple); stroke-width: 2.5; }
+.ww-ff__tool { fill: none; stroke: var(--ww-violet); stroke-width: 5; stroke-linecap: round; }
+/* the lines */
+.ww-ff__hopper { fill: var(--ww-white); stroke: var(--ww-purple); stroke-width: 3; stroke-linejoin: round; }
+.ww-ff__feed { fill: none; stroke: var(--ww-purple); stroke-width: 22; stroke-linecap: round; }
+.ww-ff__feed--in { stroke: var(--ww-lavender); stroke-width: 16; }
+.ww-ff__beltbody { fill: var(--ww-lavender); stroke: var(--ww-purple); stroke-width: 3; }
+.ww-ff__roller { fill: var(--ww-white); stroke: var(--ww-purple); stroke-width: 2.5; }
+.ww-ff__spoke { stroke: var(--ww-purple); stroke-width: 2.5; stroke-linecap: round; }
+.ww-ff__cleat { stroke: var(--ww-purple); stroke-width: 4; stroke-linecap: round; }
+/* the cars: any colour, so long as it is black */
+.ww-ff__chassis { stroke: var(--ww-ink); stroke-width: 8; stroke-linecap: round; }
+.ww-ff__wheel { fill: var(--ww-white); stroke: var(--ww-ink); stroke-width: 7; }
+.ww-ff__hub { fill: var(--ww-ink); }
+.ww-ff__metal { fill: var(--ww-ink); stroke: var(--ww-ink); stroke-width: 2; stroke-linejoin: round; }
+.ww-ff__grille { fill: none; stroke: var(--ww-paper); stroke-width: 3; stroke-linecap: round; }
+.ww-ff__window { fill: var(--ww-lavender); }
+.ww-ff__spark { fill: var(--ww-magenta); }
+
+/* ─── The factory floor from above (FactoryFloorSlide): a world of its own, earth and steel.
+   Two layers on the Goldberg canvas — the ground (drawn once) and what moves over it. ─── */
+.ww-tf { display: block; }
+.ww-tf__layer { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ww-tf__shadow { fill: var(--tf-shadow); }
+/* the ground */
+.ww-tf__sand { fill: var(--tf-sand); }
+.ww-tf__sand--dark { fill: var(--tf-sand-dark); }
+.ww-tf__sand--speck { fill: var(--tf-pebble); opacity: 0.35; }
+.ww-tf__pebble { fill: var(--tf-pebble); opacity: 0.55; }
+.ww-tf__concrete { fill: var(--tf-concrete); }
+.ww-tf__concrete--speck { fill: var(--tf-concrete-dark); opacity: 0.6; }
+.ww-tf__joint { fill: none; stroke: var(--tf-concrete-dark); stroke-width: 3; }
+.ww-tf__aisle { fill: none; stroke: var(--tf-amber); stroke-width: 5; stroke-dasharray: 26 18; opacity: 0.8; }
+.ww-tf__asphalt { fill: var(--tf-asphalt); }
+.ww-tf__asphalt--speck { fill: var(--tf-steel); opacity: 0.5; }
+.ww-tf__lane { fill: none; stroke: var(--tf-paint); stroke-width: 4; stroke-dasharray: 22 20; opacity: 0.6; }
+.ww-tf__bay { fill: none; stroke: var(--tf-paint); stroke-width: 4; stroke-linejoin: round; opacity: 0.85; }
+/* a line as it is planned — a blueprint — and as it is built */
+.ww-tf__plan { fill: color-mix(in srgb, var(--tf-blueprint) 30%, transparent); stroke: var(--tf-blueprint); stroke-width: 3.5; stroke-dasharray: 9 7; }
+.ww-tf__bed { fill: var(--tf-belt); stroke: var(--tf-steel-dark); stroke-width: 4; }
+.ww-tf__slat { stroke: var(--tf-steel); stroke-width: 3; }
+.ww-tf__rail { fill: none; stroke: var(--tf-steel-light); stroke-width: 5; stroke-linecap: round; }
+.ww-tf__chevron { fill: none; stroke: var(--tf-amber); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+.ww-tf__pad { fill: color-mix(in srgb, var(--tf-amber) 22%, transparent); stroke: var(--tf-amber); stroke-width: 3; stroke-dasharray: 12 9; }
+/* the machines */
+.ww-tf__case { fill: var(--tf-steel-dark); }
+.ww-tf__plate { fill: var(--tf-steel); stroke: var(--tf-steel-light); stroke-width: 2.5; }
+.ww-tf__rivet { fill: var(--tf-steel-light); }
+.ww-tf__gear { fill: var(--tf-rust); stroke: var(--tf-steel-dark); stroke-width: 3; stroke-linejoin: round; }
+.ww-tf__stack { fill: var(--tf-steel-dark); stroke: var(--tf-steel-light); stroke-width: 3; }
+.ww-tf__light { fill: var(--tf-steel-dark); stroke: var(--tf-steel-light); stroke-width: 2; }
+.ww-tf__light--on { fill: var(--ww-mint); }
+.ww-tf__smoke { fill: var(--tf-smoke); }
+.ww-tf__table { fill: var(--ww-white); stroke: var(--tf-steel-dark); stroke-width: 3; }
+.ww-tf__sheet { fill: none; stroke: var(--tf-blueprint); stroke-width: 4; stroke-linecap: round; }
+/* the people, from above */
+.ww-tf__foot { fill: var(--tf-steel-dark); }
+.ww-tf__arm { fill: none; stroke-width: 8; stroke-linecap: round; }
+.ww-tf__arm--worker { stroke: var(--tf-denim); }
+.ww-tf__arm--engineer { stroke: var(--tf-paint); }
+.ww-tf__tool { stroke: var(--tf-steel-light); stroke-width: 5; stroke-linecap: round; }
+.ww-tf__overall { fill: var(--tf-denim); stroke: var(--tf-steel-dark); stroke-width: 2.5; }
+.ww-tf__coat { fill: var(--ww-white); stroke: var(--tf-steel-dark); stroke-width: 2.5; }
+.ww-tf__cap { fill: var(--tf-steel-dark); }
+.ww-tf__capdot { fill: var(--tf-steel); }
+.ww-tf__hat { fill: var(--ww-magenta); stroke: var(--tf-steel-dark); stroke-width: 2.5; }
+.ww-tf__ridge { fill: none; stroke: var(--tf-steel-dark); stroke-width: 3; stroke-linecap: round; }
+/* the cars: any colour, so long as it is black */
+.ww-tf__chassis { fill: none; stroke: var(--tf-steel-light); stroke-width: 6; stroke-linecap: round; }
+.ww-tf__tyre { fill: var(--ww-ink); }
+.ww-tf__metal { fill: var(--ww-ink); stroke: var(--tf-steel); stroke-width: 1.5; }
+.ww-tf__gloss { fill: none; stroke: var(--tf-steel); stroke-width: 3; stroke-linecap: round; }
+.ww-tf__gloss--roof { fill: var(--tf-steel-dark); stroke: none; }
+.ww-tf__lamp { fill: var(--tf-amber); }
+.ww-tf__window { fill: var(--tf-steel-light); }
+.ww-tf__spark { fill: var(--tf-amber); stroke: var(--ww-white); stroke-width: 1.5; }

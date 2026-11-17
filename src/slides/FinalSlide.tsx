@@ -7,9 +7,13 @@ import portrait from '../assets/about/yaroslav.jpg';
 const LINKEDIN_URL = 'https://www.linkedin.com/in/yarik-yermilov/';
 const SLIDES_URL = 'https://yermilov.github.io/loops-skills-artifacts-factory-en/';
 
-/** The close: «thank you» die-cut stickers — the about-me slide's «hello» pack, in the same
- *  nations — framing two things to scan: me on LinkedIn (the about-me stand: photo, handle,
- *  blue QR) and these slides (QR only; the URL is too long to be worth reading off a screen). */
+/** The close, and the encore beside it (Yarik, 17.11.2026: «обєднаємо … зліва будуть qr коди,
+ *  а справа стаб де я буду показувати наче на біс How I prepared this talk»). Then, same day: «зліва мій код,
+ *  справа слайди, а по центру як я робив цю презентацію». Left: me on LinkedIn (the about-me
+ *  stand: photo, handle, blue QR). Right: these slides (QR only; the URL is too long to read
+ *  off a screen). Centre: a STUB for the encore — only the
+ *  title is his, what is shown there is not designed yet. «Thank you» stickers — the about-me
+ *  slide's «hello» pack — run across the top and the bottom. */
 export const FinalSlide: SlideDefinition = {
   id: 'final',
   content: (
@@ -19,8 +23,6 @@ export const FinalSlide: SlideDefinition = {
         <ThankStickers group="top" />
 
         <div className="ww-final__stands">
-          <ThankStickers group="left" />
-
           <div className="ww-final__stand">
             <div className="ww-final__head">
               <img className="ww-about__photo ww-final__photo" src={portrait} alt="Yaroslav Yermilov" />
@@ -32,7 +34,7 @@ export const FinalSlide: SlideDefinition = {
             <QrLink
               className="ww-final__qr"
               value={LINKEDIN_URL}
-              size={420}
+              size={300}
               level="M"
               fgColor="var(--ww-linkedin)"
               bgColor="var(--ww-white)"
@@ -40,7 +42,10 @@ export const FinalSlide: SlideDefinition = {
             />
           </div>
 
-          <ThankStickers group="mid" />
+          <div className="ww-final__encore">
+            <div className="ww-final__encoretitle" role="heading" aria-level={2}>How I prepared this talk</div>
+            <span className="ww-final__todo">draft · the encore, to be designed</span>
+          </div>
 
           <div className="ww-final__stand">
             <div className="ww-final__head ww-final__head--slides">
@@ -49,15 +54,13 @@ export const FinalSlide: SlideDefinition = {
             <QrLink
               className="ww-final__qr"
               value={SLIDES_URL}
-              size={420}
+              size={300}
               level="M"
               fgColor="var(--ww-purple)"
               bgColor="var(--ww-white)"
               title="QR code: these slides"
             />
           </div>
-
-          <ThankStickers group="right" />
         </div>
 
         <ThankStickers group="bottom" />
@@ -66,5 +69,7 @@ export const FinalSlide: SlideDefinition = {
   ),
   notes:
     'Closing slide. 45-minute slot, no Q&A. Thank you — on the left, me on LinkedIn; on the right, '
-    + 'these slides, everything in them is live.',
+    + 'these slides, everything in them is live. And while you scan, an encore in the middle: how I '
+    + 'prepared this talk — with the same assistant. DRAFT — the encore is a stub, what to show '
+    + 'there is not designed yet.',
 };

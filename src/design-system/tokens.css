@@ -85,6 +85,24 @@
      (src/slides/RouteMap.tsx): the idiom of a consumer maps app — light land,
      white streets, yellow arterials, blue water, the chosen route in blue and
      the alternatives in grey. These belong to that one drawing. */
+  /* the factory floor seen from above (FactoryFloorSlide): a world of its own, earth and steel */
+  --tf-sand: #d8b680;
+  --tf-sand-dark: #b08a52;
+  --tf-pebble: #8e7653;
+  --tf-concrete: #c4bfb4;
+  --tf-concrete-dark: #a39e93;
+  --tf-asphalt: #3c3e44;
+  --tf-paint: #ece7d6;
+  --tf-steel: #5d636d;
+  --tf-steel-light: #a3aab4;
+  --tf-steel-dark: #2a2d33;
+  --tf-belt: #383b41;
+  --tf-amber: #f4b62e;
+  --tf-rust: #a4532a;
+  --tf-denim: #3f5f8a;
+  --tf-blueprint: #2f8fd8;
+  --tf-shadow: rgb(20 12 0 / 0.3);
+  --tf-smoke: rgb(255 255 255 / 0.55);
   --map-land: #f1efe9;
   --map-street: #ffffff;
   --map-arterial: #fbe39a;

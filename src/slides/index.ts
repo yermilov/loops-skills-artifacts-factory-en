@@ -37,6 +37,8 @@ import { LayoutBreak } from './LayoutBreak';
 import { LayoutBigTitle } from './LayoutBigTitle';
 import { LayoutContacts } from './LayoutContacts';
 import { FinalSlide } from './FinalSlide';
+// the side view is kept for a rollback: swap the two names here and in the list
+import { FactoryFloorSlide } from './FactoryFloorSlide';
 import { MementoSlide } from './MementoSlide';
 import { SkillUnitSlide, SkillUnitRefsSlide, SkillUnitScriptsSlide } from './SkillUnitSlide';
 import { SkillReadRefSlide, SkillRunScriptSlide } from './SkillFilesSlide';
@@ -55,8 +57,8 @@ import {
   PaceSlide,
   FreeModelsSlide,
 } from './improve';
-import { MiniappBirthSlide, MiniappsSlide, MiniappsMoreSlide, MiniappsLastSlide, MiniappsEndSlide, MiniappsTreeSlide } from './MiniappsSlide';
-import { TalkPrepSlide, ArchitectureSlide, ArchitectureDaemonSlide, ArchitectureTwoSlide, ArchitectureWebSlide, ArchitectureAppsSlide, ArchitectureMobileSlide, ArchitectureHomeSlide, ArchitectureHealthSlide, ArchitectureServicesSlide, HuntersSlide, FactoryRevealSlide, FactoryPhilosophySlide, MiniappTasksSlide, BuildsItselfSlide, LearnsItselfSlide } from './factory';
+import { MiniappBirthSlide, MiniappsSlide, MiniappsMoreSlide, MiniappsHomeSlide, MiniappsLastSlide, MiniappsEndSlide, MiniappsTreeSlide } from './MiniappsSlide';
+import { ArchitectureSlide, ArchitectureDaemonSlide, ArchitectureTwoSlide, ArchitectureWebSlide, ArchitectureAppsSlide, ArchitectureMobileSlide, ArchitectureHomeSlide, ArchitectureHealthSlide, ArchitectureServicesSlide, RepairsItselfSlide, RepairLoopsSlide, FordFactorySlide, FactoryRevealSlide, FactoryPhilosophySlide, ArchitectureAppTaskSlide, BuildsItselfSlide, LearnsItselfSlide } from './factory';
 
 /**
  * LAYOUT GALLERY — one example of every WAWTech layout, kept as reference code
@@ -135,18 +137,21 @@ export const slides = [
   MiniappsSlide,
   ArchitectureMobileSlide,
   MiniappsMoreSlide,
+  ArchitectureAppTaskSlide,
+  MiniappsHomeSlide,
   ArchitectureHomeSlide,
   MiniappsLastSlide,
   ArchitectureHealthSlide,
   MiniappsEndSlide,
   ArchitectureServicesSlide,
   MiniappsTreeSlide,
-  MiniappTasksSlide,
   FactoryRevealSlide,
   BuildsItselfSlide,
   LearnsItselfSlide,
-  HuntersSlide,
+  RepairsItselfSlide,
+  RepairLoopsSlide,
+  FordFactorySlide,
+  FactoryFloorSlide,
   FactoryPhilosophySlide,
-  TalkPrepSlide,
   FinalSlide,
 ];

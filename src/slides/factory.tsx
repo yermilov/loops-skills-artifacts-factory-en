@@ -1,11 +1,12 @@
 import { SlideDefinition } from '../types/slides';
-import { CornerRings } from '../components/wawtech';
+import { CornerRings, Reveal } from '../components/wawtech';
 import { useAnimating } from '../components/frameSettled';
 import { useClock } from './BootstrapSlide';
 import { Machine } from './GoldbergSlide';
 import herdrLogo from '../assets/herdr/logo.svg';
 import factorioClip from '../assets/factory/factorio-factory.mp4';
 import factorioStill from '../assets/factory/factorio-factory.jpg';
+import fordLine from '../assets/factory/ford-body-drop-1913.jpg';
 
 /**
  * SCHEMATIC — the flow after «How do we improve it?», parked as three
@@ -30,25 +31,109 @@ import factorioStill from '../assets/factory/factorio-factory.jpg';
 
 const Draft = () => <span className="ww-overlay ww-draft">draft · outline only</span>;
 
-const HUNTERS = [
-  { where: 'in the logs', what: 'errors and warnings nobody filed' },
-  { where: 'in sloppy code', what: 'what can be simplified, now that it works' },
-  { where: 'in performance', what: 'pages and queries that got slower' },
+/** The loop tasks that keep the system itself in shape. Each is a real recurring series in
+ *  the product (read off its task list on 17.11.2026), and each one's brief is the same
+ *  sentence with a different name in it: «The method of this task is the skill X. Load it
+ *  and run it.» — which is the slide's point: a loop is just a skill, started on a schedule.
+ *    `name`   — a name the room can read (Yarik: «придумай кожному кращі назви»); the real
+ *               series title is in `series`, for the notes
+ *    `skill`  — the real skill, as the brief names it
+ *    `prompt` — that skill's description, cut to four or five sentences; mine, not a quote,
+ *               with «myclaw» for the product
+ *  Left out on purpose: the loops about my life, and the ones that only update plugins. */
+const REPAIR_LOOPS: { name: string; series: string; every: string; skill: string; prompt: string[] }[] = [
+  {
+    name: 'Read the logs',
+    series: 'Daily check: backend + frontend log errors',
+    every: 'every day',
+    skill: 'engineering:log-health-check',
+    prompt: [
+      'Probe that the backend and the frontend are up.',
+      'Sweep the logs of both since the previous run — search by text, not only by level.',
+      'Group what you find by cause, and set aside the signatures known to be harmless.',
+      'Verify each real problem, then file it as a task.',
+      'Report what was checked and what was found.',
+    ],
+  },
+  {
+    name: 'Catch what got slower',
+    series: 'Daily check: performance degradations',
+    every: 'every day',
+    skill: 'engineering:perf-health-check',
+    prompt: [
+      'Measure API latency percentiles, sync times and the frontend\'s Web Vitals since the previous run.',
+      'Once a week, look at every route\'s trend: that is where slow drift shows.',
+      'Compare everything with the baseline the last run left.',
+      'Read-only: fix nothing — file a task for every real regression.',
+      'Carry the new baseline forward for the next run.',
+    ],
+  },
+  {
+    name: 'Simplify the code',
+    series: 'Simplify myclaw codebase',
+    every: 'every day',
+    skill: 'engineering:codebase-simplify-pass',
+    prompt: [
+      'Pick one slice of the codebase.',
+      'Run the code-simplifier agent over it.',
+      'Verify every change it proposes yourself: dead code, duplication, needless indirection, over-broad exports.',
+      'Ship only what strictly preserves behaviour — tests, review, deploy.',
+      'Anything that would change behaviour is a different task: file it.',
+    ],
+  },
+  {
+    name: 'Polish one page',
+    series: 'Daily design pass: review prod web UI + evolve the design system',
+    every: 'every day',
+    skill: 'engineering:design-pass',
+    prompt: [
+      'Rotate to one page of the live app — or to one axis no page owns, such as how it feels on touch.',
+      'Open it with real production data and gather evidence: screenshots, measurements.',
+      'Ship ONE measured improvement, not a redesign.',
+      'Run the mechanical checks before shipping.',
+      'Fold what you learned into the design system, so the next page starts from it.',
+    ],
+  },
+  {
+    name: 'Improve one skill',
+    series: 'Daily: improve one marketplace skill',
+    every: 'every day',
+    skill: 'agent-ops:marketplace-skill-review',
+    prompt: [
+      'Pick ONE skill from the marketplace.',
+      'Have an independent reviewer grade it against the authoring rules.',
+      'Check it yourself too: is every command true, can it be executed, does it contradict itself?',
+      'Fix everything the review earns — in that one skill — and ship it.',
+      'A fresh reviewer re-grades it from scratch; record the grade.',
+    ],
+  },
+  {
+    name: 'Learn from the last sessions',
+    series: 'Self-improvement reflection',
+    every: 'every day',
+    skill: 'agent-ops:self-improvement-reflection',
+    prompt: [
+      'Read every session log of every agent since the previous reflection.',
+      'Count the waste: retries, dead ends, questions that did not need asking.',
+      'Extract the lessons that transfer, and home each where every agent inherits it: a check, a tool, a skill.',
+      'Remove the rules that turned out false.',
+      'Suggest a new skill where the same work keeps being improvised.',
+    ],
+  },
+  {
+    name: 'The right model for each task',
+    series: 'Audit model/effort of agent tasks',
+    every: 'every week',
+    skill: 'agent-ops:agent-model-audit',
+    prompt: [
+      'Walk the queues of both agents.',
+      'Judge each waiting task\'s difficulty against the model table.',
+      'Where the model or the effort is a tier or more off, file a proposal to change it.',
+      'Never change it yourself: that is a human decision.',
+      'Report what was proposed, and what the last proposals came to.',
+    ],
+  },
 ];
-
-/** A stub for the closing beat (Yarik, 14.11.2026: «add a stub slide to the very
- *  end — how I prepared this talk»). Only the title is his. */
-export const TalkPrepSlide: SlideDefinition = {
-  id: 'talk-prep',
-  title: 'How I prepared this talk',
-  content: (
-    <>
-      <CornerRings corner="top-right" />
-      <Draft />
-    </>
-  ),
-  notes: 'DRAFT — stub. How this talk was prepared — with the same assistant. To design: what to show.',
-};
 
 /** The architecture, as ONE diagram (Yarik, 16.11.2026: «replace the text with a
  *  diagram; take the text on the slide as the base and explore juggernaut's code» —
@@ -114,6 +199,10 @@ type Scene = {
   home?: { at: [x: number, y: number]; width: number; icons: Icon[] };
   /** …and what the phone app reads on the phone itself, drawn the same way */
   health?: { at: [x: number, y: number]; width: number; icons: Icon[] };
+  /** a miniapp puts a task into the queue: a line inside the cloud, from the pages to the queue */
+  appTask?: true;
+  /** the server's cron puts the loop tasks into the queue: a line inside the cloud, on the right */
+  cronTask?: true;
   /** which of ON_SERVER stand in the cloud beside the server */
   onServer: string[];
   /** the server's own integrations, under it */
@@ -150,7 +239,7 @@ type Scene = {
   /** the name written beside the line that leads to them */
   handsBy?: { label: string; at: [x: number, y: number] };
   /** what this scene ADDS to the one before it, lit a little so the eye finds it (Yarik,
-   *  16.11.2026): `screen:<kind>`, `laptop:<name>`, `daemon`, `miniapps`, `home` */
+   *  16.11.2026): `screen:<kind>`, `laptop:<name>`, `daemon`, `miniapps`, `apptask`, `home`, `cron` */
   fresh?: string[];
   /** more words written on the picture */
   /** `of` names the `fresh` key a note or a wire belongs to: it is lit with it */
@@ -282,9 +371,21 @@ const QUEUE = ['keep track of my coffee', 'slot 2', 'slot 3'] as const;
  *  sign for a server — draw the hosting as a cloud, the server and its parts inside it).
  *  The two sides are arcs of one circle (centre 790 410, r 230), so every line that
  *  reaches the server ends on that circle; the top is three lobes, the bottom is flat. */
+/** From the miniapps part in the cloud, out to the left and up into the queue's last slot. */
+const APP_TASK = 'M 671 494 C 612 490, 598 446, 622 430';
+/** …the same line when cron stands beside the miniapps and pushes them to the left… */
+const APP_TASK_LEFT = 'M 634 494 C 600 484, 598 442, 622 430';
+/** …and cron's own, mirrored: out to the right and up into the same slot. */
+const CRON_TASK = 'M 946 494 C 982 484, 984 442, 958 430';
+/** The cloud, redrawn 17.11.2026 (Yarik: «переробити з нуля щоб вона гарно виглядала»): three
+ *  bumps on top, round sides, and a bottom that follows on from the sides — each bottom
+ *  corner is an arc TANGENT to the side arc where they meet (centre on the side's own
+ *  radius), so there is no waist. The sides are where every line lands, so they did not move. */
 const CLOUD =
-  'M 600 280 A 80 80 0 0 1 700 215 A 100 100 0 0 1 880 215 A 80 80 0 0 1 980 280 '
-  + 'A 230 230 0 0 1 980 540 A 70 70 0 0 1 910 640 H 670 A 70 70 0 0 1 600 540 A 230 230 0 0 1 600 280 Z';
+  'M 600 280 A 80 80 0 0 1 700 200 A 100 100 0 0 1 880 200 A 80 80 0 0 1 980 280 '
+  + 'A 230 230 0 0 1 980 540 A 90 90 0 0 1 905.7 579 H 674.3 A 90 90 0 0 1 600 540 A 230 230 0 0 1 600 280 Z';
+/** The database's glyph: it stands in the row of the server's parts, between the others. */
+const DB_ICON = 'M5 6c0-1.7 3.1-3 7-3s7 1.3 7 3-3.1 3-7 3-7-1.3-7-3z M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6 M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3';
 
 /** What else lives in the cloud beside the server and its queue. */
 const ON_SERVER = [
@@ -470,6 +571,15 @@ const SCENE_MOBILE: Scene = {
   screens: [...SCENE_APPS.screens, { kind: 'phone', label: 'myclaw app', row: 4, at: [190, 510] }],
 };
 
+/** And a page is not only something to look at: a button on it can put a task into the
+ *  same queue the agents work (Yarik, 17.11.2026: «архітектурна діаграма в якій мініапп
+ *  створює задачу в черзі»). Stands after the Movies frame, whose headline says so. */
+const SCENE_APPTASK: Scene = {
+  ...SCENE_MOBILE,
+  fresh: ['apptask'],
+  appTask: true,
+};
+
 /** And the daemon is not only a task runner: being a program on a machine that is AT HOME,
  *  it also reads the house on a timer — the router, the camera, which devices are on the
  *  Wi-Fi — and posts what it reads to the server (Yarik, 16.11.2026: «один з лептопів
@@ -477,13 +587,13 @@ const SCENE_MOBILE: Scene = {
  *  runner does exactly these three: internet every 30 s, camera every 15 s, presence
  *  every 2 min. Plain code, no model. */
 const SCENE_HOME: Scene = {
-  ...SCENE_MOBILE,
+  ...SCENE_APPTASK,
   fresh: ['home'],
   wires: [
-    ...(SCENE_MOBILE.wires ?? []),
+    ...(SCENE_APPTASK.wires ?? []),
     // the devices → the second laptop, then that laptop → the server
     { d: 'M 1060 792 C 1060 740, 1180 702, 1262 702', one: true, label: 'on a timer', at: [870, 722], of: 'home' },
-    { d: 'M 1270 678 C 1190 678, 1130 652, 1016 634', one: true, of: 'home' },
+    { d: 'M 1270 678 C 1180 678, 1090 650, 976 572', one: true, of: 'home' },
   ],
   home: {
     at: [890, 800],
@@ -525,6 +635,34 @@ const SCENE_SERVICES: Scene = {
   services: true,
   // up and to the left of the cloud: under it the phone's label and the home devices stand
   servicesAt: { left: -40, top: 96, width: 530, rail: 'M 590 300 L 512 250' },
+};
+
+/** And the queue fills by itself: a cron on the server puts the loop tasks into it on a
+ *  schedule — nobody files them (Yarik, 17.11.2026: «додаємо на архітектурну діаграму крон до
+ *  серверу який періодично додає луп таски в чергу»). So in this scene nobody asks: the
+ *  web page is just a screen, and what the laptops take are the loop tasks themselves. */
+const SCENE_CRON: Scene = {
+  ...SCENE_SERVICES,
+  fresh: ['cron'],
+  cronTask: true,
+  onServer: ['miniapps', 'cron'],
+  screens: SCENE_SERVICES.screens.map((screen) => ({ ...screen, asks: undefined })),
+  badges: SCENE_SERVICES.badges.filter(([n]) => n !== 1),
+  laptops: SCENE_SERVICES.laptops.map((laptop, owner) => ({
+    ...laptop,
+    tasks:
+      owner === 0
+        ? [
+            ['check the logs', 'logs'],
+            ['simplify the code', 'code'],
+            ['improve a skill', 'skill'],
+          ]
+        : [
+            ['check performance', 'perf'],
+            ['design pass', 'design'],
+            ['audit the models', 'audit'],
+          ],
+  })),
 };
 
 /** Where it stands today: every screen, the server's own integrations, two laptops with
@@ -589,6 +727,7 @@ const BUILD_TASKS: [queued: string, short: string][] = [
   ['build a web page', 'web'],
   ['host the miniapps', 'miniapps'],
   ['build the mobile app', 'mobile'],
+  ['let miniapps add tasks', 'tasks'],
   ['read the home devices', 'home'],
   ['sync Google Health', 'health'],
   ['integrate Spotify', 'Spotify'],
@@ -600,6 +739,7 @@ const BUILD_SCENES: Scene[] = [
   SCENE_WEB,
   SCENE_APPS,
   SCENE_MOBILE,
+  SCENE_APPTASK,
   SCENE_HOME,
   SCENE_HEALTH,
   SCENE_SERVICES,
@@ -667,8 +807,8 @@ function Architecture({ scene: given, build }: { scene: Scene; build?: Scene[] }
         {/* the server's own integrations never stop: both ways, on a timer */}
         {scene.services && (
           <>
-            {scene.fresh?.includes('services') && <path className="ww-arch__halo" d={scene.servicesAt?.rail ?? 'M 790 652 V 728'} />}
-            <path className="ww-arch__rail" d={scene.servicesAt?.rail ?? 'M 790 652 V 728'} markerStart="url(#ww-arch-tip)" markerEnd="url(#ww-arch-tip)" />
+            {scene.fresh?.includes('services') && <path className="ww-arch__halo" d={scene.servicesAt?.rail ?? 'M 790 590 V 728'} />}
+            <path className="ww-arch__rail" d={scene.servicesAt?.rail ?? 'M 790 590 V 728'} markerStart="url(#ww-arch-tip)" markerEnd="url(#ww-arch-tip)" />
           </>
         )}
         {links.filter((link) => onFor(link.owner, ...link.steps)).map((link) => (
@@ -754,29 +894,33 @@ function Architecture({ scene: given, build }: { scene: Scene; build?: Scene[] }
             });
           })()}
         </div>
-        {/* the database is there from the first day: the tasks and every session's log live in it */}
-        <div className={`ww-arch__apihead ww-arch__apihead--db${!all && someone(5) ? ' ww-arch--hot' : ''}`}>
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M5 6c0-1.7 3.1-3 7-3s7 1.3 7 3-3.1 3-7 3-7-1.3-7-3z M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6 M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3" />
-          </svg>
-          <span>
-            <strong>database</strong>
-            <i>tasks · session logs</i>
-          </span>
+        {/* the server's parts, one row under the queue: the database is there from the first
+            day (the tasks and every session's log live in it); the pages and the cron join it */}
+        <div className="ww-arch__parts">
+          {[
+            ...ON_SERVER.filter(([name]) => name === 'miniapps' && scene.onServer.includes(name)),
+            ['database', DB_ICON] as const,
+            ...ON_SERVER.filter(([name]) => name !== 'miniapps' && scene.onServer.includes(name)),
+          ].map(([name, d]) => (
+            <span key={name} className={`ww-arch__part${fresh(name)}${name === 'database' && !all && someone(5) ? ' ww-arch--hot' : ''}`}>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d={d} />
+              </svg>
+              {name}
+            </span>
+          ))}
         </div>
-        {scene.onServer.length > 0 && (
-          <div className="ww-arch__icons" style={{ gridTemplateColumns: `repeat(${scene.onServer.length}, 1fr)` }}>
-            {ON_SERVER.filter(([name]) => scene.onServer.includes(name)).map(([name, d]) => (
-              <span key={name} className={fresh(name).trim() || undefined}>
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d={d} />
-                </svg>
-                {name}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
+
+      {/* a miniapp files a task: drawn over the cloud, which would cover a line under it */}
+      {scene.appTask && (
+        <svg className="ww-arch__beams" viewBox="0 0 1696 904" aria-hidden="true">
+          {scene.fresh?.includes('apptask') && <path className="ww-arch__halo" d={APP_TASK} />}
+          <path className="ww-arch__rail" d={scene.cronTask ? APP_TASK_LEFT : APP_TASK} markerEnd="url(#ww-arch-tip)" />
+          {scene.cronTask && scene.fresh?.includes('cron') && <path className="ww-arch__halo" d={CRON_TASK} />}
+          {scene.cronTask && <path className="ww-arch__rail" d={CRON_TASK} markerEnd="url(#ww-arch-tip)" />}
+        </svg>
+      )}
 
       {/* what the server talks to by itself */}
       {scene.services && (
@@ -1035,6 +1179,22 @@ export const ArchitectureMobileSlide: SlideDefinition = {
 };
 
 /** …and with a laptop that reads the house. */
+/** …and with a miniapp putting a task into the queue (was a reminder stub that morning). */
+export const ArchitectureAppTaskSlide: SlideDefinition = {
+  id: 'factory-architecture-apptask',
+  content: () => (
+    <>
+      <CornerRings corner="top-right" />
+      <Architecture scene={SCENE_APPTASK} />
+    </>
+  ),
+  notes:
+    'One small arrow, and it closes a loop. Until now a task came from me — from the web page, '
+    + 'the phone, a chat. Now a miniapp can put one into the queue itself: a button on a page '
+    + 'files a task, and the same laptops pick it up like any other. The pages are no longer '
+    + 'only where results land — they are one more place work starts from.',
+};
+
 export const ArchitectureHomeSlide: SlideDefinition = {
   id: 'factory-architecture-home',
   content: () => (
@@ -1143,20 +1303,6 @@ export const FactoryRevealSlide: SlideDefinition = {
     + '(Factorio 1.0 launch trailer, Wube Software.)',
 };
 
-/** A reminder, not a slide yet (Yarik, 17.11.2026: «пустий стаб слайду як мені
- *  нагадування: мініапп може створювати задачі в чергу»). Stands after the miniapps tree. */
-export const MiniappTasksSlide: SlideDefinition = {
-  id: 'improve-miniapp-tasks',
-  title: 'A miniapp can create tasks in the queue',
-  content: (
-    <>
-      <CornerRings corner="top-right" />
-      <Draft />
-    </>
-  ),
-  notes: 'DRAFT — a reminder only. A miniapp can create tasks in the queue: to be written.',
-};
-
 /** After the reveal, three slides say what kind of factory it is — it builds itself, it
  *  learns from itself, it repairs itself (Yarik, 17.11.2026). The first two show a
  *  picture the deck has already drawn, again, under a title: `ww-self` holds it. */
@@ -1173,8 +1319,9 @@ export const BuildsItselfSlide: SlideDefinition = {
     + 'picture: one laptop, a daemon, a queue on the server. Now watch the queue: every task in '
     + 'it is «build the next piece of this very system». The agent takes it, does the work, '
     + 'reports — and the piece appears, in mint: a second laptop, a web page, the miniapps on '
-    + 'the server, the mobile app, the home devices, Google Health, Spotify and the other '
-    + 'services. Every element of the architecture you saw was a task in its own queue.',
+    + 'the server, the mobile app, miniapps that add tasks, the home devices, Google Health, '
+    + 'Spotify and the other services. Every element of the architecture you saw was a task in '
+    + 'its own queue.',
 };
 
 export const LearnsItselfSlide: SlideDefinition = {
@@ -1195,27 +1342,101 @@ export const LearnsItselfSlide: SlideDefinition = {
     + 'it is the last step of every task.',
 };
 
-export const HuntersSlide: SlideDefinition = {
-  id: 'factory-hunters',
+/** «It repairs itself», in two slides (Yarik, 17.11.2026): first the architecture with the
+ *  cron that feeds the queue, then the loop tasks themselves, one per click. */
+export const RepairsItselfSlide: SlideDefinition = {
+  id: 'factory-repairs-itself',
   title: 'It repairs itself',
-  content: (
-    <>
-      <CornerRings corner="bottom-left" />
-      <div className="ww-columns" style={{ ['--cols' as string]: 3 }}>
-        {HUNTERS.map((hunter) => (
-          <div key={hunter.where}>
-            <h3>{hunter.where}</h3>
-            <p>{hunter.what}</p>
-          </div>
-        ))}
-      </div>
-      <Draft />
-    </>
+  content: () => (
+    <div className="ww-self">
+      <Architecture scene={SCENE_CRON} />
+    </div>
   ),
   notes:
-    'DRAFT — outline only. It repairs itself. Loop tasks that hunt problems: recurring tasks nobody has to file. One '
-    + 'reads the logs, one looks for sloppy code, one watches performance — and each files what it '
-    + 'finds as an ordinary task in the queue.',
+    'It repairs itself — and here is the last piece of the picture. On the server there is a '
+    + 'cron. On a schedule it puts loop tasks into the queue: nobody files them, nobody asks. '
+    + 'Watch the queue — check the logs, simplify the code, improve a skill — and the same '
+    + 'laptops pick them up like any other task. What those tasks are is the next slide.',
+};
+
+export const RepairLoopsSlide: SlideDefinition = {
+  id: 'factory-repair-loops',
+  title: 'It repairs itself',
+  maxRevealStages: REPAIR_LOOPS.length,
+  initialRevealStage: 1,
+  content: ({ revealStage }) => {
+    const at = Math.min(Math.max(revealStage, 1), REPAIR_LOOPS.length) - 1;
+    const loop = REPAIR_LOOPS[at];
+    return (
+      <>
+        <CornerRings corner="bottom-left" />
+        <div className="ww-loops">
+          {/* the loops so far, the current one lit */}
+          <div className="ww-loops__list">
+            {REPAIR_LOOPS.map((item, i) => (
+              <Reveal key={item.skill} at={i + 1} stage={revealStage}>
+                <div className={i === at ? 'ww-loops__name ww-loops__name--on' : 'ww-loops__name'}>{item.name}</div>
+              </Reveal>
+            ))}
+          </div>
+          {/* the current one, as what it is: a task whose whole brief is «run this skill» */}
+          <div key={loop.skill} className="ww-loops__panel ww-jg__arrive">
+            <div className="ww-loops__head">
+              <span>loop task</span>
+              <span>{loop.every}</span>
+            </div>
+            <div className="ww-loops__brief">
+              The method of this task is the skill <code>{loop.skill}</code>. Load it and run it.
+            </div>
+            <div className="ww-loops__skillhead">SKILL.md, in short</div>
+            <div className="ww-loops__prompt">
+              {loop.prompt.map((line) => (
+                <span key={line}>{line} </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  },
+  notes:
+    'One per click. These are the real loop tasks that look after the system itself — and look at '
+    + 'the right side: every one of them is the same thing. The whole brief of the task is one '
+    + 'sentence: «the method of this task is the skill so-and-so; load it and run it». A loop is '
+    + 'just a skill, started on a schedule. Under it, the skill in four or five sentences. '
+    + REPAIR_LOOPS.map((loop, i) => `[${i + 1}] ${loop.name} — in the product it is called «${loop.series}», ${loop.every}. `).join('')
+    + 'The checks file what they find as ordinary tasks in the queue; the code, design and skill '
+    + 'loops ship their small fix themselves. Honest: the briefs and the skill '
+    + 'names are the real ones; the names on the left are simplified for the slide, and the short '
+    + 'versions are my cuts of skills that run to hundreds of lines.',
+};
+
+/** «How everyone imagines a software factory» — the picture people have in their heads,
+ *  full bleed, before the philosophy slide answers it (Yarik, 17.11.2026: «додай зображення
+ *  завода форда і підпис»). The photo (his pick of six): the body of a Model T
+ *  lowered down a ramp onto its chassis outside the Highland Park plant, 1913 — Wikimedia
+ *  Commons, «AssemblyLine.jpg», from the US National Archives, public domain. Same
+ *  `ww-ready` treatment as the other full-bleed slides. */
+export const FordFactorySlide: SlideDefinition = {
+  id: 'factory-ford',
+  content: (
+    <div className="ww-ready">
+      <img
+        className="ww-ready__img ww-ready__img--low"
+        src={fordLine}
+        alt="Ford, Highland Park, 1913: a Model T body is lowered down a ramp onto its chassis"
+      />
+      <div className="ww-ready__title" role="heading" aria-level={2}>
+        How everyone imagines a software factory
+      </div>
+    </div>
+  ),
+  notes:
+    'How everyone imagines a software factory. Ford, Highland Park, 1913: a chassis rolls '
+    + 'up, a body slides down the ramp onto it, and the next one is already behind — a line, and a '
+    + 'person at every station doing one small thing. Swap the people for agents and you have the '
+    + 'picture in most heads. Hold it for a moment: what we just walked through '
+    + 'does not look like this. (Photo: Ford assembly line, 1913, public domain.)',
 };
 
 export const FactoryPhilosophySlide: SlideDefinition = {
