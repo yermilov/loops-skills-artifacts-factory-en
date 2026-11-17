@@ -29,8 +29,6 @@ import fordLine from '../assets/factory/ford-body-drop-1913.jpg';
  * `perf-health-check`.
  */
 
-const Draft = () => <span className="ww-overlay ww-draft">draft · outline only</span>;
-
 /** The loop tasks that keep the system itself in shape. Each is a real recurring series in
  *  the product (read off its task list on 17.11.2026), and each one's brief is the same
  *  sentence with a different name in it: «The method of this task is the skill X. Load it
@@ -1437,21 +1435,4 @@ export const FordFactorySlide: SlideDefinition = {
     + 'person at every station doing one small thing. Swap the people for agents and you have the '
     + 'picture in most heads. Hold it for a moment: what we just walked through '
     + 'does not look like this. (Photo: Ford assembly line, 1913, public domain.)',
-};
-
-export const FactoryPhilosophySlide: SlideDefinition = {
-  id: 'factory-philosophy',
-  title: 'My philosophy of a software factory',
-  content: (
-    <>
-      <CornerRings corner="top-right" />
-      <ul>
-        <li>principle one — to be written</li>
-        <li>principle two — to be written</li>
-        <li>principle three — to be written</li>
-      </ul>
-      <Draft />
-    </>
-  ),
-  notes: 'DRAFT — outline only. My philosophy of a software factory: the principles are not written yet.',
 };

@@ -6115,23 +6115,6 @@
   color: var(--ww-magenta);
 }
 
-/* A placeholder slide says so on its face, so an outline is never mistaken for
-   a finished slide in a run-through. Remove with the placeholders. (Used with
-   `ww-overlay`, which exempts it from the titled body's `position: relative`.) */
-.ww-draft {
-  position: absolute;
-  right: var(--stage-pad-x);
-  bottom: var(--stage-pad-y);
-  padding: var(--space-xs) var(--space-md);
-  border-radius: var(--radius-pill);
-  border: 3px dashed var(--ww-magenta);
-  color: var(--ww-magenta);
-  font-size: var(--font-size-code);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-caps);
-}
-
 /* 5 · beat 4 — the pace meter under the loop: how much of the weekly limit is
    used (fill) against how much of the week is gone (the tick) */
 .ww-imp__runnerleft {
@@ -6907,7 +6890,10 @@
 .ww-tf__stack { fill: var(--tf-steel-dark); stroke: var(--tf-steel-light); stroke-width: 3; }
 .ww-tf__light { fill: var(--tf-steel-dark); stroke: var(--tf-steel-light); stroke-width: 2; }
 .ww-tf__light--on { fill: var(--ww-mint); }
+.ww-tf__light--alarm { fill: var(--tf-alarm); }
+.ww-tf__alarm { fill: none; stroke: var(--tf-alarm); stroke-width: 6; }
 .ww-tf__smoke { fill: var(--tf-smoke); }
+.ww-tf__smoke--soot { fill: var(--tf-soot); }
 .ww-tf__table { fill: var(--ww-white); stroke: var(--tf-steel-dark); stroke-width: 3; }
 .ww-tf__sheet { fill: none; stroke: var(--tf-blueprint); stroke-width: 4; stroke-linecap: round; }
 /* the people, from above */
@@ -6931,3 +6917,31 @@
 .ww-tf__lamp { fill: var(--tf-amber); }
 .ww-tf__window { fill: var(--tf-steel-light); }
 .ww-tf__spark { fill: var(--tf-amber); stroke: var(--ww-white); stroke-width: 1.5; }
+/* the engineers' factory (EngineersFactorySlide): paints, the lines' own gears, what gets added */
+.ww-tf__paint { stroke: var(--tf-steel-dark); stroke-width: 1.5; }
+.ww-tf__paint--raw { fill: var(--tf-steel-light); }
+.ww-tf__paint--0 { fill: var(--tf-car-0); }
+.ww-tf__paint--1 { fill: var(--tf-car-1); }
+.ww-tf__paint--2 { fill: var(--tf-car-2); }
+.ww-tf__paint--3 { fill: var(--tf-car-3); }
+.ww-tf__paint--4 { fill: var(--tf-car-4); }
+.ww-tf__paint--5 { fill: var(--tf-car-5); }
+.ww-tf__paint--6 { fill: var(--tf-car-6); }
+.ww-tf__paint--7 { fill: var(--tf-car-7); }
+.ww-tf__bedin { fill: var(--tf-steel-dark); }
+.ww-tf__rim { stroke: none; }
+.ww-tf__rim--0 { fill: var(--ww-white); }
+.ww-tf__rim--1 { fill: var(--tf-amber); }
+.ww-tf__rim--2 { fill: var(--ww-mint); }
+.ww-tf__lamp--1 { fill: var(--ww-white); }
+.ww-tf__lamp--2 { fill: var(--ww-mint); }
+.ww-tf__roof { fill: var(--ww-white); stroke: var(--tf-steel-dark); stroke-width: 1.5; }
+.ww-tf__stripe { fill: none; stroke: var(--ww-white); stroke-width: 5; }
+.ww-tf__rack { fill: none; stroke: var(--tf-steel-dark); stroke-width: 3.5; stroke-linecap: round; }
+.ww-tf__gear--1 { fill: var(--tf-amber); }
+.ww-tf__gear--2 { fill: var(--tf-blueprint); }
+.ww-tf__gear--3 { fill: var(--ww-mint); }
+.ww-tf__gear--4 { fill: var(--ww-violet); }
+.ww-tf__addon { fill: var(--tf-steel); stroke: var(--tf-steel-dark); stroke-width: 3; }
+.ww-tf__beam { fill: none; stroke: var(--tf-steel-light); stroke-width: 8; stroke-linecap: round; }
+.ww-tf__glow { fill: var(--tf-amber); stroke: var(--tf-steel-dark); stroke-width: 2; }

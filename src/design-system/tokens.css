@@ -103,6 +103,17 @@
   --tf-blueprint: #2f8fd8;
   --tf-shadow: rgb(20 12 0 / 0.3);
   --tf-smoke: rgb(255 255 255 / 0.55);
+  --tf-soot: rgb(28 24 22 / 0.62);
+  --tf-alarm: #e8382c;
+  /* the engineers' factory: every car a paint of its own */
+  --tf-car-0: #d9432f;
+  --tf-car-1: #f08a24;
+  --tf-car-2: #f4c430;
+  --tf-car-3: #4fae5a;
+  --tf-car-4: #2fa7a0;
+  --tf-car-5: #3d7fd9;
+  --tf-car-6: #8a5fd0;
+  --tf-car-7: #e8589a;
   --map-land: #f1efe9;
   --map-street: #ffffff;
   --map-arterial: #fbe39a;

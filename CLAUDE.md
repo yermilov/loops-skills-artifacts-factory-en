@@ -53,7 +53,9 @@ src/
 │   ├── improve.tsx               # «How do we improve it?» — the task board and the artifact (two slides, one `BoardFrame`), the runner walk-through, agents arguing over a review, the empty queue, the self-playing pace week, free OpenRouter models on Codex; `Herdr` + `CodexPane`
 │   ├── MiniappsSlide.tsx         # «artifacts that stay: miniapps» — Coffee is BORN in a task, then one page a click; Supplies on a phone, a Silpo cart; Home replays its real task, then walks its cards
 │   ├── ledgerApp.tsx             # the assistant's web app shell both of them draw in (sidebar, task cards, timeline)
-│   ├── factory.tsx               # the ARCHITECTURE drawing (three slides, one `Scene` each) + SCHEMATIC placeholders (DRAFT pill) for the last arc
+│   ├── factory.tsx               # the ARCHITECTURE drawing (three slides, one `Scene` each) + the finale: «It builds / learns / repairs itself», the loop tasks, the Ford photo
+│   ├── FactoryFloorSlide.tsx     # the factory everyone imagines, from above — a self-playing animation; also exports the belt, figures and clock
+│   ├── EngineersFactorySlide.tsx # the factory by his philosophy: one belt through five engineers' sections, in the same world
 │   ├── AgendaSlide.tsx           # template p.3 — exports AGENDA (the four words)
 │   ├── sectionSlide.tsx          # factory for section openers (template p.11/18)
 │   ├── sections.tsx              # one opener per AGENDA word
@@ -356,7 +358,7 @@ the `ww-ready` treatment of the C-3PO slide) → three things it does to itself:
 `RepairsItselfSlide` (the architecture with a cron in the cloud feeding the queue) →
 `RepairLoopsSlide` (seven real loop tasks, one per click) → `FordFactorySlide` («How everyone
 imagines a software factory», a 1913 public-domain photo) → `FactoryFloorSlide` (that factory as a
-self-playing machine, seen from above) → `FactoryPhilosophySlide` (draft) → `FinalSlide` (LinkedIn
+self-playing machine, seen from above) → `EngineersFactorySlide` (the factory by his own philosophy) → `FinalSlide` (LinkedIn
 QR · a stub for the encore «How I prepared this talk» · slides QR). Earlier in the arc,
 `ArchitectureAppTaskSlide` stands after the Movies frame, whose headline is «✓ bonus miniapps can
 add a task to the queue»; that cut the miniapps run once more (`THREAT_FRAME`, `MiniappsHomeSlide`).
@@ -381,9 +383,20 @@ add a task to the queue»; that cut the miniapps run once more (`THREAT_FRAME`, 
   tokens.css — because he asked for a factory-builder game's feel and then «ще ближче». The genre
   is borrowed (a site read like a map, belts, machines, shadows, grain); the drawing is ours and
   nothing is copied from a game. No words on it at all («взагалі всі підписи позабирай»), two
-  engineers, and the cars DRIVE to their bays — no box, no counter. Its ground is a separate SVG
+  engineers, and the cars DRIVE to their bays — no box, no counter; with the park full the rest
+  drive down the lane and off the slide. Every ten beats one feeder's machine breaks: the LINE's
+  clock (`lineTime`) stands still, everybody waits, an engineer mends it — cars already on the
+  road and people walking stay on the real clock. Its ground is a separate SVG
   drawn once: the grain is a filter and must not be recomputed every frame. The first, side-view
   take is kept unregistered in `ClassicFactorySlide.tsx` (`.ww-ff…`) for a rollback.
+- **`EngineersFactorySlide` answers it in the same world** (it imports the belt, the figures and the
+  clock from `FactoryFloorSlide`, and the `.ww-tf…` styles) — his script, 17.11.2026: everybody is an
+  engineer (five); each builds their own stretch alone and the stretches all differ; a breakdown is
+  mended by the engineer whose stretch it is; each customises one piece by hand at a bench (rims,
+  lamps, body shape, paint, extras), so no two cars are the same; the machines do the assembly while
+  the engineers customise, mend and keep adding to their stretches. It is ONE belt — his correction
+  to a first take with five separate lines: «треба щоб всі лінії були зєднані в одну» — a serpentine
+  through five sections with one clock (`lineClock`). No words on it either.
 - **A picture shown again under a title goes inside `.ww-self`.** `.slide--titled > *` forces
   `position: relative` on every direct child, so an absolutely placed diagram (`.ww-arch`, `.ww-gb`)
   put straight into a titled slide loses its place. `.ww-self` is the positioned box; the

@@ -27,7 +27,15 @@ import { useAnimating } from '../components/frameSettled';
  *   4. the workers put them together — the belt moves a station and stops, the
  *      part comes over, the wrenches swing;
  *   5. and many identical cars come out — each drives off the end of the belt, up
- *      the lane and into the next free bay; a full car park empties and fills again.
+ *      the lane and into the next free bay; once the park is full the rest drive
+ *      down the lane and off the slide (Yarik: «хай машини просто уїзжають за слайд»).
+ *
+ * And an episode that comes back every so often (Yarik, 17.11.2026: «одна лінія
+ * ламається, все зупиняється і всі чекають поки інженер полагодить»): a feeder's
+ * machine dies mid-beat, every belt halts where it is, the workers turn and look,
+ * an engineer walks over from the table, mends it, and the line picks up exactly
+ * where it stopped. So the LINE has a clock of its own that the stop holds still
+ * (`lineTime`); people walking and cars already on the road stay on the real one.
  *
  * Then it keeps running for as long as the slide is up (an endless loop is ambient
  * for the ready mark; the build is not, hence `useAnimating`). The PDF gets one
@@ -37,25 +45,43 @@ import { useAnimating } from '../components/frameSettled';
  * Styles are `.ww-tf…`.
  */
 
-type P = [number, number];
+export type P = [number, number];
 
 // ── the clock ───────────────────────────────────────────────────────────────
 const T = { office: 200, power: 6300, hire: 6700, run: 10700 };
 /** One beat of the line: the belt moves a station, then everybody works. */
 const MOVE = 800;
 const CYCLE = 2200;
-const EXPORT_AT = T.run + CYCLE * 21 + MOVE + (CYCLE - MOVE) * 0.62;
 
-const ease = (p: number) => (p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
-const pop = (p: number) => (p <= 0 ? 0 : p >= 1 ? 1 : 1 + 2.4 * Math.pow(p - 1, 3) + 1.4 * Math.pow(p - 1, 2));
+// ── the breakdown: the line's clock stands still while a machine is mended ────
+/** The first stop, in the middle of beat 6's move; then one every `EVERY` beats. */
+const BREAK = { first: T.run + CYCLE * 6 + MOVE * 0.5, every: CYCLE * 10, stop: 6500, leave: 600, mended: 6000 };
+const BREAK_PERIOD = BREAK.every + BREAK.stop;
+/** Which stop this is and how long ago it began (real ms); `n` is −1 before the first. */
+function breakdown(t: number): { n: number; since: number } {
+  if (t < BREAK.first) return { n: -1, since: 0 };
+  const n = Math.floor((t - BREAK.first) / BREAK_PERIOD);
+  return { n, since: t - BREAK.first - n * BREAK_PERIOD };
+}
+/** The line's own time: the real one, less every stop so far. */
+function lineTime(t: number): number {
+  const { n, since } = breakdown(t);
+  return n < 0 ? t : BREAK.first + n * BREAK.every + Math.max(0, since - BREAK.stop);
+}
+/** The real moment the line reaches `lt` of its own time. */
+const realTime = (lt: number) => (lt <= BREAK.first ? lt : lt + BREAK.stop * (Math.floor((lt - BREAK.first) / BREAK.every) + 1));
+const EXPORT_AT = realTime(T.run + CYCLE * 21 + MOVE + (CYCLE - MOVE) * 0.62);
+
+export const ease = (p: number) => (p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+export const pop = (p: number) => (p <= 0 ? 0 : p >= 1 ? 1 : 1 + 2.4 * Math.pow(p - 1, 3) + 1.4 * Math.pow(p - 1, 2));
 /** The same number every time for the same seeds: scatter without dice. */
-const noise = (...seeds: number[]) => {
+export const noise = (...seeds: number[]) => {
   const x = Math.sin(seeds.reduce((sum, seed, i) => sum + seed * (12.9898 + i * 78.233), 0)) * 43758.5453;
   return x - Math.floor(x);
 };
 
-function useLoopClock(): number {
-  const [t, setT] = useState(() => (EXPORT_MODE ? EXPORT_AT : 0));
+export function useLoopClock(exportAt = EXPORT_AT): number {
+  const [t, setT] = useState(() => (EXPORT_MODE ? exportAt : 0));
   useLayoutEffect(() => {
     if (EXPORT_MODE) return;
     const start = performance.now();
@@ -69,11 +95,11 @@ function useLoopClock(): number {
 }
 
 // ── the site (the Goldberg canvas: 1700 wide, y from −110 to 750) ─────────────
-const VIEW = '0 -110 1700 860';
+export const VIEW = '0 -110 1700 860';
 /** The main belt runs left to right; its middle is the line the cars ride. */
 const MAIN = { x0: 96, x1: 1236, y: 486, w: 96 };
 /** The cars and the people are drawn small and shown at this size: read from the room. */
-const K = 1.4;
+export const K = 1.4;
 const PITCH = 250;
 /** Where a car stands on beat k: 0 the bare chassis, 1–3 the stations, 4 the end. */
 const stop = (k: number) => 176 + PITCH * k;
@@ -86,7 +112,7 @@ const MOUNT: Record<number, P> = { 1: [0, 0], 2: [33, 0], 3: [-12, 0] };
 const WORK_Y = 578;
 const AISLE_Y = 676;
 /** How far a thing's shadow falls: the sun is up and to the left. */
-const SHADE: P = [7, 9];
+export const SHADE: P = [7, 9];
 
 // ── the car park: a lane up the middle, bays nose-in on both sides ───────────
 const LOT = { x: 1296, lane: 1498, left: 1394, right: 1602, row: 64, scale: 0.62 };
@@ -107,10 +133,12 @@ const BAYS: Bay[] = (() => {
   }
   return list;
 })();
+/** With every bay taken, a car turns down the lane and drives off the picture. */
+const EXIT: P[] = [[stop(4), MAIN.y], [LOT.lane, MAIN.y], [LOT.lane, 860]];
 const DRIVE = 0.42; // px per ms
-const pathLength = (path: P[]) => path.slice(1).reduce((sum, p, i) => sum + Math.hypot(p[0] - path[i][0], p[1] - path[i][1]), 0);
+export const pathLength = (path: P[]) => path.slice(1).reduce((sum, p, i) => sum + Math.hypot(p[0] - path[i][0], p[1] - path[i][1]), 0);
 /** A point `dist` along a path of straight runs, turning through each corner over `turn` px. */
-function follow(path: P[], dist: number, turn = 46): { p: P; angle: number } {
+export function follow(path: P[], dist: number, turn = 46): { p: P; angle: number } {
   const dirs = path.slice(1).map((p, i) => (Math.atan2(p[1] - path[i][1], p[0] - path[i][0]) * 180) / Math.PI);
   let left = Math.max(0, dist);
   for (let i = 0; i < path.length - 1; i++) {
@@ -134,9 +162,9 @@ function follow(path: P[], dist: number, turn = 46): { p: P; angle: number } {
 }
 
 // ── act 1: who walks where, and what appears behind them ─────────────────────
-type Key = { at: number; p: P };
+export type Key = { at: number; p: P };
 /** A walk as a list of moments: where the figure is at each, straight lines between. */
-function along(keys: Key[], t: number): { p: P; angle: number; moving: boolean; walked: number } {
+export function along(keys: Key[], t: number): { p: P; angle: number; moving: boolean; walked: number } {
   let walked = 0;
   let angle = 0;
   for (let i = 0; i < keys.length - 1; i++) {
@@ -185,6 +213,27 @@ const builtTo = (t: number) => ease(seg(t, 3000, 1900));
 const feedPlan = (i: number, t: number) => seg(t, FEEDER_AT[i], 500);
 const feedBuilt = (i: number, t: number) => ease(seg(t, FEEDER_AT[i] + 900, 500));
 
+/** Where the mender stands at machine k, and the way there from the table and back. */
+const REPAIR_SPEED = 0.42; // px per ms
+const repairWalk = (k: number): Key[] => {
+  const home = RIGGER[0].p;
+  const spot: P = [stop(k) - 104, -38];
+  const way: P[] = [home, [home[0] + 14, 66], [spot[0], 66], spot];
+  const keys: Key[] = [{ at: 0, p: home }];
+  let at = BREAK.leave;
+  way.forEach((p, i) => {
+    if (i > 0) at += Math.hypot(p[0] - way[i - 1][0], p[1] - way[i - 1][1]) / REPAIR_SPEED;
+    keys.push({ at, p });
+  });
+  at = Math.max(at, BREAK.mended);
+  keys.push({ at, p: spot });
+  [...way].reverse().forEach((p, i, back) => {
+    if (i > 0) at += Math.hypot(p[0] - back[i - 1][0], p[1] - back[i - 1][1]) / REPAIR_SPEED;
+    keys.push({ at, p });
+  });
+  return keys;
+};
+
 /** Six workers, two at each station; the farthest walks in first, so nobody overtakes. */
 const WORKERS = STATIONS.flatMap((k) => [
   { station: k, x: stop(k) - 58 },
@@ -195,7 +244,7 @@ const WORKERS = STATIONS.flatMap((k) => [
 const WALK = 0.3; // px per ms
 
 // ── the people, from above: a shadow, feet, two arms, shoulders, a hat ────────
-function Person({
+export function Person({
   p,
   angle,
   kind,
@@ -204,6 +253,7 @@ function Person({
   swing = 0,
   point = 0,
   o = 1,
+  k = K,
 }: {
   p: P;
   /** degrees; 0 looks right, −90 looks up the picture */
@@ -214,18 +264,20 @@ function Person({
   swing?: number;
   point?: number;
   o?: number;
+  /** how big the figure is drawn; the engineers' own factory has more of them and draws them smaller */
+  k?: number;
 }) {
   const left: P = [lerp(9 - stride * 7, 36, Math.max(reach, point)), lerp(-21, -6 + 7 * swing, reach) - 12 * point];
   const right: P = [lerp(9 + stride * 7, 34, reach), lerp(21, 7 - 7 * swing, reach)];
   return (
     <g opacity={o}>
-      <ellipse className="ww-tf__shadow" cx={(p[0] + SHADE[0]).toFixed(1)} cy={(p[1] + SHADE[1]).toFixed(1)} rx={22 * K * 0.8} ry={22 * K * 0.8} />
-      <g transform={`translate(${p[0].toFixed(1)} ${p[1].toFixed(1)}) rotate(${angle.toFixed(1)}) scale(${K})`}>
+      <ellipse className="ww-tf__shadow" cx={(p[0] + SHADE[0]).toFixed(1)} cy={(p[1] + SHADE[1]).toFixed(1)} rx={22 * k * 0.8} ry={22 * k * 0.8} />
+      <g transform={`translate(${p[0].toFixed(1)} ${p[1].toFixed(1)}) rotate(${angle.toFixed(1)}) scale(${k})`}>
         <ellipse className="ww-tf__foot" cx={(stride * 11).toFixed(1)} cy="-9" rx="9" ry="5.5" />
         <ellipse className="ww-tf__foot" cx={(-stride * 11).toFixed(1)} cy="9" rx="9" ry="5.5" />
         <line className={`ww-tf__arm ww-tf__arm--${kind}`} x1="2" y1="-19" x2={left[0].toFixed(1)} y2={left[1].toFixed(1)} />
         <line className={`ww-tf__arm ww-tf__arm--${kind}`} x1="2" y1="19" x2={right[0].toFixed(1)} y2={right[1].toFixed(1)} />
-        {kind === 'worker' && reach > 0.05 && (
+        {reach > 0.05 && (
           <line className="ww-tf__tool" x1={right[0].toFixed(1)} y1={right[1].toFixed(1)} x2={(right[0] + 16).toFixed(1)} y2={(right[1] - 4 * swing).toFixed(1)} />
         )}
         <ellipse className={kind === 'worker' ? 'ww-tf__overall' : 'ww-tf__coat'} rx="13" ry="24" />
@@ -247,12 +299,12 @@ function Person({
 }
 
 // ── the car from above, and its parts ───────────────────────────────────────
-const Wheels = () => (
+export const Wheels = () => (
   <>
     {[-30, 30].flatMap((wx) => [-27, 27].map((wy) => <rect key={`${wx}${wy}`} className="ww-tf__tyre" x={wx - 11} y={wy - 5} width="22" height="10" rx="4" />))}
   </>
 );
-const Engine = () => (
+export const Engine = () => (
   <>
     <rect className="ww-tf__metal" x="-15" y="-17" width="30" height="34" rx="7" />
     <path className="ww-tf__gloss" d="M-8 -11 H6 M-8 11 H6" />
@@ -304,7 +356,7 @@ function Car({ x, y, s = 1, o = 1, angle = 0, parts }: { x: number; y: number; s
   );
 }
 
-function gearPath(r: number, teeth: number): string {
+export function gearPath(r: number, teeth: number): string {
   const ri = r * 0.76;
   const s = (2 * Math.PI) / teeth;
   const pt = (rad: number, a: number) => `${(rad * Math.cos(a)).toFixed(1)},${(rad * Math.sin(a)).toFixed(1)}`;
@@ -315,8 +367,8 @@ function gearPath(r: number, teeth: number): string {
   }
   return `M${pts.join('L')}Z`;
 }
-const GEAR = gearPath(24, 9);
-const SPARK = 'M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z';
+export const GEAR = gearPath(24, 9);
+export const SPARK = 'M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z';
 
 /** The ground: drawn once. Sand with grain and pebbles, a concrete apron, the car park. */
 const Ground = memo(function Ground() {
@@ -376,12 +428,36 @@ const Ground = memo(function Ground() {
 });
 
 /** A length of belt, along x or down y: a shadow, the bed, rollers and chevrons that travel. */
-function Belt({ x, y, len, w, down, plan, built, off }: { x: number; y: number; len: number; w: number; down?: true; plan: number; built: number; off: number }) {
+export function Belt({
+  x,
+  y,
+  len,
+  w,
+  down,
+  turn = down ? 90 : 0,
+  plan,
+  built,
+  off,
+}: {
+  x: number;
+  y: number;
+  len: number;
+  w: number;
+  down?: true;
+  /** which way it runs, in degrees: 0 to the right, 90 down, 180 to the left */
+  turn?: number;
+  plan: number;
+  built: number;
+  off: number;
+}) {
   const tile = 50;
   const done = len * built;
+  // the shadow falls the same way on the picture whichever way the belt is turned
+  const rad = (turn * Math.PI) / 180;
+  const shade: P = [SHADE[0] * Math.cos(rad) + SHADE[1] * Math.sin(rad), -SHADE[0] * Math.sin(rad) + SHADE[1] * Math.cos(rad)];
   // everything is drawn along x from the origin, and a feeder is the same thing turned
   return (
-    <g transform={`translate(${x} ${y})${down ? ' rotate(90)' : ''}`}>
+    <g transform={`translate(${x} ${y}) rotate(${turn})`}>
       {Array.from({ length: Math.ceil(len / tile) }, (_, i) => {
         const there = clamp01((plan * len - i * tile) / tile);
         const gone = clamp01((done - i * tile) / tile);
@@ -391,7 +467,7 @@ function Belt({ x, y, len, w, down, plan, built, off }: { x: number; y: number; 
       })}
       {built > 0 && (
         <>
-          <rect className="ww-tf__shadow" x={down ? SHADE[1] : SHADE[0]} y={-w / 2 + (down ? -SHADE[0] : SHADE[1])} width={done} height={w} rx="10" />
+          <rect className="ww-tf__shadow" x={shade[0].toFixed(1)} y={(-w / 2 + shade[1]).toFixed(1)} width={done} height={w} rx="10" />
           <rect className="ww-tf__bed" x="0" y={-w / 2} width={done} height={w} rx="10" />
           {Array.from({ length: Math.ceil(len / 23) }, (_, i) => {
             const rx = 8 + ((i * 23 + off) % (len - 16));
@@ -413,7 +489,13 @@ function Floor() {
   useAnimating(!EXPORT_MODE && t < T.run + CYCLE);
 
   // ── acts 3–5: the line's own beat ──
-  const tr = t - T.run;
+  const stopped = breakdown(t);
+  const down = stopped.n >= 0 && stopped.since < BREAK.stop;
+  /** The machine that is down, 0 when none; and how much everybody is standing about. */
+  const broken = down && stopped.since < BREAK.mended ? STATIONS[stopped.n % STATIONS.length] : 0;
+  const idle = down ? ease(seg(stopped.since, 250, 500)) * (1 - ease(seg(stopped.since, BREAK.mended, BREAK.stop - BREAK.mended))) : 0;
+  const lt = lineTime(t);
+  const tr = lt - T.run;
   const cyc = tr < 0 ? -1 : Math.floor(tr / CYCLE);
   const ph = tr < 0 ? 0 : tr - cyc * CYCLE;
   const m = cyc < 0 ? 0 : ease(seg(ph, 0, MOVE));
@@ -447,25 +529,21 @@ function Floor() {
     );
   }
 
-  // the car park: car c left the belt at the start of its beat 4's work, for bay c mod BAYS
-  const leftAt = (c: number) => T.run + (c + 4) * CYCLE + MOVE;
+  // the car park: car c left the belt at the start of its beat 4's work — for bay c while
+  // there is one, and after that down the lane and off the picture. It drives on the real
+  // clock: a car already on the road does not wait for the line.
+  const leftAt = (c: number) => realTime(T.run + (c + 4) * CYCLE + MOVE);
   const newest = cyc - 4 - (w > 0 ? 0 : 1);
-  const batch = Math.floor(Math.max(0, newest) / BAYS.length);
   const out = [];
-  const drive = (c: number, o: number) => {
-    const bay = BAYS[c % BAYS.length];
+  const exitLength = pathLength(EXIT);
+  for (let c = 0; c <= newest; c++) {
+    const bay = BAYS[c] as Bay | undefined;
     const dist = (t - leftAt(c)) * DRIVE;
-    const total = pathLength(bay.path);
-    const at = dist >= total ? { p: [bay.x, bay.y] as P, angle: bay.angle } : follow(bay.path, dist);
+    if (!bay && dist >= exitLength) continue;
+    const at = !bay ? follow(EXIT, dist) : dist >= pathLength(bay.path) ? { p: [bay.x, bay.y] as P, angle: bay.angle } : follow(bay.path, dist);
     // it leaves the belt at the belt's size and is its road size a little way out of the gate
     const s = lerp(1, LOT.scale, ease(clamp01(dist / 150)));
-    return <Car key={c} x={at.p[0]} y={at.p[1]} angle={at.angle} s={s} o={o} parts={WHOLE} />;
-  };
-  for (let c = batch * BAYS.length; c <= newest; c++) out.push(drive(c, 1));
-  // a full park empties as the next batch's first car comes out
-  if (batch > 0) {
-    const fade = 1 - seg(t, leftAt(batch * BAYS.length), 1400);
-    if (fade > 0) for (let c = (batch - 1) * BAYS.length; c < batch * BAYS.length; c++) out.push(drive(c, fade));
+    out.push(<Car key={c} x={at.p[0]} y={at.p[1]} angle={at.angle} s={s} parts={WHOLE} />);
   }
 
   // the parts on their way down the feeders: one arriving, one behind it
@@ -482,14 +560,19 @@ function Floor() {
   });
 
   const layer = along(LAYER, t);
-  const rigger = along(RIGGER, t);
+  // the rigger is the one who mends: out to the machine, and back to the table after the line restarts
+  const mending = stopped.n >= 0 ? STATIONS[stopped.n % STATIONS.length] : 0;
+  const repair = repairWalk(mending || 1);
+  const fixFrom = repair[4].at;
+  const fixing = mending > 0 && stopped.since >= fixFrom && stopped.since < BREAK.mended;
+  const rigger = mending && stopped.since < repair[repair.length - 1].at ? along(repair, stopped.since) : along(RIGGER, t);
 
   return (
     <svg
       className="ww-tf__layer"
       viewBox={VIEW}
       role="img"
-      aria-label="Seen from above: engineers lay out a conveyor line, workers walk in and take their places, parts come down three feeders, the workers assemble them, and identical cars drive off to fill a car park"
+      aria-label="Seen from above: engineers lay out a conveyor line, workers walk in and take their places, parts come down three feeders, the workers assemble them, and identical cars drive off to fill a car park; now and then a machine breaks, the whole line stops and waits, and an engineer walks over to mend it"
     >
       <g clipPath="url(#ww-tf-site)">
         {/* the office: the plan table. No words anywhere on this picture (Yarik: «всі підписи позабирай») */}
@@ -516,6 +599,8 @@ function Floor() {
         {STATIONS.map((k, i) => {
           const x = stop(k);
           const up = pop(seg(t, FEEDER_AT[i] + 1300, 500));
+          const dead = broken === k;
+          const lit = dead ? Math.floor(t / 260) % 2 === 0 : powered && !down && Math.floor(t / 420 + i) % 2 === 0;
           return (
             <g key={k}>
               <g transform={`translate(${x} -52) scale(${up.toFixed(3)})`}>
@@ -523,12 +608,13 @@ function Floor() {
                 <rect className="ww-tf__case" x="-62" y="-50" width="124" height="100" rx="14" />
                 <rect className="ww-tf__plate" x="-50" y="-38" width="100" height="76" rx="8" />
                 {[-52, 52].flatMap((rx) => [-40, 40].map((ry) => <circle key={`${rx}${ry}`} className="ww-tf__rivet" cx={rx} cy={ry} r="3" />))}
-                <g transform={`translate(-12 0) rotate(${(powered ? (t - T.power) / 14 : 0).toFixed(1)})`}>
+                {dead && <rect className="ww-tf__alarm" x="-70" y="-58" width="140" height="116" rx="20" opacity={(0.35 + 0.65 * Math.abs(Math.sin(t / 260))).toFixed(2)} />}
+                <g transform={`translate(-12 0) rotate(${(powered ? (lt - T.power) / 14 : 0).toFixed(1)})`}>
                   <path className="ww-tf__gear" d={GEAR} />
                   <circle className="ww-tf__rivet" r="5" />
                 </g>
                 <circle className="ww-tf__stack" cx="30" cy="-16" r="11" />
-                <circle className={powered && Math.floor(t / 420 + i) % 2 === 0 ? 'ww-tf__light ww-tf__light--on' : 'ww-tf__light'} cx="30" cy="20" r="6" />
+                <circle className={lit ? (dead ? 'ww-tf__light ww-tf__light--alarm' : 'ww-tf__light ww-tf__light--on') : 'ww-tf__light'} cx="30" cy="20" r="6" />
               </g>
               {powered &&
                 [0, 1, 2, 3].map((j) => {
@@ -536,11 +622,11 @@ function Floor() {
                   return (
                     <circle
                       key={j}
-                      className="ww-tf__smoke"
+                      className={dead ? 'ww-tf__smoke ww-tf__smoke--soot' : 'ww-tf__smoke'}
                       cx={(x + 30 + 60 * age + 10 * Math.sin(j * 2.1 + age * 5)).toFixed(1)}
                       cy={(-68 - 46 * age).toFixed(1)}
                       r={(8 + 20 * age).toFixed(1)}
-                      opacity={(1 - age).toFixed(2)}
+                      opacity={((1 - age) * (dead ? 1 : 1 - idle)).toFixed(2)}
                     />
                   );
                 })}
@@ -562,9 +648,11 @@ function Floor() {
             <Person
               kind="engineer"
               p={rigger.p}
-              angle={rigger.moving ? rigger.angle : 180}
+              angle={rigger.moving ? rigger.angle : fixing ? 0 : 180}
               stride={rigger.moving ? Math.sin((rigger.walked / 34) * Math.PI) : 0}
               point={FEEDER_AT.some((at) => t >= at && t < at + 500) ? 1 : 0}
+              reach={fixing ? seg(stopped.since, fixFrom, 300) : 0}
+              swing={Math.sin(t / 70)}
               o={pop(seg(t, T.office + 400, 400))}
             />
           </>
@@ -586,7 +674,7 @@ function Floor() {
               key={i}
               kind="worker"
               p={walk.p}
-              angle={walk.moving ? walk.angle : -90}
+              angle={walk.moving ? walk.angle : -90 + ((Math.atan2(-52 - WORK_Y, stop(mending || 1) - worker.x) * 180) / Math.PI + 90) * idle}
               stride={walk.moving ? Math.sin((walk.walked / 34) * Math.PI) : 0}
               reach={reach(worker.station)}
               swing={Math.sin(w * Math.PI * 8 + i)}
@@ -612,7 +700,22 @@ function Floor() {
             : null,
         )}
 
-        {/* the cars that have left the line: on the road, and in their bays */}
+        {/* and where the mender's meets the machine */}
+        {fixing &&
+          [0, 1, 2].map((j) => {
+            const tick = Math.floor(t / 90);
+            if (noise(stopped.n, j, tick) < 0.4) return null;
+            return (
+              <path
+                key={j}
+                className="ww-tf__spark"
+                d={SPARK}
+                transform={`translate(${(stop(mending) - 62 + 26 * noise(j, tick)).toFixed(1)} ${(-64 + 52 * noise(tick, j, 3)).toFixed(1)}) scale(${(0.7 + noise(tick, j, 7)).toFixed(2)})`}
+              />
+            );
+          })}
+
+        {/* the cars that have left the line: on the road, in their bays, or on their way out */}
         {out}
       </g>
     </svg>
@@ -634,7 +737,10 @@ export const FactoryFloorSlide: SlideDefinition = {
     + 'first as a blueprint, then for real. Then ordinary people come to work on it — identical, two '
     + 'at each station. Parts start to travel: a chassis on the main belt; wheels, engines, bodies '
     + 'down the feeders. The belt moves one station and stops, the part comes over, the wrenches '
-    + 'swing — and off the end drive cars, one after another, into the car park. Many. All the same. '
+    + 'swing — and off the end drive cars, one after another, into the car park, and when it is full, '
+    + 'off the slide. Many. All the same. About half a minute in, and then again every half minute, '
+    + 'one machine breaks: every belt stops, everybody on the line turns and waits, and one of the '
+    + 'engineers walks over and mends it. Nobody on the line can. '
     + 'That is the picture: the intelligence is in the people who designed the line, and on the line '
     + 'nobody needs any.',
 };
