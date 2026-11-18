@@ -17,6 +17,9 @@ const FAMILIES =
   '&family=Fraunces:opsz,wght@9..144,400..600' +
   '&family=DM+Sans:opsz,wght@9..40,400..600' +
   '&family=JetBrains+Mono:wght@400;500' +
+  // Figtree: Preply's web face (preply.com), used ONLY on the Preply slides.
+  // SIL OFL 1.1 — its licence ships as public/fonts/Figtree-OFL.txt.
+  '&family=Figtree:ital,wght@0,400..700;1,400' +
   '&display=swap';
 
 // Subsets the deck can actually show: English slides, Cyrillic, and the

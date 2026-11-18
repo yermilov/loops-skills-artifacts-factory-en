@@ -47,6 +47,12 @@
   --pp-barcelona-teal: #3ddabe;
   --pp-newyork-blue: #2885fd;
   --pp-ink: #121117;            /* logo, text on the primaries */
+  /* Brand's ask (Nov 2026): the Preply slides stay in pink, black and grey —
+   * text black, pink only for small highlights. Greys as preply.com uses them. */
+  --pp-grey-dark: #4d4c5c;
+  --pp-grey: #6a697c;
+  --pp-grey-light: #dcdce5;
+  --pp-font: 'Figtree', var(--font-sans);
 
   /* ── Machine palette ────────────────────────────────────────────────────
    * Not part of the WAWTech template: these are the colours of the two

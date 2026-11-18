@@ -513,8 +513,21 @@
 
 .ww-preply {
   --ww-magenta: var(--pp-tokyo-pink);
-  --ww-mint: var(--pp-barcelona-teal);
+  --ww-mint: var(--pp-tokyo-pink);
 }
+/* The whole Preply slide, title band included, goes Preply: Figtree, black text,
+ * and the WAWTech purples turned to black and grey (Brand, Nov 2026). The corner
+ * rings are a purple PNG, so they are greyed rather than recoloured. */
+.slide:has(.ww-preply) {
+  --ww-purple: var(--pp-ink);
+  --ww-text: var(--pp-ink);
+  --ww-violet: var(--pp-grey);
+  --ww-lavender: var(--pp-grey-light);
+  font-family: var(--pp-font);
+}
+.slide:has(.ww-preply) :is(h1, h2, h3) { font-family: var(--pp-font); }
+.slide:has(.ww-preply) h2.slide-title { font-weight: 600; }
+.slide:has(.ww-preply) .ww-corner-rings { filter: grayscale(1); }
 
 .ww-preply-product__logo {
   position: absolute;
@@ -544,8 +557,8 @@
 }
 /* One Preply colour per step — the same tinted tile, in pink, teal and blue. */
 .ww-preply-step--pink { --step-tone: var(--pp-tokyo-pink); }
-.ww-preply-step--teal { --step-tone: var(--pp-barcelona-teal); }
-.ww-preply-step--blue { --step-tone: var(--pp-newyork-blue); }
+.ww-preply-step--grey { --step-tone: var(--pp-grey-light); }
+.ww-preply-step--ink { --step-tone: var(--pp-ink); }
 .ww-preply-step__media { display: block; width: 100%; height: 100%; object-fit: cover; }
 .ww-preply-step__media--contain { object-fit: contain; background: var(--ww-white); }
 /* A transparent cut-out (the App Store phone): no backdrop, a little air around it. */
@@ -654,9 +667,8 @@
   font-weight: 700;
   color: var(--pp-ink);
 }
-.ww-preply-hub--yellow { background: var(--pp-kyiv-yellow); }
-.ww-preply-hub--teal { background: var(--pp-barcelona-teal); }
-.ww-preply-hub--pink { background: var(--pp-tokyo-pink); }
+/* Grey tiles: pink stays a highlight (the frame and the QR on the right), per Brand. */
+.ww-preply-hub { background: var(--pp-grey-light); }
 .ww-preply-city__icon {
   width: 200px;
   height: 200px;

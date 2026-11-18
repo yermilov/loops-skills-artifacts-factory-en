@@ -11,10 +11,11 @@ import insightsPoster from '../assets/preply/insights-poster.png';
 import practiceShot from '../assets/preply/practice.png';
 
 /*
- * Two slides about Preply, wearing a blend of the two design systems: the WAWTech page (paper,
- * purple type, corner rings, the four type tiers) with Preply's colours in place of the WAWTech
- * accents — `.ww-preply` remaps them (slide-layouts.css), and the hub and step colours come
- * from the `--pp-*` tokens.
+ * Two slides about Preply. Brand's review (Elisa Alston, Nov 2026) set their look: Preply pink,
+ * black and grey only — text black, pink for small highlights — and Figtree, Preply's web face.
+ * The WAWTech page is kept (paper, greyed corner rings, the four type tiers); `.ww-preply` and
+ * `.slide:has(.ww-preply)` remap its colours and font (slide-layouts.css), and the hub and step
+ * colours come from the `--pp-*` tokens.
  *
  * Media provenance — what has already been shown in public, and what still needs Brand / PR:
  *   classroom.png PUBLIC precedent: Kyiv AI Day 2026 deck, slide 3 (the classroom laptop mockup),
@@ -59,7 +60,7 @@ function Step({
   children,
 }: {
   label: string;
-  tone: 'pink' | 'teal' | 'blue';
+  tone: 'pink' | 'grey' | 'ink';
   children: React.ReactNode;
 }) {
   return (
@@ -75,7 +76,7 @@ function Step({
 /** 1 · What Preply is, for a room that has never heard of it: the three steps of using it. */
 export const PreplyProductSlide: SlideDefinition = {
   id: 'preply-product',
-  title: 'Tutor-led, AI-enhanced learning',
+  title: 'Human-led, AI-enabled learning',
   maxRevealStages: 2,
   content: ({ revealStage }) => (
     <>
@@ -89,7 +90,7 @@ export const PreplyProductSlide: SlideDefinition = {
           </div>
         </Step>
         <Reveal at={1} stage={revealStage}>
-          <Step label="Learn live, one-on-one, by video" tone="teal">
+          <Step label="Learn live, one-on-one, by video" tone="grey">
             <div className="ww-preply-lesson">
               <div className="ww-preply-lesson__box">
                 <img
@@ -109,7 +110,7 @@ export const PreplyProductSlide: SlideDefinition = {
           </Step>
         </Reveal>
         <Reveal at={2} stage={revealStage}>
-          <Step label="Practice with AI" tone="blue">
+          <Step label="Practice with AI" tone="ink">
             <img
               className="ww-preply-step__media ww-preply-step__media--cutout"
               src={practiceShot}
@@ -188,9 +189,9 @@ function LondonIcon() {
 }
 
 const HUBS = [
-  { city: 'Kyiv', tone: 'yellow', Icon: KyivIcon },
-  { city: 'Barcelona', tone: 'teal', Icon: BarcelonaIcon },
-  { city: 'London', tone: 'pink', Icon: LondonIcon },
+  { city: 'Kyiv', Icon: KyivIcon },
+  { city: 'Barcelona', Icon: BarcelonaIcon },
+  { city: 'London', Icon: LondonIcon },
 ] as const;
 
 /** 2 · Meet us at our booth (top left), the cities we hire in (bottom left), «We are hiring» + the
@@ -207,8 +208,8 @@ export const PreplyHiringSlide: SlideDefinition = {
             <h2>Meet us at our booth</h2>
           </div>
           <div className="ww-preply-hubs">
-            {HUBS.map(({ city, tone, Icon }) => (
-              <div key={city} className={`ww-preply-hub ww-preply-hub--${tone}`}>
+            {HUBS.map(({ city, Icon }) => (
+              <div key={city} className="ww-preply-hub">
                 <Icon />
                 <span>{city}</span>
               </div>
@@ -235,6 +236,6 @@ export const PreplyHiringSlide: SlideDefinition = {
   notes:
     'Preply is a unicorn — $1.2B valuation after the Series D this year — with over a million learners '
     + 'and 150,000 tutors. Meet us at our booth here at WAWTech. We are hiring in Kyiv, Barcelona '
-    + 'and London — in Preply\'s own brand colours: Kyiv Yellow, Barcelona Teal and Tokyo Pink. '
+    + 'and London. '
     + 'At our interviews you work with an AI tool in front of us. Scan the QR.',
 };
