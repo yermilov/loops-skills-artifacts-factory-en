@@ -52,7 +52,7 @@ type Turn = { who: Who; label: string; text: string; act: number };
 
 const PROMPT = 'do the next task';
 const TURNS: Turn[] = [
-  { who: 'harness', label: 'System:', text: 'You are Claude Code. Tools: Read, Edit, Bash. …', act: 1 },
+  { who: 'harness', label: '', text: 'You are Claude Code. Tools: Read, Edit, Bash. …', act: 1 },
   { who: 'user', label: 'User:', text: `/loop 10m ${PROMPT}`, act: 2 },
   { who: 'harness', label: 'User:', text: PROMPT, act: 4 },
   { who: 'model', label: 'Assistant:', text: 'Checking the queue… <|tool_call|> Bash(curl …/tasks) <|end_call|>', act: 5 },
@@ -253,9 +253,14 @@ function Sheet() {
         <span className={`ww-ctx__stamp ww-ctx__stamp--${turn.who}`} style={{ opacity: started ? 1 : 0 }}>
           <Stamp who={turn.who} />
         </span>
-        <span className="ww-ctx__label" style={{ visibility: started ? 'visible' : 'hidden' }}>
-          {turn.label}
-        </span>{' '}
+        {/* the system prompt goes unlabelled: the harness's stamp says who wrote it */}
+        {turn.label && (
+          <>
+            <span className="ww-ctx__label" style={{ visibility: started ? 'visible' : 'hidden' }}>
+              {turn.label}
+            </span>{' '}
+          </>
+        )}
         {u.map((text, ui) => {
           const shown = ui < n;
           const style: CSSProperties = { visibility: shown ? 'visible' : 'hidden' };

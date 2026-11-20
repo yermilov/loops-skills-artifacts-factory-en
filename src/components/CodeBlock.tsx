@@ -76,6 +76,7 @@ export function CodeBlock({
   language = 'typescript',
   showLineNumbers = false,
   highlightLines,
+  lineStyle,
 }: CodeBlockProps) {
   // No window chrome (traffic-light dots / filename / copy button) — code
   // blocks across the deck render as a bare bordered panel.
@@ -83,7 +84,8 @@ export function CodeBlock({
   // `highlightLines` (1-based, after trim) go bold — «this one just appeared»; 600 is the
   // heaviest IBM Plex Mono weight index.css loads. The highlighter hands lineProps the
   // line number only while line numbers are on, so a highlight turns them on and hides them.
-  const highlight = Boolean(highlightLines?.length);
+  // `lineStyle` styles any line by number the same way (a beat that greys code out).
+  const highlight = Boolean(highlightLines?.length) || Boolean(lineStyle);
   return (
     <div className="code-block">
       <SyntaxHighlighter
@@ -92,7 +94,12 @@ export function CodeBlock({
         showLineNumbers={showLineNumbers || highlight}
         lineNumberStyle={showLineNumbers ? undefined : { display: 'none' }}
         wrapLines
-        lineProps={(line: number) => (highlightLines?.includes(line) ? { style: { fontWeight: 600 } } : {})}
+        lineProps={(line: number) => ({
+          style: {
+            ...(highlightLines?.includes(line) ? { fontWeight: 600 } : {}),
+            ...lineStyle?.(line),
+          },
+        })}
         customStyle={{
           margin: 0,
           padding: 'var(--space-md)',

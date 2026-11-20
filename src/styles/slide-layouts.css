@@ -708,6 +708,210 @@
 
 /* ─── History (a recreated interface, filling the stage) ──────────────── */
 
+/* ─── The autocomplete era (CopilotSlide.tsx) — the Cursor clip's editor ────
+   Drawn on the clip's own 1920 × 860 canvas (sizes inline in the TSX) and
+   scaled to the stage width the way `.ww-history` scales the video. */
+.ww-ide {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.ww-ide__frame { position: relative; width: 100%; }
+.ww-ide__canvas { position: absolute; top: 0; left: 0; transform-origin: top left; }
+/* beat 3: the Cursor clip, laid exactly over the canvas it was drawn from */
+.ww-ide__clip { position: absolute; inset: 0; }
+.ww-ide__clip video { display: block; width: 100%; height: 100%; }
+.ww-ide__window {
+  position: absolute;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--ide-editor);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 40px 120px color-mix(in srgb, var(--ww-ink) 28%, transparent);
+}
+.ww-ide__window .ww-dot { width: 16px; height: 16px; }
+.ww-ide__chrome {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 22px;
+  background: var(--ide-titlebar);
+}
+.ww-ide__title { margin-left: 20px; font-family: var(--font-mono); font-size: var(--font-size-code); color: var(--ide-titletext); }
+.ww-ide__body { flex: 1; min-height: 0; display: flex; }
+.ww-ide__editor { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ww-ide__tabs { flex-shrink: 0; display: flex; background: var(--ide-chrome); border-bottom: 1px solid var(--ide-border); }
+.ww-ide__tab {
+  display: flex;
+  align-items: center;
+  padding: 0 26px;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-code);
+  color: var(--ide-dim);
+  border-top: 2px solid transparent;
+}
+.ww-ide__tab--active { color: var(--ide-text); background: var(--ide-editor); border-top-color: var(--ide-kw); }
+.ww-ide__code {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  color: var(--ide-text);
+}
+.ww-ide__row { display: flex; overflow: hidden; }
+.ww-ide__row--added { background: var(--ide-added); }
+.ww-ide__ln { flex: none; text-align: right; padding-right: 28px; box-sizing: border-box; color: var(--ide-line); }
+.ww-ide__src { white-space: pre; }
+.ww-ide__src--ghost { color: var(--ide-ghost); }
+.ww-ide__kw { color: var(--ide-kw); }
+.ww-ide__type { color: var(--ide-type); }
+.ww-ide__fn { color: var(--ide-fn); }
+.ww-ide__var { color: var(--ide-var); }
+.ww-ide__num { color: var(--ide-num); }
+.ww-ide__str { color: var(--ide-str); }
+.ww-ide__plain { color: var(--ide-text); }
+.ww-ide__comment { color: var(--ide-comment); }
+.ww-ide__caret {
+  display: inline-block;
+  width: 3px;
+  height: 30px;
+  margin-left: 1px;
+  vertical-align: -5px;
+  background: var(--ide-accent);
+  animation: wwLlmBlink 1s steps(2, start) infinite;
+}
+/* the hint the tab model puts beside what it offers — the clip's own pill */
+.ww-ide__hint {
+  position: absolute;
+  right: 36px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 16px;
+  border-radius: 8px;
+  background: var(--ide-keycap);
+  border: 1px solid var(--ide-border);
+  font-family: var(--font-sans);
+  font-size: 0.88em;
+  color: var(--ide-dim);
+}
+.ww-ide__keycap {
+  font-family: var(--font-mono);
+  color: var(--ide-accent);
+  border: 1px solid var(--ide-keyborder);
+  border-radius: 5px;
+  padding: 1px 9px;
+}
+.ww-ide__chat {
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--ide-panel);
+  border-left: 1px solid var(--ide-border);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-code);
+}
+.ww-ide__chathead {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px;
+  border-bottom: 1px solid var(--ide-border);
+  font-size: 0.88em;
+  color: var(--ide-dim);
+  white-space: nowrap;
+}
+.ww-ide__chatbody { flex: 1; min-height: 0; padding: 20px; min-width: 520px; }
+.ww-ide__who { font-size: 0.88em; letter-spacing: 1px; color: var(--ide-dim); margin-bottom: 6px; }
+.ww-ide__said { font-size: 0.88em; line-height: 1.4; color: var(--ide-text); }
+.ww-ide__ask {
+  flex-shrink: 0;
+  margin: 14px 20px 18px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: 1px solid var(--ide-border);
+  font-size: 0.88em;
+  color: var(--ide-dim);
+  white-space: nowrap;
+}
+.ww-ide__flying {
+  position: absolute;
+  z-index: 2;
+  transform-origin: top left;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  line-height: 45px;
+  white-space: pre;
+}
+
+/* ─── 2023, the sceptics — the Hacker News page the clip before came from ───
+   Two columns of HN comments; each fades in once, in order (finite, so the
+   ready mark waits for the last one; export mode kills it). */
+.ww-hn {
+  position: absolute;
+  inset: var(--stage-pad-y) var(--stage-pad-x);
+  display: flex;
+  flex-direction: column;
+  font-family: Verdana, Geneva, sans-serif;
+}
+.ww-hn__bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-md);
+  background: var(--hn-orange);
+  font-size: var(--font-size-code);
+}
+.ww-hn__y {
+  border: 2px solid var(--ww-white);
+  color: var(--ww-white);
+  font-weight: 700;
+  padding: 0 var(--space-xs);
+}
+.ww-hn__name { color: var(--hn-ink); font-weight: 700; }
+.ww-hn__page {
+  --hn-indent: 40px;
+  flex: 1;
+  min-height: 0;
+  background: var(--hn-paper);
+  padding: var(--space-md) var(--space-lg);
+  display: grid;
+  grid-template-columns: 0.62fr 1.38fr;
+  column-gap: var(--space-lg);
+  align-items: start;
+}
+.ww-hn__thread { display: flex; flex-direction: column; gap: var(--space-sm); }
+.ww-hn__comment { animation: ww-hn-in 500ms var(--ease) backwards; }
+.ww-hn__meta { font-size: var(--font-size-code); color: var(--hn-meta); margin-bottom: 4px; }
+.ww-hn__vote { display: inline-block; transform: scale(0.6) translateY(-0.1em); }
+.ww-hn__text { font-size: var(--font-size-body); line-height: var(--line-height-tight); color: var(--hn-ink); }
+.ww-hn__mark {
+  color: inherit;
+  background: linear-gradient(var(--hn-marker), var(--hn-marker)) no-repeat left 55% / 100% 80%;
+  border-radius: 0.2em 0.35em 0.25em 0.3em;
+  padding: 0 0.1em;
+  margin: 0 -0.1em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  animation: ww-hn-mark 600ms var(--ease) backwards;
+}
+@keyframes ww-hn-mark {
+  from { background-size: 0% 80%; }
+}
+/* the comments a reply answered: there for the nesting, quieter than the reply */
+.ww-hn__comment--context .ww-hn__text { font-size: var(--font-size-code); color: var(--hn-meta); }
+@keyframes ww-hn-in {
+  from { opacity: 0; transform: translateY(10px); }
+}
+
 .ww-history {
   position: absolute;
   inset: 0;
@@ -1504,7 +1708,8 @@
 
 .ww-sdk {
   position: absolute;
-  inset: var(--stage-pad-y) var(--stage-pad-x);
+  /* the full call is 19 lines: a little less air top and bottom so it never runs off */
+  inset: calc(var(--stage-pad-y) * 0.6) var(--stage-pad-x);
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   align-items: center;
@@ -1516,6 +1721,12 @@
 }
 .ww-sdk__code pre {
   padding-bottom: var(--space-lg);
+}
+/* the to-do list, in the right column until the chat replaces it */
+.ww-todo__sheet.ww-sdk__todo {
+  width: auto;
+  padding: var(--space-xl) var(--space-2xl);
+  transform: rotate(-1.2deg);
 }
 
 /* The dashboard's chat widget — the same grey card as the rest of the deck,
@@ -1936,6 +2147,54 @@
   overflow: hidden;
   background: var(--ww-ink);
 }
+/* beat 2: the agenda, on a dark glass card over the photo's top-left corner */
+.ww-myway__agenda {
+  position: absolute;
+  top: var(--stage-pad-y);
+  left: var(--stage-pad-x);
+  /* narrow enough to stay clear of his head, wide enough that no item wraps
+     (a wrapped item makes the card tall enough to reach the caption) */
+  max-width: 650px;
+  padding: var(--space-md);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--ww-ink) 74%, transparent);
+  backdrop-filter: blur(6px);
+  color: var(--ww-white);
+}
+.ww-myway__agendahead {
+  font-size: var(--font-size-code);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-caps);
+  color: var(--ww-mint);
+  margin-bottom: var(--space-xs);
+}
+.slide ul.ww-myway__agendalist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-tight);
+}
+.slide ul.ww-myway__agendalist li::before { color: var(--ww-magenta); }
+/* the buzzwords, as chips under «demystifying buzzwords» */
+.slide ul.ww-myway__agendalist li.ww-myway__buzz {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  padding-left: var(--space-lg);
+  font-size: var(--font-size-code);
+}
+.slide ul.ww-myway__agendalist li.ww-myway__buzz::before { content: none; }
+.ww-myway__chip {
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--ww-white) 16%, transparent);
+}
+
 .ww-myway__defs {
   position: absolute;
   width: 0;
@@ -2141,6 +2400,9 @@
   width: 12px;
   height: var(--font-size-code);
   background: color-mix(in srgb, var(--cc-text) 45%, transparent);
+  /* the prompt waiting for you blinks, as a real one does (an endless loop is
+     ambient for the ready mark; export mode stops it) */
+  animation: wwLlmBlink 1s steps(1, end) infinite;
 }
 /* The cursor that sits at the end of a line still being written. */
 .ww-boot__cursor--inline {
@@ -2604,6 +2866,12 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--space-xl);
   align-items: center;
+}
+/* the same two columns on a slide with no title band: the whole stage, inside its
+   margins, both columns centred (SelfLearningSlide) */
+.ww-skillunit--untitled {
+  position: absolute;
+  inset: var(--stage-pad-y) var(--stage-pad-x);
 }
 .ww-skillunit__specimen { min-width: 0; }
 .ww-skillunit__pointer { margin-top: var(--space-md); }
@@ -7017,3 +7285,300 @@
 .ww-tf__addon { fill: var(--tf-steel); stroke: var(--tf-steel-dark); stroke-width: 3; }
 .ww-tf__beam { fill: none; stroke: var(--tf-steel-light); stroke-width: 8; stroke-linecap: round; }
 .ww-tf__glow { fill: var(--tf-amber); stroke: var(--tf-steel-dark); stroke-width: 2; }
+
+/* herdr's API, before the runner uses it: its mark on the left, six commands on the right */
+.ww-herdr {
+  position: absolute;
+  inset: var(--stage-pad-y) var(--stage-pad-x);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xl);
+}
+.ww-herdr__brand {
+  flex: none;
+  width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-md);
+}
+.ww-herdr__brand img {
+  width: 320px;
+  height: 320px;
+  border-radius: 64px;
+  box-shadow: 0 24px 60px color-mix(in srgb, var(--ww-purple) 22%, transparent);
+}
+.ww-herdr__name {
+  font-family: var(--font-display);
+  font-size: var(--font-size-heading);
+  font-weight: 700;
+  color: var(--ww-text-strong);
+  line-height: 1;
+}
+.ww-herdr__tagline {
+  font-size: var(--font-size-body);
+  color: var(--ww-text-muted);
+  line-height: 1.25;
+}
+.ww-herdr__api {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+.ww-herdr__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+/* `.slide code` paints inline code lavender; the commands are herdr's own terminal */
+.slide .ww-herdr__cmd {
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  background: var(--hd-bg);
+  color: var(--hd-text);
+  padding: 10px var(--space-md);
+  border-radius: 14px;
+  white-space: nowrap;
+}
+.ww-herdr__what {
+  font-size: var(--font-size-body);
+  color: var(--ww-text);
+  line-height: 1.2;
+  padding-left: var(--space-sm);
+}
+
+/* the deck's pointer for a click on a product button: placed on the middle of the
+   `ww-jg__tapped` element it sits in, it travels in for TAP_TRAVEL_MS (ledgerApp.tsx) */
+.ww-jg__tapped {
+  position: relative;
+}
+.ww-jg__tap,
+.ww-jg__tapring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  pointer-events: none;
+}
+.ww-jg__tap {
+  width: 64px;
+  height: 64px;
+  margin: -8px 0 0 -12px;
+  fill: var(--jg-ink);
+  stroke: var(--ww-white);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 4px 6px color-mix(in srgb, var(--jg-ink) 35%, transparent));
+  animation: ww-jg-tap 700ms var(--ease) backwards;
+}
+@keyframes ww-jg-tap {
+  from {
+    opacity: 0;
+    transform: translate(360px, 240px);
+  }
+}
+.ww-jg__tapring {
+  width: 72px;
+  height: 72px;
+  margin: -36px 0 0 -36px;
+  border-radius: 50%;
+  border: 4px solid var(--ww-magenta);
+  opacity: 0;
+  animation: ww-jg-click 520ms var(--ease) forwards;
+}
+
+/* /tasks/new, the product's own form, drawn in the deck's sizes */
+.ww-jg__form {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 1500px;
+  margin: 0 auto; /* the product centres it too (max-w-[820px] mx-auto) */
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+.ww-jg__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 22px;
+  border-bottom: 2px solid var(--jg-ink-200);
+}
+.ww-jg__back .ww-jg__ico {
+  width: 26px;
+  height: 26px;
+}
+.ww-jg__formfield {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.ww-jg__req {
+  margin-left: 8px;
+  color: var(--jg-vermilion);
+}
+.ww-jg__input {
+  min-height: 64px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--jg-ink-200);
+  font-family: var(--jg-serif);
+  font-size: var(--font-size-body);
+  color: var(--jg-ink);
+}
+.ww-jg__area {
+  min-height: 170px;
+  padding: 16px 22px;
+  border: 2px solid var(--jg-ink-200);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--jg-paper-100) 50%, transparent);
+  font-family: var(--jg-mono);
+  font-size: var(--font-size-code);
+  line-height: 1.5;
+  color: var(--jg-ink-700);
+}
+.ww-jg__input--focus {
+  border-color: var(--jg-ink-700);
+}
+.ww-jg__input--empty {
+  color: var(--jg-ink-300);
+  font-style: italic;
+}
+.ww-jg__caret {
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: var(--jg-ink);
+  animation: ww-jg-blink 1s steps(1) infinite;
+}
+@keyframes ww-jg-blink {
+  50% {
+    opacity: 0;
+  }
+}
+.ww-jg__attachrow,
+.ww-jg__prio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.ww-jg__attachrow .ww-jg__pill,
+.ww-jg__prio .ww-jg__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 22px;
+}
+.ww-jg__attachrow .ww-jg__ico,
+.ww-jg__prio .ww-jg__ico {
+  width: 24px;
+  height: 24px;
+}
+.ww-jg__pill--quiet {
+  color: var(--jg-ink-500);
+}
+.ww-jg__pill--on {
+  border-color: var(--jg-ink);
+  background: var(--jg-ink);
+  color: var(--jg-paper);
+}
+.ww-jg__dim {
+  color: var(--jg-ink-400);
+}
+.ww-jg__formrow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.5fr);
+  gap: 40px;
+}
+.ww-jg__select {
+  height: 64px;
+  padding: 0 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 2px solid var(--jg-ink-200);
+  border-radius: 4px;
+  background: var(--jg-paper);
+  font-family: var(--jg-mono);
+  font-size: var(--font-size-code);
+  color: var(--jg-ink-700);
+}
+.ww-jg__formfoot {
+  margin-top: auto;
+  padding-top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 2px solid var(--jg-ink-200);
+}
+.ww-jg__formfoot .ww-jg__new {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.ww-jg__formfoot .ww-jg__ico {
+  width: 26px;
+  height: 26px;
+}
+
+/* the same answer as text and as code, streamed side by side (TextVsCodeSlide) */
+.ww-tvc {
+  /* no title band: the two columns fill the page */
+  position: absolute;
+  inset: var(--stage-pad-y) var(--stage-pad-x);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-lg);
+}
+.ww-tvc__col {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.ww-tvc__card {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--ww-card);
+}
+.ww-tvc__card--text {
+  padding: var(--space-md) var(--space-lg);
+  font-size: var(--font-size-code);
+  line-height: 1.4;
+  color: var(--ww-text-strong);
+}
+.ww-tvc__who {
+  font-weight: 700;
+  color: var(--ww-purple);
+}
+.ww-tvc__caret {
+  display: inline-block;
+  width: 0.5em;
+  height: 1em;
+  margin-left: 4px;
+  vertical-align: text-bottom;
+  background: var(--ww-magenta);
+}
+/* the code panel is the card itself: no margin, and no mint bar, so the two columns match */
+.ww-tvc__card--code .code-block {
+  margin: 0;
+  border-left: none;
+  background: transparent;
+}
+/* the highlighter sets its own line height inline; this one fits sixteen lines */
+.ww-tvc__card--code pre,
+.ww-tvc__card--code code {
+  line-height: 1.3 !important;
+}
+.ww-tvc__card--code pre {
+  padding: var(--space-md) var(--space-lg) !important;
+}

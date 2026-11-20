@@ -1,6 +1,6 @@
 import { SlideDefinition } from '../types/slides';
 import { CornerRings } from '../components/wawtech';
-import { buildPlay, CARD_LEFT, CARD_RIGHT, CtxPlay, type PlayCard, type PlayTurn } from '../components/ctxPlay';
+import { buildPlay, firstUserAt, CARD_LEFT, CARD_RIGHT, CtxPlay, type PlayCard, type PlayTurn } from '../components/ctxPlay';
 
 /**
  * MCP — in the context-sheet language of the slides around it
@@ -31,7 +31,7 @@ const CARDS: PlayCard[] = [
 ];
 
 const SCENE: PlayTurn[] = [
-  { who: 'harness', label: 'System:', text: 'You are Claude Code. Tools: Read, Edit, Bash.' },
+  { who: 'harness', label: '', text: 'You are Claude Code. Tools: Read, Edit, Bash.' },
   { who: 'harness', label: 'Tools:', text: 'github:list_issues github:create_pull_request', from: 0 },
   { who: 'harness', label: 'Tools:', text: 'slack:post_message', from: 1 },
   { who: 'user', label: 'User:', text: 'open a PR for the VAT fix' },
@@ -42,24 +42,29 @@ const SCENE: PlayTurn[] = [
 
 const PLAY = buildPlay(SCENE);
 
+/** Beat 1 is the harness setting up — its own tools, then tools/list to both servers;
+ *  beat 2 starts with your first message. */
+const STOPS = [firstUserAt(SCENE, PLAY)];
+
 export const McpSlide: SlideDefinition = {
   id: 'mcp',
-  content: () => (
+  maxRevealStages: STOPS.length,
+  content: ({ revealStage }) => (
     <>
       <CornerRings corner="top-right" />
       <div className="ww-ctxstage">
-        <CtxPlay scene={SCENE} cards={CARDS} play={PLAY} />
+        <CtxPlay scene={SCENE} cards={CARDS} play={PLAY} stage={revealStage} stops={STOPS} />
       </div>
     </>
   ),
   notes:
-    'MCP — the harness asks for more tools. It plays by itself, about half a minute; narrate over it. '
+    'MCP — the harness asks for more tools. Two clicks: the harness setting up, then your request. '
     + 'Same sheet, same three writers, and two new things in the corners: MCP servers — github, '
     + 'reached over a URL, and slack, which is just a local process on stdio, the default and most of '
     + 'what people actually install. The harness drops its own three tools, Read, Edit, Bash. Then it '
     + 'asks each server one question — tools/list — and writes what comes back onto the sheet as more '
     + 'tools, exactly like its own three; the green ink is only there so you can see where they came '
-    + 'from. You ask for a PR. The model calls one of the new tools and cannot tell the difference. '
+    + 'from. [reveal] You ask for a PR. The model calls one of the new tools and cannot tell the difference. '
     + 'The harness lifts the call and forwards it — tools/call — to that same server, and drops the '
     + 'answer onto the sheet. So: MCP is not a model feature and not an agent feature. It is a way '
     + 'for the harness to find out what a thing can do and how to call it. '

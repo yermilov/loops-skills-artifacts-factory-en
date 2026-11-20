@@ -47,7 +47,7 @@ export const AssistantReadySlide: SlideDefinition = {
     </div>
   ),
   notes:
-    'And that is it. Claude Code, a CLAUDE.md, a loop and a task queue: our barebones AI '
+    'And that is it. Claude Code, an AGENTS.md, a loop and a task queue: our barebones AI '
     + 'assistant is ready. (Let the clip play — five seconds: he is switched on, looks around.) '
     + 'This is Anakin, nine years old, showing off the droid he built out of spare parts — '
     + '«isn\'t he great? He\'s not finished yet.» Both halves of that line are the next slide: '

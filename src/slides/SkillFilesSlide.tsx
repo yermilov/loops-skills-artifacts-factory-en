@@ -16,7 +16,7 @@ import { buildPlay, CARD_LEFT, CtxPlay, type PlayCard, type PlayTurn } from '../
 
 const CARDS: PlayCard[] = [{ name: 'the skill', via: 'development-process', icon: 'file', ink: 'user', box: CARD_LEFT }];
 
-const SYSTEM: PlayTurn = { who: 'harness', label: 'System:', text: 'You are Claude Code. Tools: Read, Edit, Bash, Skill.' };
+const SYSTEM: PlayTurn = { who: 'harness', label: '', text: 'You are Claude Code. Tools: Read, Edit, Bash, Skill.' };
 
 const READ_SCENE: PlayTurn[] = [
   SYSTEM,

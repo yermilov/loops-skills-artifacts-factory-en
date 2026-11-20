@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { SlideDefinition } from '../types/slides';
 import songsData from '../assets/music/songs.json';
 import { useAnimating } from '../components/frameSettled';
@@ -37,14 +37,17 @@ const RUN_MS = 700;
  * contract the Remotion clips use, which is what makes the session replay
  * identically every time the slide is opened.
  */
-function useClock(): number {
-  const [t, setT] = useState(0);
+function useClock(limit = Infinity, from = 0): number {
+  const [t, setT] = useState(from);
+  const cap = useRef(limit);
+  cap.current = limit;
   useEffect(() => {
     if (EXPORT_MODE) {
       setT(Number.MAX_SAFE_INTEGER);
       return;
     }
-    const id = setInterval(() => setT((v) => v + TICK_MS), TICK_MS);
+    // `limit` holds the clock (a beat that stops mid-session); raising it lets it run on
+    const id = setInterval(() => setT((v) => Math.min(cap.current, v + TICK_MS)), TICK_MS);
     return () => clearInterval(id);
   }, []);
   return t;
@@ -156,16 +159,20 @@ const CARET = <span className="ww-proto__caret" />;
  */
 export const MusicPrototypeSlide: SlideDefinition = {
   id: 'history-2024',
-  content: () => <PrototypeSession />,
+  // one command per beat: beat 1 holds before «play something else», beat 2 runs it
+  maxRevealStages: 2,
+  initialRevealStage: 1,
+  content: ({ revealStage }) => <PrototypeSession stage={revealStage} />,
   notes:
     '2024, Boris Cherny’s first week: one tool, AppleScript, no files and no bash. It reads the '
-    + 'track, then changes it — both are on record. «A cool demo that wasn’t that interesting» — '
+    + 'track [reveal], then changes it — both are on record. «A cool demo that wasn’t that interesting» — '
     + 'until he gave it the filesystem and bash. The slide plays itself; the songs are drawn at '
     + 'random from my own top 100, and the shell and the player are recreated.',
 };
 
-function PrototypeSession() {
-  const t = useClock();
+function PrototypeSession({ stage }: { stage: number }) {
+  // the player's own clock never stops — a paused session is not a paused song
+  const wall = useClock();
   // Two distinct favourites per mount: one playing, one it skips to.
   const [first, second, firstOffsetMs] = useMemo(() => {
     const i = Math.floor(Math.random() * SONGS.length);
@@ -220,8 +227,12 @@ function PrototypeSession() {
     ms += A2.length * STREAM_MS + 400;
     return { cmd, q1, tool1, script1, result1, answer1, q2, tool2, script2, result2, answer2, end: ms };
   }, [A1, A2, Q2, R1, R2]);
-  // Busy until the scripted session has played out (the player keeps ticking after; that is ambient).
-  useAnimating(t < at.end);
+  // The session's clock holds at the second command until beat 2 lets it run on;
+  // opened straight on beat 2, it starts there.
+  const t = useClock(stage >= 2 ? Infinity : at.q2, stage >= 2 ? at.q2 : 0);
+  const beatEnd = stage >= 2 ? at.end : at.q2;
+  // Busy until this beat's part has played out (the player keeps ticking after; that is ambient).
+  useAnimating(t < beatEnd);
 
   const lines1 = Math.max(0, Math.min(SCRIPT1.length, Math.floor((t - at.script1) / LINE_MS)));
   const lines2 = Math.max(0, Math.min(SCRIPT2.length, Math.floor((t - at.script2) / LINE_MS)));
@@ -229,6 +240,10 @@ function PrototypeSession() {
   // moment `play next track` returns.
   const skipped = t >= at.result2;
   const playing = skipped ? second : first;
+  // when the skip happened on the player's clock
+  const skippedAt = useRef<number | null>(null);
+  if (!skipped) skippedAt.current = null; // a replayed reveal skips afresh
+  if (skipped && skippedAt.current === null) skippedAt.current = wall;
   // The clock is MAX_SAFE_INTEGER in export mode, which would run every track
   // to its end, so the PDF gets the same two states a viewer sees early on.
   const elapsedMs = EXPORT_MODE
@@ -236,8 +251,8 @@ function PrototypeSession() {
       ? 6_000
       : firstOffsetMs
     : skipped
-      ? t - at.result2
-      : firstOffsetMs + t;
+      ? wall - (skippedAt.current ?? wall)
+      : firstOffsetMs + wall;
 
   return (
     <div className="ww-proto">

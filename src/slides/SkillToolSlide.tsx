@@ -4,14 +4,14 @@ import { buildPlay, CARD_LEFT, CtxPlay, type PlayCard, type PlayTurn } from '../
 
 /**
  * How a skill reaches the model — in the context-sheet language of the agent,
- * MCP and CLAUDE.md scenes (components/ctxPlay.tsx), played in one go:
+ * MCP and AGENTS.md scenes (components/ctxPlay.tsx), played in one go:
  *
  *  · the harness drops the system prompt, and among its tools there is one
  *    more: Skill;
  *  · it reads the skills folder (a card, top left, in your ink — you wrote
  *    them) and puts every skill's DESCRIPTION onto the sheet — only that;
  *  · you type a task; the model, reading the sheet, matches it to a
- *    description and calls the Skill tool;
+ *    description and reads that skill's SKILL.md — a plain Read: a skill is a file;
  *  · the harness loads that skill's SKILL.md and drops its body onto the sheet;
  *  · the model reads on and starts with step 1 of the process.
  *
@@ -25,7 +25,7 @@ import { buildPlay, CARD_LEFT, CtxPlay, type PlayCard, type PlayTurn } from '../
 const CARDS: PlayCard[] = [{ name: '.claude/skills', via: '3 skills', icon: 'file', ink: 'user', box: CARD_LEFT }];
 
 const SCENE: PlayTurn[] = [
-  { who: 'harness', label: 'System:', text: 'You are Claude Code. Tools: Read, Edit, Bash, Skill.' },
+  { who: 'harness', label: '', text: 'You are Claude Code. Tools: Read, Edit, Bash, Skill.' },
   {
     who: 'harness',
     label: 'Skills:',
@@ -41,8 +41,8 @@ const SCENE: PlayTurn[] = [
   {
     who: 'model',
     label: 'Assistant:',
-    text: '<|tool_call|> Skill(development-process) <|end_call|>',
-    call: 'Skill(development-process)',
+    text: '<|tool_call|> Read(development-process/SKILL.md) <|end_call|>',
+    call: 'Read(development-process/SKILL.md)',
     card: 0,
   },
   {
@@ -75,10 +75,12 @@ export const SkillToolSlide: SlideDefinition = {
     + 'description, one line each; that is why I can have dozens of them. (With hundreds, the listing hits '
     + 'its budget and Claude Code drops the descriptions of the skills I use least — so keep them short.) '
     + 'I type a task. The model '
-    + 'reads the sheet, sees that «TRIGGER when: starting any coding task» matches, and calls the Skill '
-    + 'tool. The harness loads that one SKILL.md and drops its body onto the sheet — and the model '
+    + 'reads the sheet, sees that «TRIGGER when: starting any coding task» matches, and reads that '
+    + 'skill\'s SKILL.md — an ordinary Read, a skill is just a file. The harness drops its body onto the '
+    + 'sheet — and the model '
     + 'starts with step one. Nobody reminded it: the description did. That is why the description is '
     + 'the most important line of a skill. '
-    + 'Fine print if asked: in Claude Code the list sits inside the Skill tool\'s own description, and '
-    + 'calling it injects the SKILL.md body — same shape: descriptions up front, body on demand.',
+    + 'Fine print if asked: Claude Code does this through its Skill tool — the list sits in that tool\'s '
+    + 'description, and calling it injects the SKILL.md body; shown here as a Read because that is all it '
+    + 'amounts to — same shape: descriptions up front, body on demand.',
 };

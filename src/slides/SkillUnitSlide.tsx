@@ -43,9 +43,14 @@ const FILE_STAGE = 1;
 // Quoted, so the colon in «TRIGGER when:» stays text (unquoted, the frontmatter does
 // not parse, and Claude Code then loads the skill with no description at all); the
 // line break inside the quotes folds into a space.
-const SKILL_MD = `---
-description: "Run the dev process for a change.
-  TRIGGER when: starting any coding task."
+/** The file is shown twice: first with the description most people write — a
+ *  label, not an instruction — and, after the Skill-tool scene shows that the
+ *  description is all the model sees, with a good one. */
+const BAD_DESCRIPTION = `description: Development process`;
+const GOOD_DESCRIPTION = `description: "Run the dev process for a change.
+  TRIGGER when: starting any coding task."`;
+const skillMd = (good: boolean) => `---
+${good ? GOOD_DESCRIPTION : BAD_DESCRIPTION}
 ---
 # Development process
 1. Plan — approval first
@@ -97,7 +102,7 @@ const DESCRIPTION_TIPS: ReactNode[] = [
 
 /** The slide is split around the Skill-tool scene: `from` is the beat this part
  *  starts on, so the second part picks up where the first left off. */
-function unitSlide(id: string, from: number, count: number, notes: string): SlideDefinition {
+function unitSlide(id: string, from: number, count: number, notes: string, goodDescription = false): SlideDefinition {
   return {
     id,
     title: 'Skill — a unit of knowledge',
@@ -111,7 +116,7 @@ function unitSlide(id: string, from: number, count: number, notes: string): Slid
           <div className="ww-skillunit">
             <div className="ww-skillunit__specimen">
               {stage === FILE_STAGE ? (
-                <CodeBlock language="markdown" filename="development-process/SKILL.md" code={SKILL_MD} />
+                <CodeBlock language="markdown" filename="development-process/SKILL.md" code={skillMd(goodDescription)} />
               ) : (
                 <>
                   <CodeBlock language="bash" filename="tree .claude/skills/development-process" code={tree(stage)} />
@@ -124,17 +129,22 @@ function unitSlide(id: string, from: number, count: number, notes: string): Slid
               )}
             </div>
             {stage === FILE_STAGE ? (
-              // the file beat: its bullet, then how to write the line that matters most
+              // the file beat: its bullet — and, once the description has been fixed, how
+              // to write the line that matters most
               <div className="ww-skillunit__notes reveal-in">
                 <ul>
                   <li>{BULLETS[FILE_STAGE]}</li>
                 </ul>
-                <h3 className="ww-skillunit__tipshead">a good description</h3>
-                <ul className="ww-skillunit__tips">
-                  {DESCRIPTION_TIPS.map((tip, i) => (
-                    <li key={i}>{tip}</li>
-                  ))}
-                </ul>
+                {goodDescription && (
+                  <>
+                    <h3 className="ww-skillunit__tipshead">a good description</h3>
+                    <ul className="ww-skillunit__tips">
+                      {DESCRIPTION_TIPS.map((tip, i) => (
+                        <li key={i}>{tip}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
               </div>
             ) : (
               <ul className="ww-skillunit__notes">
@@ -164,10 +174,20 @@ export const SkillUnitSlide = unitSlide(
     + 'disk it is just a directory — here, the process from two slides back, packaged as one. '
     + '[reveal] SKILL.md is the only required file, and it should have two things: a description up '
     + 'top, then the text — the instructions, here the nine steps. (The name is optional: it defaults '
-    + 'to the directory name.) And the description is the line that '
-    + 'matters most: say what it does AND when to use it, open with a verb, add «TRIGGER when:» with '
-    + 'the words people actually type, keep it under 1024 characters — because at startup it is all the '
-    + 'model sees. How does the model get from there to the steps? Next.',
+    + 'to the directory name.) Look at the description: «Development process» — the one most people '
+    + 'write, a label. Keep it in mind. How does the model get from there to the steps? Next.',
+);
+
+/** After the Skill-tool scene: the same file, its description fixed — now that the room
+ *  has seen the description is all the model reads at startup. */
+export const SkillDescriptionSlide = unitSlide(
+  'skill-description',
+  FILE_STAGE,
+  1,
+  'So the description is all the model sees before it decides — and «Development process» tells it '
+    + 'nothing about WHEN. Here it is fixed: say what it does AND when to use it, open with a verb, add '
+    + '«TRIGGER when:» with the words people actually type, keep it under 1024 characters.',
+  true,
 );
 
 /** After the Skill-tool scene: what else a skill directory can carry — one beat

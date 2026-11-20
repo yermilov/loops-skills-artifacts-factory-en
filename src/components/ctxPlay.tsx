@@ -1,6 +1,6 @@
 /**
  * A context-sheet PLAY: the shared engine behind the scenes that show a harness
- * fetching things from the outside (MCP servers, a CLAUDE.md on disk) and
+ * fetching things from the outside (MCP servers, a AGENTS.md on disk) and
  * pasting them into the context. A scene is just data — the sheet's turns and
  * the cards in the corners — and this turns it into one timeline, played once
  * off a single clock (see ctxScene.tsx for the visual language).
@@ -18,7 +18,7 @@
  *                            with `call` alone: the scene ends on the call;
  *                            with no call: the answer reaches the laptop.
  */
-import { useRef, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useAnimating } from './frameSettled';
 import {
   Chip,
@@ -35,7 +35,7 @@ import {
   ServerCard,
   SHEET,
   Stamp,
-  useOneShotClock,
+  EXPORT_MODE,
   useUnitSlots,
   WIN,
   type CardInk,
@@ -146,6 +146,41 @@ export function buildPlay(scene: PlayTurn[]) {
   return { UNITS, PHASES, WRITTEN_AT, TOTAL: clock + TAIL };
 }
 
+/** When the first user message starts typing — a natural place to stop a beat:
+ *  everything before it is the harness setting the scene. */
+export function firstUserAt(scene: PlayTurn[], play: ReturnType<typeof buildPlay>): number {
+  const i = scene.findIndex((turn) => turn.who === 'user');
+  // a hair before: at `at` itself the label and the first character are already down
+  return play.PHASES.find((p) => p.kind === 'type' && p.turn === i)!.at - 60;
+}
+
+/** The play split into beats at `stops` (ms): each beat plays its stretch and holds;
+ *  a step forward carries on from where the last beat stopped, any other jump starts
+ *  the beat fresh. With no stops it is the whole play, once. The PDF gets the end. */
+function useBeatClock(stage: number, stops: number[], total: number): { t: number; end: number } {
+  const bounds = [0, ...stops, total];
+  const b = Math.min(Math.max(stage, 0), bounds.length - 2);
+  const start = bounds[b];
+  const end = bounds[b + 1];
+  const [t, setT] = useState(EXPORT_MODE ? total : start);
+  useEffect(() => {
+    if (EXPORT_MODE) {
+      setT(end);
+      return;
+    }
+    setT((cur) => (cur >= start && cur <= end ? cur : start));
+    let last = performance.now();
+    let id = requestAnimationFrame(function tick(now) {
+      const dt = now - last;
+      last = now;
+      setT((cur) => Math.min(end, cur + dt));
+      id = requestAnimationFrame(tick);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [start, end]);
+  return { t, end };
+}
+
 // ── the harness's screen ────────────────────────────────────────────────────
 const CALL_SLOT: Pt = [WIN.x + 210, 52];
 const ASK_FROM: Pt = [WIN.x + 230, 112];
@@ -155,11 +190,25 @@ const SCREEN_UNITS = 36;
 
 const cardAt = (c: PlayCard): Pt => [c.box.x + c.box.w / 2 - 70, c.box.y + c.box.h + 10];
 
-export function CtxPlay({ scene, cards, play }: { scene: PlayTurn[]; cards: PlayCard[]; play: ReturnType<typeof buildPlay> }) {
+export function CtxPlay({
+  scene,
+  cards,
+  play,
+  stage = 0,
+  stops = [],
+}: {
+  scene: PlayTurn[];
+  cards: PlayCard[];
+  play: ReturnType<typeof buildPlay>;
+  /** the reveal stage, when the play is split into beats */
+  stage?: number;
+  /** where the beats end (ms into the play); none = one beat, the whole play */
+  stops?: number[];
+}) {
   const { UNITS, PHASES, WRITTEN_AT, TOTAL } = play;
-  const t = useOneShotClock(TOTAL);
+  const { t, end } = useBeatClock(stage, stops, TOTAL);
   const done = t >= TOTAL;
-  useAnimating(!done);
+  useAnimating(t < end);
 
   const now = PHASES.filter((p) => t >= p.at && t < p.at + p.ms);
   const active = (kind: Kind) => now.find((p) => p.kind === kind);
@@ -299,9 +348,14 @@ export function CtxPlay({ scene, cards, play }: { scene: PlayTurn[]; cards: Play
         <span className={`ww-ctx__stamp ww-ctx__stamp--${turn.who}`} style={{ opacity: started ? 1 : 0 }}>
           <Stamp who={turn.who} />
         </span>
-        <span className="ww-ctx__label" style={{ visibility: started ? 'visible' : 'hidden' }}>
-          {turn.label}
-        </span>{' '}
+        {/* the system prompt goes unlabelled: the harness's stamp says who wrote it */}
+        {turn.label && (
+          <>
+            <span className="ww-ctx__label" style={{ visibility: started ? 'visible' : 'hidden' }}>
+              {turn.label}
+            </span>{' '}
+          </>
+        )}
         {u.map((text, ui) => {
           const shown = ui < n;
           const style: CSSProperties = { visibility: shown ? 'visible' : 'hidden' };

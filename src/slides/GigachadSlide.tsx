@@ -113,8 +113,9 @@ const ECOSYSTEM: { label: string; tools: string[] }[] = [
   { label: 'sees', tools: ['Peekaboo', 'camsnap', 'songsee', 'gifgrep'] },
 ];
 
-const DIAGRAM_STAGE = NAMES.length + 1;
-const CATEGORY_STAGE = NAMES.length + 2;
+/** The diagram arrives with the last name: OpenClaw, and what it runs, in one beat. */
+const DIAGRAM_STAGE = NAMES.length;
+const CATEGORY_STAGE = NAMES.length + 1;
 
 /** Hub and four clusters: the gateway in the middle, his CLIs around it. */
 function Ecosystem() {
@@ -223,7 +224,7 @@ export const GigachadSlide: SlideDefinition = {
     + 'And the honest part, the bridge: even he did not rebuild the model\'s loop — «models and '
     + 'agent harnesses are plugins you can swap». He wrote everything AROUND it, which is exactly '
     + 'the backlog from the previous slide. '
-    + 'Next click — what «single-handedly» means: the ecosystem under the gateway, as it shipped '
+    + 'With OpenClaw comes the ecosystem too — what «single-handedly» means: the ecosystem under the gateway, as it shipped '
     + 'in early January. Every name around the hub is his own CLI, most written in the six weeks '
     + 'before launch: wacli for WhatsApp, imsg for iMessage, bird for X; gog for Google, '
     + 'summarize, oracle (GPT-5 Pro when the agent is stuck), mcporter for MCP; Peekaboo to see '

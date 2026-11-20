@@ -38,6 +38,8 @@ export interface CodeBlockProps {
   language?: string;
   showLineNumbers?: boolean;
   highlightLines?: number[];
+  /** Inline style for a line, by its 1-based number (after trim). */
+  lineStyle?: (line: number) => import('react').CSSProperties | undefined;
   filename?: string;
 }
 

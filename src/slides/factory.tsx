@@ -131,6 +131,21 @@ const REPAIR_LOOPS: { name: string; series: string; every: string; skill: string
       'Report what was proposed, and what the last proposals came to.',
     ],
   },
+  {
+    // added 20.11.2026 (task 71128310, commit d1a694a): the one-off security audit turned
+    // into a daily loop — «завжди оновлюй залежності; перетвори цю задачу на луп»
+    name: 'Close the security holes',
+    series: 'Security audit',
+    every: 'every day',
+    skill: 'engineering:security-audit',
+    prompt: [
+      'Update every dependency — every run, always.',
+      'Clear the npm advisories: fixed by the update, or unreachable from our code — say which.',
+      'Audit one slice of the attack surface in depth, in rotation — plus all the code that is new since the last run.',
+      'Fix what is real, each with a test: the attacker refused, the legitimate user still served.',
+      'Report what moved, what was fixed, and what needs a human — a secret to rotate, a decision.',
+    ],
+  },
 ];
 
 /** The architecture, as ONE diagram (Yarik, 16.11.2026: «replace the text with a

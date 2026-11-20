@@ -12,7 +12,10 @@ import {
   Comment,
   Event,
   Fields,
+  Ico,
   SessionFoot,
+  Tap,
+  TAP_TRAVEL_MS,
   Task,
   TaskBar,
   TaskCard,
@@ -142,6 +145,116 @@ const PICKED_MS = 2600;
 const LIFE_MS = [0, PICKED_MS, PICKED_MS + (STREAM.length + 1) * STREAM_MS] as const; // created · picked up · answered
 type Moment = 0 | 1 | 2;
 
+/**
+ * …and before all that, the task is BORN on screen (Yarik, 21.11.2026): a pointer
+ * clicks «+ New task», the form opens, I type the title and the first comment, drop
+ * the photo, give it to Claude Code at high priority and click «Create task». The
+ * form is the product's own /tasks/new (apps/web/src/routes/new-task.tsx, read
+ * 21.11.2026 at 031eea5): «← Back to board», Title*, First comment with
+ * «Attach · or drop files here», Status / Assignee / Priority, Cancel / ✓ Create task.
+ * Cut for the slide: the Triggers and Recurrence sections under the three fields
+ * (admin-only, and empty for a one-off task). The product's defaults are @me and
+ * medium — which is why the assignee and the priority visibly change.
+ */
+const NEW_TITLE = 'Book the car service';
+const NEW_COMMENT = 'Book a car service this week — a morning, in Podil. Tell them about this light:';
+const TITLE_TYPE_MS = 45; // a character of the title per this long
+const COMMENT_TYPE_MS = 30; // …and of the first comment
+const NEW_TAP_MS = 300; // the pointer sets off for «+ New task»
+const FORM_MS = NEW_TAP_MS + TAP_TRAVEL_MS + 300; // the click lands, the form opens
+const TITLE_MS = FORM_MS + 400;
+const COMMENT_MS = TITLE_MS + NEW_TITLE.length * TITLE_TYPE_MS + 300;
+const PHOTO_MS = COMMENT_MS + NEW_COMMENT.length * COMMENT_TYPE_MS + 400;
+const ASSIGN_MS = PHOTO_MS + 600;
+const HIGH_MS = ASSIGN_MS + 500;
+const SUBMIT_MS = HIGH_MS + 400; // the pointer sets off for «Create task»
+const CREATED_MS = SUBMIT_MS + TAP_TRAVEL_MS + 300;
+
+const typed = (text: string, t: number, from: number, per: number) =>
+  text.slice(0, Math.max(0, Math.min(text.length, Math.floor((t - from) / per))));
+
+function Caret() {
+  return <span className="ww-jg__caret" aria-hidden="true" />;
+}
+
+/** /tasks/new, as it fills in, at `t` ms into the frame. */
+function NewTaskForm({ t }: { t: number }) {
+  const title = typed(NEW_TITLE, t, TITLE_MS, TITLE_TYPE_MS);
+  const comment = typed(NEW_COMMENT, t, COMMENT_MS, COMMENT_TYPE_MS);
+  const inTitle = t < COMMENT_MS; // the title field has autofocus
+  const inComment = !inTitle && t < ASSIGN_MS;
+  const high = t >= HIGH_MS;
+  return (
+    <div className="ww-jg__form ww-jg__arrive">
+      <span className="ww-jg__back ww-jg__label">
+        <Ico name="back" />
+        Back to board
+      </span>
+      <div className="ww-jg__formfield">
+        <span className="ww-jg__label">
+          Title<span className="ww-jg__req">*</span>
+        </span>
+        <span className={`ww-jg__input${inTitle ? ' ww-jg__input--focus' : ''}${title ? '' : ' ww-jg__input--empty'}`}>
+          {title || (inTitle ? '' : 'Title')}
+          {inTitle && <Caret />}
+        </span>
+      </div>
+      <div className="ww-jg__formfield">
+        <span className="ww-jg__label">First comment</span>
+        <span className={`ww-jg__area${inComment ? ' ww-jg__input--focus' : ''}${comment ? '' : ' ww-jg__input--empty'}`}>
+          {comment || 'Context, details, links — starts the task timeline…'}
+          {inComment && <Caret />}
+        </span>
+        <span className="ww-jg__attachrow">
+          {t >= PHOTO_MS && (
+            <span className="ww-jg__pill ww-jg__pill--time ww-jg__arrive">
+              <Ico name="clip" />
+              dash-light.jpg <span className="ww-jg__dim">1.2 MB</span>
+            </span>
+          )}
+          <span className="ww-jg__pill ww-jg__pill--quiet">
+            <Ico name="clip" />
+            Attach
+          </span>
+          <span className="ww-jg__label">or drop files here</span>
+        </span>
+      </div>
+      <div className="ww-jg__formrow">
+        <div className="ww-jg__formfield">
+          <span className="ww-jg__label">Status</span>
+          <span className="ww-jg__select">todo<span aria-hidden="true">▾</span></span>
+        </div>
+        <div className="ww-jg__formfield">
+          <span className="ww-jg__label">Assignee</span>
+          <span className="ww-jg__select" key={t >= ASSIGN_MS ? 'agent' : 'me'}>
+            <span className={t >= ASSIGN_MS ? 'ww-jg__arrive' : undefined}>{t >= ASSIGN_MS ? 'Claude Code' : '@me'}</span>
+            <span aria-hidden="true">▾</span>
+          </span>
+        </div>
+        <div className="ww-jg__formfield">
+          <span className="ww-jg__label">Priority</span>
+          <span className="ww-jg__prio">
+            <span className="ww-jg__pill">Low</span>
+            <span className={`ww-jg__pill${high ? '' : ' ww-jg__pill--on'}`}>Medium</span>
+            <span className={`ww-jg__pill${high ? ' ww-jg__pill--on' : ''}`}>
+              <Ico name="flame" />
+              High
+            </span>
+          </span>
+        </div>
+      </div>
+      <div className="ww-jg__formfoot">
+        <span className="ww-jg__label">Cancel</span>
+        <span className="ww-jg__new ww-jg__tapped">
+          <Ico name="check" />
+          Create task
+          {t >= SUBMIT_MS && <Tap />}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 /** The second round, a click of its own: I ask a follow-up in a comment, the agent
  *  takes the task back, works — and answers with a map it WROTE, not a paragraph. */
 const MAP_STREAM = [
@@ -180,8 +293,11 @@ export function InFlight({ lines, since, t }: { lines: string[]; since: number; 
 }
 
 function TaskLife({ withMap }: { withMap: boolean }) {
-  const t = useClock(0);
+  const tFrame = useClock(0);
   const tMap = useClock(withMap ? 1 : 0); // restarts on the map click
+  // the life of the task starts once it is created; the map round has no birth
+  const tc = withMap ? Number.MAX_SAFE_INTEGER : tFrame;
+  const t = tc - CREATED_MS;
   // landing on the map reveal directly (a link, the PDF) shows the first round
   // finished, not replaying under the second one
   const moment: Moment = withMap || t >= LIFE_MS[2] ? 2 : t >= LIFE_MS[1] ? 1 : 0;
@@ -191,6 +307,23 @@ function TaskLife({ withMap }: { withMap: boolean }) {
   const agentHasIt = moment < 2 || (withMap && mapMoment < 2);
   // busy until the answer is in, so the PDF and the ready mark wait for the last moment
   useAnimating(agentHasIt || mapMoment === 2);
+  if (tc < FORM_MS) {
+    // the board as the frame before left it — and the pointer goes for «+ New task»
+    return (
+      <>
+        <TaskBar view="Inbox" switcher={false} tap={NEW_TAP_MS} />
+        <div className="ww-jg__split ww-jg__split--inbox">
+          <div className="ww-jg__list">
+            {INBOX.map((task) => (
+              <TaskCard key={task.title} task={task} withStatus />
+            ))}
+          </div>
+          <div className="ww-jg__empty ww-jg__label">Select a task</div>
+        </div>
+      </>
+    );
+  }
+  if (tc < CREATED_MS) return <NewTaskForm t={tc} />;
   const status =
     moment === 0
       ? ({ label: 'Status', value: 'Todo' } as const)
@@ -198,6 +331,8 @@ function TaskLife({ withMap }: { withMap: boolean }) {
         ? ({ label: 'Status', value: 'In progress', tone: 'time' } as const)
         : ({ label: 'Status', value: 'Paused', tone: 'hold' } as const);
   return (
+    <>
+    <TaskBar view="Inbox" switcher={false} />
     <div className="ww-jg__split ww-jg__split--inbox">
       <div className="ww-jg__list">
         {!agentHasIt && (
@@ -287,6 +422,7 @@ function TaskLife({ withMap }: { withMap: boolean }) {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
@@ -309,16 +445,18 @@ function BoardFrame({ revealStage }: { revealStage: number }) {
         </div>
         <Browser url="myclaw.app">
           <App active="Tasks" pages={['Tasks']}>
-            <TaskBar view="Inbox" switcher={false} />
             {revealStage < 2 ? (
-              <div className="ww-jg__split ww-jg__split--inbox">
-                <div className="ww-jg__list">
-                  {INBOX.map((task) => (
-                    <TaskCard key={task.title} task={task} withStatus />
-                  ))}
+              <>
+                <TaskBar view="Inbox" switcher={false} />
+                <div className="ww-jg__split ww-jg__split--inbox">
+                  <div className="ww-jg__list">
+                    {INBOX.map((task) => (
+                      <TaskCard key={task.title} task={task} withStatus />
+                    ))}
+                  </div>
+                  <div className="ww-jg__empty ww-jg__label">Select a task</div>
                 </div>
-                <div className="ww-jg__empty ww-jg__label">Select a task</div>
-              </div>
+              </>
             ) : (
               <TaskLife key="life" withMap={revealStage >= 3} />
             )}
@@ -341,8 +479,11 @@ export const TaskBoardSlide: SlideDefinition = {
     'progress, what is waiting, what is done, who has it. ' +
     'What is on the screen is MY queue: the tasks assigned to me, plus the ones an agent is ' +
     'blocked on — an agent quietly working is not my problem and is not here. ' +
-    'Click — and it plays by itself, three moments, talk over it: I create a task — one sentence ' +
-    'and a photo, assigned to the agent. The agent picks it up: in progress, a session in flight — ' +
+    'Click — and it plays by itself, talk over it: I click New task, type a title and a first ' +
+    'comment — one sentence — drop the dashboard photo on it, give it to Claude Code, high ' +
+    'priority, Create. That is the whole ask: no fields to fill for the agent, just what I would ' +
+    'write to a person. (The form is the real /tasks/new, minus its triggers and recurrence.) ' +
+    'Then the task page. The agent picks it up: in progress, a session in flight — ' +
     'and its tool calls stream into the page as it works (honest: today the page only says the ' +
     'session is running; the live stream is where it is going) — ' +
     'and notice it is NOT in my list, it is not my problem yet. Then the agent answers: the report, ' +
@@ -1008,7 +1149,9 @@ const GRADE_MARK: Record<Grade, string> = { good: '✓', ok: '~', bad: '✕' };
 
 export const FreeModelsSlide: SlideDefinition = {
   id: 'improve-free',
-  content: () => (
+  // two beats: the setup alone, then what the models did with it (Yarik, 21.11.2026)
+  maxRevealStages: 1,
+  content: ({ revealStage }) => (
     <>
       <CornerRings corner="top-right" />
       <div className="ww-imp ww-imp--claim">
@@ -1023,7 +1166,7 @@ export const FreeModelsSlide: SlideDefinition = {
           <div className="ww-imp__runnerleft">
             <RunnerCode code={FREE_SETUP} hot={() => false} />
           </div>
-          <div className="ww-imp__grades">
+          <div className={`ww-imp__grades ${revealStage >= 1 ? 'reveal-in' : 'reveal-hidden'}`}>
             {FREE_GRADES.map(([model, grade]) => (
               <div key={model} className={`ww-imp__grade ww-imp__grade--${grade}`}>
                 <span className="ww-imp__grademark">
@@ -1045,7 +1188,7 @@ export const FreeModelsSlide: SlideDefinition = {
     + 'on launch — the provider, web search off, because OpenRouter rejects that tool, and the '
     + 'model. My daemon passes the same thing per task, so the other panes stay on the '
     + 'subscription. '
-    + 'On the right is what I found. Every new free model gets one small task with a known '
+    + '[reveal] On the right is what I found. Every new free model gets one small task with a known '
     + 'answer — find a function, fix one bug, build a table. Eleven models on Codex in a month: '
     + 'seven did it cleanly, most in under a minute. One was right but sloppy. Three failed — and '
     + 'look why: not wrong answers, broken rules. They wrote outside their folder, or tried to '
@@ -1276,7 +1419,7 @@ export const AnyAgentSlide: SlideDefinition = {
             <span aria-hidden="true">✓</span>
             bonus
           </span>
-          <span>agents of different vendors argue over a review</span>
+          <span>agents can launch different vendors and models to talk to</span>
         </div>
         <ReviewWalk />
       </div>

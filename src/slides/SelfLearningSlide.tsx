@@ -48,7 +48,6 @@ const STEPS_FROM = 2;
 
 export const SelfLearningSlide: SlideDefinition = {
   id: 'self-learning',
-  title: 'Self-learning system',
   maxRevealStages: STEPS_FROM + STEPS.length - 1,
   content: ({ revealStage }) => {
     const shownSteps = Math.max(0, revealStage - STEPS_FROM + 1);
@@ -61,7 +60,7 @@ export const SelfLearningSlide: SlideDefinition = {
     return (
       <>
         <CornerRings corner="bottom-right" />
-        <div className="ww-skillunit">
+        <div className="ww-skillunit ww-skillunit--untitled">
           <div className="ww-skillunit__specimen">
             <CodeBlock language="markdown" filename="do-task/SKILL.md" code={code} highlightLines={fresh} />
           </div>

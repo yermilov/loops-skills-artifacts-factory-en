@@ -139,7 +139,8 @@ function LlmScene({ stage }: { stage: number }) {
   const t = useClock(stage);
 
   // Beat 1 ends with the first token landing on the left; beat 2 carries the
-  // loop on from there; beat 3 runs it over the reply instead.
+  // loop on from there; beat 3 shows the dialogue, ending on an empty
+  // «Assistant:» line; beat 4 runs the loop over that line.
   const landed = stage === 1 && t >= FLY_MS ? 1 : 0;
   const completionCount =
     stage >= 3
@@ -147,7 +148,7 @@ function LlmScene({ stage }: { stage: number }) {
       : stage === 2
         ? 1 + arrived(COMPLETION.length - 1, t, TOKEN_MS)
         : landed;
-  const replyCount = stage >= 3 ? arrived(REPLY.length, t, FIRST_TOKEN_MS) : 0;
+  const replyCount = stage >= 4 ? arrived(REPLY.length, t, FIRST_TOKEN_MS) : 0;
 
   // The chip on the right is the token the model has just produced: the first
   // one in beat 1 (until it flies off to the left), and then whichever the
@@ -164,7 +165,7 @@ function LlmScene({ stage }: { stage: number }) {
           : null;
   const flying = stage === 1 && t >= FLY_MS;
 
-  const looping = stage === 2 ? completionCount < COMPLETION.length : stage >= 3 && replyCount < REPLY.length;
+  const looping = stage === 2 ? completionCount < COMPLETION.length : stage >= 4 && replyCount < REPLY.length;
   // Busy until beat 1's token has flown, then while the loop is producing tokens.
   useAnimating((stage === 1 && t < FLY_MS) || looping);
 
@@ -196,7 +197,8 @@ function LlmScene({ stage }: { stage: number }) {
                   <wbr />
                 </Fragment>
               ))}
-              {looping && <span className="ww-llm__caret" />}
+              {/* beat 3 waits on the empty line; beat 4 fills it */}
+              {(stage === 3 || looping) && <span className="ww-llm__caret" />}
             </div>
           </div>
         ) : (
@@ -227,10 +229,12 @@ function LlmScene({ stage }: { stage: number }) {
                 {text}
               </div>
             ))}
-            <div className="ww-llm__bubble ww-llm__bubble--bot">
-              {REPLY.slice(0, replyCount).filter((token) => token !== END).join(' ')}
-              {looping && <span className="ww-llm__caret" />}
-            </div>
+            {stage >= 4 && (
+              <div className="ww-llm__bubble ww-llm__bubble--bot">
+                {REPLY.slice(0, replyCount).filter((token) => token !== END).join(' ')}
+                {looping && <span className="ww-llm__caret" />}
+              </div>
+            )}
           </div>
         ) : (
           <>
@@ -276,7 +280,7 @@ export const HowLlmWorksSlide: SlideDefinition = {
       Language model <span className="ww-llm__titlesub">— predicts the next token</span>
     </>
   ),
-  maxRevealStages: 3,
+  maxRevealStages: 4,
   initialRevealStage: 1,
   content: ({ revealStage }) => (
     <>
@@ -296,7 +300,7 @@ export const HowLlmWorksSlide: SlideDefinition = {
     + 'token like any other; whoever runs the loop sees it and stops asking. '
     + 'Beat 3 — so where does the assistant come from? The machine in the middle has not changed. '
     + 'What changed is the text: a preface («You are ChatGPT, a helpful assistant»), then a script '
-    + 'of a dialogue, ending on an empty «Assistant:» line. The model completes THAT line — and the '
+    + 'of a dialogue, ending on an empty «Assistant:» line. [reveal] The model completes THAT line — and the '
     + 'app on the right draws the completion as a bubble — and it never draws the end token, which '
     + 'is what hands the turn back to you (chat formats have their own, <|im_end|>). '
     + 'Nobody is talking to you: it is writing '

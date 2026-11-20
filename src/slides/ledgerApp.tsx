@@ -154,15 +154,21 @@ export function TaskBar({
   view,
   filters,
   switcher = true,
+  tap,
 }: {
   view: 'Inbox' | 'Board' | 'Loop';
   filters?: ReactNode;
   switcher?: boolean;
+  /** a pointer comes in and clicks «+ New task», this many ms after the bar mounts */
+  tap?: number;
 }) {
   return (
     <div className="ww-jg__bar">
       <span className="ww-jg__filters">{filters}</span>
-      <span className="ww-jg__new">+ New task</span>
+      <span className={tap === undefined ? 'ww-jg__new' : 'ww-jg__new ww-jg__tapped'}>
+        + New task
+        {tap !== undefined && <Tap delay={tap} />}
+      </span>
       {switcher && (
         <span className="ww-jg__switch">
           {(['Inbox', 'Board', 'Loop'] as const).map((name) => (
@@ -321,6 +327,24 @@ export function SessionFoot({ children }: { children: ReactNode }) {
       <span className="ww-jg__log">Session log →</span>
       <span className="ww-jg__label">{children}</span>
     </span>
+  );
+}
+
+/** How long the deck's pointer takes to travel in — the same number as the
+ *  `ww-jg-tap` animation in slide-layouts.css. */
+export const TAP_TRAVEL_MS = 700;
+
+/** The deck's own actor, not the product's: a pointer that comes in from the lower
+ *  right, `delay` ms after it mounts, and clicks the element it sits in (that
+ *  element carries `ww-jg__tapped`, so the pointer is placed on its middle). */
+export function Tap({ delay = 0 }: { delay?: number }) {
+  return (
+    <>
+      <svg className="ww-jg__tap" style={{ animationDelay: `${delay}ms` }} viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 3l14 8-6.5 1.6L10 19z" />
+      </svg>
+      <span className="ww-jg__tapring" style={{ animationDelay: `${delay + TAP_TRAVEL_MS}ms` }} aria-hidden="true" />
+    </>
   );
 }
 

@@ -54,6 +54,38 @@
   --pp-grey-light: #dcdce5;
   --pp-font: 'Figtree', var(--font-sans);
 
+  /* ── Editor (the Copilot slide): the Cursor clip's own dark theme —
+   * VS Code Dark+ with Cursor's flatter chrome (video/src/CursorTab.tsx),
+   * so the slide and the clip after it read as one program. */
+  --ide-editor: #1e1e1e;
+  --ide-chrome: #181818;
+  --ide-panel: #1b1b1b;
+  --ide-border: #2d2d2d;
+  --ide-titlebar: #2b2b31;
+  --ide-titletext: #c8c8d0;
+  --ide-text: #d4d4d4;
+  --ide-dim: #8a8a8a;
+  --ide-ghost: #6a6a6a;
+  --ide-accent: #e4e4e4;
+  --ide-line: #5a5a5a;
+  --ide-kw: #569cd6;
+  --ide-type: #4ec9b0;
+  --ide-fn: #dcdcaa;
+  --ide-var: #9cdcfe;
+  --ide-num: #b5cea8;
+  --ide-str: #ce9178;
+  --ide-comment: #6a9955;
+  --ide-keycap: #2f2f2f;
+  --ide-added: rgba(78, 201, 176, 0.16);   /* a line just written in, as the clip tints it */
+  --ide-keyborder: #4a4a4a;
+
+  /* ── Hacker News (the 2023 sceptics slide, drawn as the HN page) ──────── */
+  --hn-orange: #ff6600;
+  --hn-paper: #f6f6ef;
+  --hn-meta: #828282;
+  --hn-ink: #000000;
+  --hn-marker: #ffe94d;          /* a yellow highlighter, over the quotes that matter */
+
   /* ── Machine palette ────────────────────────────────────────────────────
    * Not part of the WAWTech template: these are the colours of the two
    * interfaces the 2024 history slide RECREATES — a Ghostty window running

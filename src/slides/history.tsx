@@ -6,7 +6,6 @@ import tweet2022 from '../assets/history/tweet2022.mp4';
 import chatUi2022 from '../assets/history/chatui2022.mp4';
 import hackerNews2023 from '../assets/history/hackernews2023.mp4';
 import gptShellSession2023 from '../assets/history/gptshellsession2023.mp4';
-import cursorTab from '../assets/history/cursortab.mp4';
 import claudeCodeFirst from '../assets/history/claudecodefirst.mp4';
 import githubMcp from '../assets/history/githubmcp.mp4';
 import dayPlan from '../assets/history/dayplan.mp4';
@@ -27,7 +26,11 @@ import dayPlan from '../assets/history/dayplan.mp4';
 const EXPORT_MODE =
   typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('export') === '1';
 
-function Clip({ src, slideId }: { src: string; slideId: string }) {
+/** `from` / `to` (seconds) play one stretch of a clip, so a clip can be split
+ *  across beats without re-rendering it. A clip stopped at `to` drops its
+ *  autoplay flag, which is what tells the ready mark (frameSettled.ts) that it
+ *  has finished rather than still loading. */
+export function Clip({ src, slideId, from, to }: { src: string; slideId: string; from?: number; to?: number }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const video = ref.current;
@@ -36,7 +39,29 @@ function Clip({ src, slideId }: { src: string; slideId: string }) {
       // `asyncSettle` turns Slide.tsx's auto-settle off for these slides, so a
       // normal run has to settle itself or an export of ANY slide would hang.
       exportRegistry.markSlideSettled(slideId);
-      return;
+      // The SAME element carries a split clip from one beat to the next, so the
+      // next stretch resumes where the last one stopped — no reload, no blink.
+      // Seek only forwards (a cold load of the second beat starts at 0).
+      if (from !== undefined && video.currentTime < from) video.currentTime = from;
+      if (to === undefined) {
+        if (video.paused && !video.ended && video.currentTime > 0) {
+          video.autoplay = true;
+          void video.play().catch(() => undefined);
+        }
+        return;
+      }
+      const stop = () => {
+        if (video.currentTime < to) return;
+        video.pause();
+        video.autoplay = false;
+      };
+      // stepping BACK onto this beat: park on its own last frame, not the clip's
+      if (video.currentTime > to) {
+        video.currentTime = to;
+        stop();
+      }
+      video.addEventListener('timeupdate', stop);
+      return () => video.removeEventListener('timeupdate', stop);
     }
     video.pause();
     const seekToEnd = () => {
@@ -50,7 +75,7 @@ function Clip({ src, slideId }: { src: string; slideId: string }) {
       video.removeEventListener('loadedmetadata', seekToEnd);
       video.removeEventListener('seeked', settle);
     };
-  }, [src, slideId]);
+  }, [src, slideId, from, to]);
   return <video ref={ref} src={src} autoPlay={!EXPORT_MODE} muted playsInline preload="auto" />;
 }
 
@@ -93,17 +118,31 @@ export const ChatGptLaunchSlide: SlideDefinition = {
 
 /** What people did with it, once they had it: a whole Linux box inside the
  *  chat box — i.e. the completion trick from the slide before, pushed. */
+/** Where the first exchange (the setup prompt and «/») has landed, just before
+ *  `ls ~` starts typing: video/src/Chat2022.tsx PROMPT_2_AT = frame 203 = 6.77 s. */
+const CHAT_UI_CUT = 6.3;
 export const ChatUiSlide: SlideDefinition = {
   id: 'history-2022-chatui',
   asyncSettle: true,
-  content: () => (
+  // one question and answer per beat; the PDF parks on the last frame as before
+  maxRevealStages: 2,
+  initialRevealStage: 1,
+  content: ({ revealStage }) => (
     <div className="ww-history">
-      <Clip key="ui" src={chatUi2022} slideId="history-2022-chatui" />
+      {/* one key for both beats: the video element survives the click */}
+      <Clip
+        key="ui"
+        src={chatUi2022}
+        slideId="history-2022-chatui"
+        from={revealStage >= 2 ? CHAT_UI_CUT : undefined}
+        to={revealStage >= 2 ? undefined : CHAT_UI_CUT}
+      />
     </div>
   ),
   notes:
     'What people actually did with it — Jonas Degrave running a whole Linux box inside the chat '
-    + 'box, engraved.blog, 3 December 2022. Transcript verbatim. Point at the mechanism from the '
+    + 'box, engraved.blog, 3 December 2022. Transcript verbatim. Beat 1: the setup prompt and «pwd» → «/». '
+    + '[reveal] Beat 2: «ls ~». Point at the mechanism from the '
     + 'previous slide: the «terminal» is the model completing a script in which one of the '
     + 'characters is a shell.',
 };
@@ -127,25 +166,6 @@ export const GptShellSlide: SlideDefinition = {
     '2023. Beat 1: ArenaSource on Hacker News, 27 March — put GPT-4 on a loop with a shell '
     + 'and it does whatever the job needs. Beat 2: it does exactly that — ping is missing, '
     + 'so it reaches for curl by itself. Verbatim from jla/gpt-shell’s own run.',
-};
-
-/** The editor everyone moved into: a chat to agree what to build, and a tab
- *  model that writes whole blocks and then jumps — down the file, and into the
- *  next file the change breaks. */
-export const CursorTabSlide: SlideDefinition = {
-  id: 'history-cursor',
-  asyncSettle: true,
-  content: () => (
-    <div className="ww-history">
-      <Clip key="cursor" src={cursorTab} slideId="history-cursor" />
-    </div>
-  ),
-  notes:
-    'Cursor. First the chat on the right: you agree WHAT you want before a line is written. '
-    + 'Then Tab — not one line but a whole block, then Tab again to jump to the next place '
-    + 'the change needs, and finally the portal at the bottom: the edit this one forces in '
-    + 'another file. Reconstruction — the behaviour is from Cursor\'s own docs, the code is '
-    + 'invented.',
 };
 
 /**

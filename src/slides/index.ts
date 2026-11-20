@@ -1,3 +1,5 @@
+import { HnSkepticsSlide } from './HnSkepticsSlide';
+import { CopilotSlide } from './CopilotSlide';
 import { TitleSlide } from './TitleSlide';
 import { AboutMeSlide } from './AboutMeSlide';
 import { PreplyProductSlide, PreplyHiringSlide } from './preply';
@@ -5,7 +7,6 @@ import {
   ChatGptLaunchSlide,
   ChatUiSlide,
   GptShellSlide,
-  CursorTabSlide,
   ClaudeCodeSlide,
   GithubMcpSlide,
   DayPlanSlide,
@@ -13,7 +14,6 @@ import {
 import { HowLlmWorksSlide } from './HowLlmWorksSlide';
 import { CodingAgentSlide } from './CodingAgentSlide';
 import { McpSlide } from './McpSlide';
-import { TodoMemeSlide } from './TodoMemeSlide';
 import { SdkChatSlide } from './SdkChatSlide';
 import { WhyNotSlide } from './WhyNotSlide';
 import { GigachadSlide } from './GigachadSlide';
@@ -41,14 +41,15 @@ import { FinalSlide } from './FinalSlide';
 import { FactoryFloorSlide } from './FactoryFloorSlide';
 import { EngineersFactorySlide } from './EngineersFactorySlide';
 import { MementoSlide } from './MementoSlide';
-import { SkillUnitSlide, SkillUnitRefsSlide, SkillUnitScriptsSlide } from './SkillUnitSlide';
+import { SkillUnitSlide, SkillDescriptionSlide, SkillUnitRefsSlide, SkillUnitScriptsSlide } from './SkillUnitSlide';
 import { SkillReadRefSlide, SkillRunScriptSlide } from './SkillFilesSlide';
 import { SkillLabyrinthSlide } from './SkillLabyrinthSlide';
 import { SelfLearningSlide } from './SelfLearningSlide';
 import { GoldbergSlide } from './GoldbergSlide';
 import { SkillToolSlide } from './SkillToolSlide';
 import { AssistantReadySlide } from './AssistantReadySlide';
-import { AssistantSessionSlide } from './AssistantSessionSlide';
+import { AssistantSessionSlide, AssistantSessionRestSlide } from './AssistantSessionSlide';
+import { HerdrApiSlide } from './HerdrApiSlide';
 import {
   TaskBoardSlide,
   ArtifactSlide,
@@ -58,6 +59,7 @@ import {
   PaceSlide,
   FreeModelsSlide,
 } from './improve';
+import { TextVsCodeSlide } from './TextVsCodeSlide';
 import { MiniappBirthSlide, MiniappsSlide, MiniappsMoreSlide, MiniappsHomeSlide, MiniappsLastSlide, MiniappsEndSlide, MiniappsTreeSlide } from './MiniappsSlide';
 import { ArchitectureSlide, ArchitectureDaemonSlide, ArchitectureTwoSlide, ArchitectureWebSlide, ArchitectureAppsSlide, ArchitectureMobileSlide, ArchitectureHomeSlide, ArchitectureHealthSlide, ArchitectureServicesSlide, RepairsItselfSlide, RepairLoopsSlide, FordFactorySlide, FactoryRevealSlide, ArchitectureAppTaskSlide, BuildsItselfSlide, LearnsItselfSlide } from './factory';
 
@@ -92,14 +94,15 @@ export const slides = [
   HowLlmWorksSlide,
   ChatUiSlide,
   GptShellSlide,
+  HnSkepticsSlide,
   MusicPrototypeSlide,
-  CursorTabSlide,
+  // Copilot → docstring → Cursor: one slide, the Cursor clip plays inside its third beat
+  CopilotSlide,
   ClaudeCodeSlide,
   CodingAgentSlide,
   GithubMcpSlide,
   McpSlide,
   DayPlanSlide,
-  TodoMemeSlide,
   SdkChatSlide,
   WhyNotSlide,
   GigachadSlide,
@@ -113,6 +116,7 @@ export const slides = [
   MementoSlide,
   SkillUnitSlide,
   SkillToolSlide,
+  SkillDescriptionSlide,
   SkillUnitRefsSlide,
   SkillReadRefSlide,
   SkillUnitScriptsSlide,
@@ -123,6 +127,8 @@ export const slides = [
   AssistantReadySlide,
   AssistantSessionSlide,
   ArchitectureSlide,
+  AssistantSessionRestSlide,
+  HerdrApiSlide,
   RunnerSlide,
   AnyAgentSlide,
   ArchitectureDaemonSlide,
@@ -133,6 +139,7 @@ export const slides = [
   TaskBoardSlide,
   ArchitectureWebSlide,
   ArtifactSlide,
+  TextVsCodeSlide,
   MiniappBirthSlide,
   ArchitectureAppsSlide,
   MiniappsSlide,

@@ -11,9 +11,37 @@ import meme from '../assets/history/something-of-an-engineer.jpg';
  * 1200×600); the caption is set in the deck's own type, not baked in.
  */
 
+/** Beat 2: what the rest of the talk is about, in the photo's quiet top-left corner. */
+const AGENDA = ['working on AI-native projects', 'building your own AI assistant', 'demystifying buzzwords'];
+/** Every term the deck actually explains, in the order the talk reaches it. */
+const BUZZWORDS = ['tokens', 'harness', 'tool', 'context', 'MCP', 'AGENTS.md', 'loops', 'skills', 'artifacts'];
+const AGENDA_LAST = 'software factories';
+
+function Agenda() {
+  return (
+    <div className="ww-myway__agenda reveal-in">
+      <div className="ww-myway__agendahead">We’ll talk about</div>
+      <ul className="ww-myway__agendalist">
+        {AGENDA.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+        <li className="ww-myway__buzz">
+          {BUZZWORDS.map((w) => (
+            <span key={w} className="ww-myway__chip">
+              {w}
+            </span>
+          ))}
+        </li>
+        <li>{AGENDA_LAST}</li>
+      </ul>
+    </div>
+  );
+}
+
 export const MyWaySlide: SlideDefinition = {
   id: 'my-way',
-  content: () => (
+  maxRevealStages: 1,
+  content: ({ revealStage }) => (
     <div className="ww-myway">
       {/* the warp for the job title: fractal noise displacing the glyphs, so the
           words look smeared rather than set — no extra font file to ship */}
@@ -29,6 +57,7 @@ export const MyWaySlide: SlideDefinition = {
         <br />
         <span className="ww-myway__warp">AI-native Engineer</span> myself
       </p>
+      {revealStage >= 1 && <Agenda />}
     </div>
   ),
   notes:
@@ -42,5 +71,8 @@ export const MyWaySlide: SlideDefinition = {
     + 'already trust with my code, a machine that is already on, a queue, a protocol for tools, '
     + 'a way to write things down. None of it was built for this. All of it fits together. '
     + 'No new harness, nothing to keep up with — the answer to the slide where I was catching up '
-    + 'with Claude Code every week. And then: here is what those parts are.',
+    + 'with Claude Code every week. And then: here is what those parts are. '
+    + '[reveal] So, what we\'ll talk about: working on AI-native projects; building your own AI assistant; '
+    + 'demystifying the buzzwords — tokens, harness, tool, context, MCP, AGENTS.md, loops, skills, '
+    + 'artifacts; and software factories.',
 };

@@ -49,11 +49,12 @@ export type Line =
       ms?: number;
     };
 
-/** The vision, shortened for the stage from the first commit's CLAUDE.md
+/** The vision, shortened for the stage from the first commit's instructions file (it was
+ *  CLAUDE.md in the real repo; the deck calls it AGENTS.md throughout)
  *  (6 June 2026, 19:04) — the real one is 18 lines; the project's name is
  *  aliased to «myclaw» throughout the deck. */
 const VISION = [
-  '# CLAUDE.md',
+  '# AGENTS.md',
   '## Vision',
   'myclaw connects services and AI agents into one system.',
   'Its core is a task system:',
@@ -90,17 +91,19 @@ const EDIT_RESULT = (added: number, removed: number) =>
 
 /** Each beat appends to the session. */
 const STEPS: Line[][] = [
+  // Claude Code has just started: the banner, an empty prompt, and nothing else yet
+  [],
   [
     {
       kind: 'you',
       // the vision itself went in as a paste, which Claude Code collapses to this
       // placeholder (format read off the 2.1.322 binary: «[Pasted text #N +M lines]»)
-      text: 'create CLAUDE.md with one section Vision and following text: [Pasted text #1 +7 lines]',
+      text: 'create AGENTS.md with one section Vision and following text: [Pasted text #1 +7 lines]',
     },
     {
       kind: 'tool',
-      text: 'Write(CLAUDE.md)',
-      result: `Wrote ${VISION.length} lines to CLAUDE.md`,
+      text: 'Write(AGENTS.md)',
+      result: `Wrote ${VISION.length} lines to AGENTS.md`,
       preview: VISION,
     },
   ],
@@ -112,7 +115,7 @@ const STEPS: Line[][] = [
     // The evening of 6 June 2026, 19:12 → 21:15, replayed over about half a minute —
     // the SERVER half only (the real commit also carried a web board, left out
     // on purpose). Rebuilt from the one commit it produced (bd712975: message,
-    // file list with line counts, CLAUDE.md diff) — no transcript survives.
+    // file list with line counts, AGENTS.md diff) — no transcript survives.
     // Every ⎿ line is output in the CLI's own words: Write's «Wrote N lines to»,
     // drizzle-kit's and vitest's summaries, and Railway's deploy line.
     {
@@ -216,7 +219,9 @@ const STEPS: Line[][] = [
       ms: 900,
     },
     { kind: 'say', text: `Created task ${TASK_ID}.` },
-    // Same beat, no click: the tick. /loop re-enters its own prompt into the same session — the
+  ],
+  [
+    // The next beat: the tick. /loop re-enters its own prompt into the same session — the
     // harness writes the «user» turn (the previous slide). The CLI shows only
     // its own dim wakeup line; the time is in its format, illustrative.
     { kind: 'you', text: LOOP_PROMPT, fired: 'Jun 6 9:52pm' },
@@ -292,7 +297,7 @@ const STEPS: Line[][] = [
   ],
   [
     // Same session, straight after: he stops it and pastes his process (shown
-    // expanded, see `paste`) — deliberately NOT into CLAUDE.md: it lives only in
+    // expanded, see `paste`) — deliberately NOT into AGENTS.md: it lives only in
     // this conversation, which is exactly the question the next slide asks
     // («how do I make it always work like this?»).
     {
@@ -578,15 +583,36 @@ export function Row({
   );
 }
 
+/** Steps that replay faster than life, and by how much: the build-the-server act (one long
+ *  evening, 2×) and the loop doing the first task on its own (3×). A step that opens with a
+ *  prompt you type keeps that prompt at normal speed, so it can be read; the rest is sped up. */
+const FAST_STEPS = new Map<number, number>([
+  [2, 2],
+  [5, 3],
+]);
+function paced(step: number, t: number): number {
+  const k = FAST_STEPS.get(step);
+  if (!k) return t;
+  const first = STEPS[step]?.[0];
+  const typed = first?.kind === 'you' && !first.fired;
+  const sent = typed ? first.text.length * TYPE_MS : 0;
+  return t <= sent ? t : sent + (t - sent) * k;
+}
+
 /** `from` is where this slide's beats start in the session; everything
  *  before it is already in the scrollback, so the split reads as one
  *  continuous session with an explainer wedged into the middle of it. */
 function Session({ stage, from }: { stage: number; from: number }) {
-  const t = useClock(stage);
-  const earlier = STEPS.slice(0, from + stage - 1).flat();
-  const live = played(STEPS[from + stage - 1] ?? [], t);
+  const step = from + stage - 1;
+  const t = paced(step, useClock(stage));
+  const earlier = STEPS.slice(0, step).flat();
+  const live = played(STEPS[step] ?? [], t);
   // Busy until the newest beat has fully typed/streamed (frameSettled.ts).
   useAnimating(live.some((row) => !row.done));
+  // What you type is typed in the prompt box, as in the real CLI; Enter moves it
+  // into the transcript. A /loop wakeup is not typed by anyone, so it skips the box.
+  const typedByYou = (line: Line) => line.kind === 'you' && !line.fired;
+  const typing = live.find((row) => typedByYou(row.line) && row.started && !row.done);
 
   return (
     <div className="ww-boot__term">
@@ -614,7 +640,7 @@ function Session({ stage, from }: { stage: number; from: number }) {
         ))}
         {live.map(
           (row, i) =>
-            row.started && (
+            (typedByYou(row.line) ? row.done : row.started) && (
               <Row key={`l${i}`} line={row.line} shown={row.shown} done={row.done} typing={row.typing} />
             )
         )}
@@ -623,7 +649,10 @@ function Session({ stage, from }: { stage: number; from: number }) {
       <div className="ww-boot__prompt">
         <div className="ww-boot__input">
           <span className="ww-boot__caret">&gt;</span>
-          <span className="ww-boot__cursor" />
+          <span>
+            {typing?.shown}
+            <span className="ww-boot__cursor" />
+          </span>
         </div>
         <div className="ww-boot__hint">? for shortcuts</div>
       </div>
@@ -631,7 +660,7 @@ function Session({ stage, from }: { stage: number; from: number }) {
   );
 }
 
-/** The session is one slide per act: the vision, then — after the CLAUDE.md
+/** The session is one slide per act: the vision, then — after the AGENTS.md
  *  explainer — everything that act makes possible. No title: the terminal
  *  takes the whole stage. */
 function sessionSlide(id: string, from: number, count: number): SlideDefinition {
@@ -652,19 +681,13 @@ function sessionSlide(id: string, from: number, count: number): SlideDefinition 
 }
 
 export const BootstrapSlide: SlideDefinition = {
-  ...sessionSlide('bootstrap', 0, 1),
+  ...sessionSlide('bootstrap', 0, 3),
   notes:
-    'The first commit was not code. 6 June 2026, 19:04: a CLAUDE.md with the vision — and the '
+    'Claude Code, just launched, waiting for me. [reveal] The first commit was not code. 6 June 2026, 19:04: an AGENTS.md with the vision — and the '
     + 'vision already says the thing the rest of the talk is about: tasks assigned to agents that '
     + 'POLL and pick them up, and every session attached back to its task. '
-    + 'Before the session carries on, say what that file IS — the next slide.',
-};
-
-export const BootstrapRestSlide: SlideDefinition = {
-  ...sessionSlide('bootstrap-rest', 1, 2),
-  notes:
-    'Back in the same session, and now it moves. '
-    + 'Beat 1 plays for about half a minute — let it, and talk over it. That was one evening: the vision '
+    + '[reveal] And now it moves — this beat plays at double speed once the prompt is in; talk over it. '
+    + 'That was one evening: the vision '
     + 'at 19:04, the technical choices at 19:12, and at 21:15 the queue in ONE commit. It proposed '
     + 'the stack and I said go: Bun, Hono, Drizzle over Postgres, create / list / update / delete, '
     + 'twelve end-to-end tests against a real Postgres, no mocks, and the Railway config. I did not '
@@ -673,11 +696,19 @@ export const BootstrapRestSlide: SlideDefinition = {
     + 'in it — not from a transcript, and it shows only the server: the real commit (75 files, '
     + '9,130 lines) also carried a web board, left out here. And notice how «get the next task» '
     + 'was answered on day one: a list filtered by status=todo — the agent still had to pick. '
+    + 'One rename: in the real repo that first file was CLAUDE.md; the deck calls it AGENTS.md, '
+    + 'the name most agents share. '
     + 'Then it deploys, and here it goes through first time — say the truth: in real life the build '
     + 'failed on Railway and took three more pushes the next morning, 11:19 to 11:30. It is never '
     + 'that clean. '
-    + 'And that is enough for the next click. '
-    + 'Beat 2 — the loop, which is the only sentence that matters, and it talks to the queue over '
+    + 'Before the session carries on, say what that AGENTS.md it wrote first IS — the next slide.',
+};
+
+export const BootstrapRestSlide: SlideDefinition = {
+  ...sessionSlide('bootstrap-rest', 3, 1),
+  notes:
+    'Back in the same session. '
+    + 'The loop, which is the only sentence that matters, and it talks to the queue over '
     + 'plain REST: curl, the list filtered by status=todo. The queue is empty, so the honest '
     + 'answer is [] and it waits for the next tick. (In real life the MCP connector came five days '
     + 'later, on 11 June — a nicer way to ask for work, not a different idea.) And /loop is a real '
@@ -699,13 +730,12 @@ export const BootstrapRestSlide: SlideDefinition = {
 /** After the loop explainer: back in the same session, the first real task —
  *  created by hand, then picked up and done by the loop on its next tick. */
 export const BootstrapTaskSlide: SlideDefinition = {
-  ...sessionSlide('bootstrap-task', 3, 1),
+  ...sessionSlide('bootstrap-task', 4, 2),
   notes:
     'Back in the session, where we left it: the loop is ticking, the queue is empty. '
-    + 'One beat, it plays through by itself — talk over it. '
     + 'I ask for the first real task, and the agent creates it through the API it built an '
     + 'hour ago. Nobody does it yet: the loop is waiting. '
-    + 'Then — ten minutes later in real life — the tick fires. Point at the dim line: «Claude resuming /loop '
+    + '[reveal] Then — ten minutes later in real life — the tick fires (this beat plays at triple speed). Point at the dim line: «Claude resuming /loop '
     + 'wakeup». Nobody typed anything — the harness submitted the loop\'s prompt itself, the very '
     + '«User:» turn from the sheet on the previous slide; Claude Code does not even draw it as a '
     + 'prompt, only that line (read off the CLI, 2.1.322). '
@@ -719,7 +749,7 @@ export const BootstrapTaskSlide: SlideDefinition = {
 /** After the loop picked up the first task: he stops it — that is not how the work is
  *  done here — hands over his development process, and the same task is redone by it. */
 export const BootstrapProcessSlide: SlideDefinition = {
-  ...sessionSlide('bootstrap-process', 4, 9),
+  ...sessionSlide('bootstrap-process', 6, 9),
   notes:
     'Same session, a minute later. Beat 1 — I stop it: it shipped, but that is not how work is done '
     + 'here. I paste my development process — the nine steps of my own development-process skill, there '

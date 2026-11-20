@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { SlideDefinition } from '../types/slides';
 import { CornerRings } from '../components/wawtech';
 import { useAnimating } from '../components/frameSettled';
@@ -16,7 +16,7 @@ import {
   seg,
   SHEET,
   Stamp,
-  useOneShotClock,
+  EXPORT_MODE,
   useUnitSlots,
   WIN,
   type Pt,
@@ -50,7 +50,7 @@ import {
 type Turn = { who: Who; label: string; text: string; call?: string; runs?: string };
 
 const SCENE: Turn[] = [
-  { who: 'harness', label: 'System:', text: 'You are Claude Code. Tools: Read, Edit, Bash. …' },
+  { who: 'harness', label: '', text: 'You are Claude Code. Tools: Read, Edit, Bash. …' },
   { who: 'user', label: 'User:', text: 'fix the VAT bug in cart.ts' },
   { who: 'model', label: 'Assistant:', text: '<|tool_call|> Read(cart.ts) <|end_call|>', call: 'Read(cart.ts)', runs: '$ cat cart.ts' },
   { who: 'harness', label: 'Tool:', text: 'total = sum(items) * VAT - discount' },
@@ -67,7 +67,7 @@ const SCENE: Turn[] = [
  * turns — it is still all there, only folded.
  */
 const FULL_PROMPT: { label?: string; text: string }[] = [
-  { label: 'System:', text: 'You are Claude Code, a coding assistant.' },
+  { text: 'You are Claude Code, a coding assistant.' },
   { text: 'To read a file, write: <|tool_call|> Read(path) <|end_call|>' },
   { text: 'To change it: <|tool_call|> Edit(path, old, new) <|end_call|>' },
   { text: 'To run a command: <|tool_call|> Bash(cmd) <|end_call|>' },
@@ -141,6 +141,51 @@ SCENE.forEach((turn, i) => {
 });
 const TOTAL = clock + TAIL;
 
+/** One click per line of the script: each beat plays the timeline up to the moment
+ *  its line is fully on the sheet — the full system prompt (it folds at the start
+ *  of the next beat), the task typed, a
+ *  tool call written (the next beat has the harness read it, run it and drop the
+ *  result), a result landed, and the answer on the user's screen — and holds. */
+const phaseEnd = (kind: Kind, turn: number) => {
+  const p = PHASES.find((x) => x.kind === kind && x.turn === turn)!;
+  return p.at + p.ms;
+};
+const BEAT_ENDS = SCENE.map((turn, i) => {
+  // the system prompt stays open for its own beat; the next one opens by folding it
+  if (i === 0) return phaseEnd('slab', 0) + 300;
+  if (i === SCENE.length - 1) return TOTAL;
+  if (turn.who === 'user') return phaseEnd('type', i);
+  if (turn.who === 'model') return phaseEnd('stream', i);
+  return phaseEnd('slab', i); // a tool result, landed
+});
+const beatSpan = (stage: number) => {
+  const b = Math.min(Math.max(stage, 0), BEAT_ENDS.length - 1);
+  return { start: b === 0 ? 0 : BEAT_ENDS[b - 1], end: BEAT_ENDS[b] };
+};
+
+/** The beat's stretch of the one timeline: a step forward carries on from where the
+ *  last beat stopped; any other jump starts the beat fresh. The PDF gets the end. */
+function useBeatClock(stage: number): number {
+  const { start, end } = beatSpan(stage);
+  const [t, setT] = useState(EXPORT_MODE ? end : start);
+  useEffect(() => {
+    if (EXPORT_MODE) {
+      setT(end);
+      return;
+    }
+    setT((cur) => (cur >= start && cur <= end ? cur : start));
+    let last = performance.now();
+    let id = requestAnimationFrame(function tick(now) {
+      const dt = now - last;
+      last = now;
+      setT((cur) => Math.min(end, cur + dt));
+      id = requestAnimationFrame(tick);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [start, end]);
+  return t;
+}
+
 // ── where things sit on the harness's screen ────────────────────────────────
 const CALL_SLOT: Pt = [WIN.x + 210, 52];
 const RUN_SLOT: Pt = [WIN.x + 210, 112];
@@ -150,10 +195,10 @@ const TEXT_TOP = SHEET.y + 40;
 /** how many «characters» of the answer the laptop's screen lines can show */
 const SCREEN_UNITS = 36;
 
-function Scene() {
-  const t = useOneShotClock(TOTAL);
+function Scene({ stage }: { stage: number }) {
+  const t = useBeatClock(stage);
   const done = t >= TOTAL;
-  useAnimating(!done);
+  useAnimating(t < beatSpan(stage).end);
 
   const now = PHASES.filter((p) => t >= p.at && t < p.at + p.ms);
   const active = (kind: Kind) => now.find((p) => p.kind === kind);
@@ -326,9 +371,14 @@ function Scene() {
         <span className={`ww-ctx__stamp ww-ctx__stamp--${turn.who}`} style={{ opacity: started ? 1 : 0 }}>
           <Stamp who={turn.who} />
         </span>
-        <span className="ww-ctx__label" style={{ visibility: started ? 'visible' : 'hidden' }}>
-          {turn.label}
-        </span>{' '}
+        {/* the system prompt goes unlabelled: the harness's stamp says who wrote it */}
+        {turn.label && (
+          <>
+            <span className="ww-ctx__label" style={{ visibility: started ? 'visible' : 'hidden' }}>
+              {turn.label}
+            </span>{' '}
+          </>
+        )}
         {u.map((text, ui) => {
           const shown = ui < n;
           const style: CSSProperties = { visibility: shown ? 'visible' : 'hidden' };
@@ -425,17 +475,19 @@ function Scene() {
 
 export const CodingAgentSlide: SlideDefinition = {
   id: 'coding-agent',
-  content: () => (
+  // one beat per line of the script (nine), see BEAT_ENDS
+  maxRevealStages: SCENE.length - 1,
+  content: ({ revealStage }) => (
     <>
       <CornerRings corner="top-right" />
       <div className="ww-ctxstage">
-        <Scene />
+        <Scene stage={revealStage} />
       </div>
     </>
   ),
   notes:
-    'Coding agent — still just predicts the next token. It plays by itself, about half a minute; '
-    + 'narrate over it. Same sheet as before: the context. The harness drops the system prompt — and '
+    'Coding agent — still just predicts the next token. One click per line of the script (nine): '
+    + 'each plays until its line is on the sheet and waits for you. Same sheet as before: the context. The harness drops the system prompt — and '
     + 'look, it now lists TOOLS: Read, Edit, Bash. You type the task. The model reads the whole sheet '
     + 'and does the only thing it ever does — predicts the next tokens; only now the most likely next '
     + 'tokens are a tool call. It cannot read the file. The harness reads that call, lifts it onto its '

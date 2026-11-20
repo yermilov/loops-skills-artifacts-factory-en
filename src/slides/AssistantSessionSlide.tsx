@@ -644,7 +644,15 @@ function Scene({ stage }: { stage: number }) {
   const earlier = STEPS.slice(0, beat).flatMap((_, i) => linesOf(i));
   // a line being written in the prompt box: its dropped part is there in one piece
   const boxed = live.find((row) => (row.line as Beat).box !== undefined && row.started && !row.done);
-  const inBox = boxed && boxed.line.text.slice(0, Math.max(boxed.shown.length, (boxed.line as Beat).box ?? 0));
+  // anything typed at the terminal is typed in the prompt box and sent on Enter —
+  // not a /loop wakeup (nobody types it) and not a message typed on the phone
+  const typedHere = (line: Beat) => line.kind === 'you' && !line.fired && !line.phone;
+  const typingHere = live.find(
+    (row) => typedHere(row.line as Beat) && (row.line as Beat).box === undefined && row.started && !row.done,
+  );
+  const inBox =
+    (boxed && boxed.line.text.slice(0, Math.max(boxed.shown.length, (boxed.line as Beat).box ?? 0)))
+    || typingHere?.shown;
   const status = statusAt(beat, live);
   const before = settled(beat);
   const ctx = useTween(status.ctx, status.ctxOver, before.ctx);
@@ -685,7 +693,7 @@ function Scene({ stage }: { stage: number }) {
               const line = row.line as Beat;
               if (line.silent) return null;
               // a message typed on the phone — or in the prompt box — arrives whole, when sent
-              const visible = line.phone || line.box !== undefined ? row.done : row.started;
+              const visible = line.phone || typedHere(line) ? row.done : row.started;
               return (
                 visible && (
                   <Row key={`l${i}`} line={row.line} shown={row.shown} done={row.done} typing={row.typing} />
@@ -740,23 +748,35 @@ function Scene({ stage }: { stage: number }) {
   );
 }
 
-export const AssistantSessionSlide: SlideDefinition = {
-  id: 'assistant-session',
-  // no title band: «Our barebones AI assistant is ready» is the slide BEFORE this one
-  // (AssistantReadySlide), and the room goes to the terminal and to the verdict line
-  maxRevealStages: STEPS.length,
-  initialRevealStage: 1,
-  content: ({ revealStage }) => (
-    <>
-      <CornerRings corner="top-right" />
-      <Scene stage={Math.min(Math.max(revealStage, 1), STEPS.length)} />
-    </>
-  ),
-  notes:
-    'The assistant is done, and it is barely any code: Claude Code, a loop, a task queue. Seven '
+/** The session in two parts, the architecture slide between them: first the four
+ *  things that are great, then — back in the same session, history intact — the four
+ *  that are not. `first` is the session beat a part opens on. */
+const FIRST_NOT_GREAT = STEPS.findIndex((step) => !step.great) + 1;
+function sessionPart(id: string, first: number, last: number, notes: string): SlideDefinition {
+  return {
+    id,
+    // no title band: «Our barebones AI assistant is ready» is the slide BEFORE this one
+    // (AssistantReadySlide), and the room goes to the terminal and to the verdict line
+    maxRevealStages: last - first + 1,
+    initialRevealStage: 1,
+    content: ({ revealStage }) => (
+      <>
+        <CornerRings corner="top-right" />
+        <Scene stage={Math.min(Math.max(first + revealStage - 1, first), last)} />
+      </>
+    ),
+    notes,
+  };
+}
+
+export const AssistantSessionSlide = sessionPart(
+  'assistant-session',
+  1,
+  FIRST_NOT_GREAT - 1,
+    'The assistant is done, and it is barely any code: Claude Code, a loop, a task queue. '
     + 'ONE session, and one errand running through all of it — my car is due for a service. '
-    + 'Nine clicks: four things about it are great, four are not (the first of the four takes '
-    + 'two clicks). '
+    + 'Four clicks here, the four things about it that are great; the four that are not come '
+    + 'after the architecture (five clicks, the first of them takes two). '
     + '1 — I open Claude Code and just talk to it: when was the car last serviced? First it loads '
     + 'my user-information skill — what I drive, that I service it yearly — then asks the only API '
     + 'it has, its own task queue: last year\'s «Book the car service» sits there, closed. The '
@@ -772,6 +792,14 @@ export const AssistantSessionSlide: SlideDefinition = {
     + '4 — remote control: I leave the laptop, the service calls back, and I take the slot from '
     + 'the phone — in the SAME session. Even greater — and I wrote not a line of it. Every feature '
     + 'Claude Code ever ships, this assistant gets for free. '
+    + 'Then the architecture — and back to the same session for the other four.',
+);
+
+export const AssistantSessionRestSlide = sessionPart(
+  'assistant-session-rest',
+  FIRST_NOT_GREAT,
+  STEPS.length,
+    'Back in the same session. '
     + 'Now the other four — keep them, because the rest of the talk is these four. '
     + '5 — chat is the most generic UX, not the most convenient. I ask how to get from the '
     + 'service to the office, and the answer is correct, complete — and a paragraph: three routes, '
@@ -800,4 +828,4 @@ export const AssistantSessionSlide: SlideDefinition = {
     + 'prints itself — image placeholder, remote-control, context low, compaction, loop wakeup — '
     + 'are read off the 2.1.322 binary. The phone is drawn after the Claude app\'s session view as '
     + 'claude.ai/code shows it — a recreation, not a capture.',
-};
+);
