@@ -5,17 +5,10 @@ import { useAnimating } from '../components/frameSettled';
 import { QrLink } from '../components/QrLink';
 import { useClock } from './BootstrapSlide';
 import { Browser, InFlight, STREAM_MS } from './improve';
-import { App, Comment, Fields, Ico, IconName, NavGroup, Thumb } from './ledgerApp';
+import { App, Comment, Fields, Ico, IconName, NavGroup, Tap, TAP_TRAVEL_MS } from './ledgerApp';
 import dryGuatemala from '../assets/coffee/dry-guatemala.jpg';
 import bekeleKechara from '../assets/coffee/ethiopia-bekele-kechara.jpg';
 import decaf from '../assets/coffee/decaf.jpg';
-import waterPhoto from '../assets/supplies/water.jpg';
-import granolaPhoto from '../assets/supplies/granola.jpg';
-import tabletsPhoto from '../assets/supplies/dishwasher-tablets.jpg';
-import eggsPhoto from '../assets/silpo/eggs.webp';
-import goudaPhoto from '../assets/silpo/gouda.webp';
-import stellaPhoto from '../assets/silpo/stella.webp';
-import yogurtPhoto from '../assets/silpo/yogurt.webp';
 import elegantPuzzleCover from '../assets/books/elegant-puzzle.jpg';
 import archModernizationCover from '../assets/books/architecture-modernization.jpg';
 import selfishGeneCover from '../assets/books/selfish-gene.jpg';
@@ -33,7 +26,6 @@ import makingThingsHappenCover from '../assets/books/making-things-happen.jpg';
 import superPumpedCover from '../assets/books/super-pumped.jpg';
 import rehearsalPoster from '../assets/movies/the-rehearsal.jpg';
 import seeEverythingPoster from '../assets/movies/you-can-see-everything.jpg';
-import droneMap from '../assets/threat/drone-map-kyiv.jpg';
 import kotykAct1925 from '../assets/rodovid/davio-r6129-8-27-akt36-1925-kotyk.jpg';
 import volovodivkaDeaths1917 from '../assets/rodovid/volovodivka-1917-husak-deaths.jpg';
 import volovodivkaRegister1917 from '../assets/rodovid/volovodivka-1917-vidomist.jpg';
@@ -58,23 +50,24 @@ import dyingToForgetCover from '../assets/music/58n0MyTEOVHzAlPowTVt4P.jpg';
 /**
  * «Artifacts that stay: miniapps» — the pages of the assistant's web app.
  *
- * The first frame plays how one is BORN (Yarik, 14.11.2026): I talk to the agent
- * about coffee in a task, it answers with an artifact, and then I say «make this
- * artifact permanent — create a miniapp»: the agent writes the page, a row appears
- * in the sidebar, and the app opens it. Every click after that adds one more row
+ * The first frame plays how one is BORN (Yarik, 14.11.2026; Books since 22.11.2026):
+ * I tell the agent in a task that I finished a book, it answers with an artifact, and
+ * then I say «make this artifact permanent — create a miniapp»: the agent writes the
+ * page, a row appears in the sidebar, and the app opens it. Every click after that adds one more row
  * and opens that page, so the room watches the app grow. «Miniapp» is the
  * product's own word (a section of its sidebar; `apps/web/src/lib/launcher.ts`).
  *
  * The fourteen pages are RECREATIONS, each drawn after the real page as it looked
  * on 14.11.2026 — its sections, their order, their controls and their wording.
  * What each is FOR is real; every name, title and number is invented, because the
- * real ones hold his real life (money, health, family) — EXCEPT Coffee and
- * Supplies, which at his word (14.11.2026) show his real bags and shelf and his own
- * photos of them (src/assets/coffee/, src/assets/supplies/, taken off the product). Its verdicts and the «your taste»
+ * real ones hold his real life (money, health, family) — EXCEPT Coffee, which at
+ * his word (14.11.2026) shows his real bags and his own photos of them
+ * (src/assets/coffee/, taken off the product). Its verdicts and the «your taste»
  * summary are sharpened for the stage: on the real page all he has said so far is
- * «OK». In the order shown:
- *   Coffee · Money · Supplies · Books · Movies ·
- *   Threat forecast · Home · Sleep · Health · Sport · Music · Family tree.
+ * «OK». In the order shown (Yarik, 22.11.2026: Books is born first, Coffee is the
+ * phone, Supplies and its Silpo cart are gone):
+ *   Books · Money · Coffee (on a phone) · Movies ·
+ *   Home · Sleep · Health · Sport · Music · Family tree. (Threat forecast is gone too.)
  * Home, Sleep and Health first replay the real task each was born in; Family tree
  * is only a task — a month of archive research, with the scans the agent found.
  * (The app has more — the nanny's hours, work hours, important dates, his
@@ -223,32 +216,111 @@ function BagCard({ bag, rated = true }: { bag: Bag; rated?: boolean }) {
   );
 }
 
-const Coffee = () => (
-  <Page icon="coffee" name="Coffee">
-    <div className="ww-ma__card ww-ma__card--quiet">
-      <L>Your taste · 7 ratings</L>
-      <p>
-        You like a sweet, nutty natural: «love» on Dry Guatemala four bags in a row — orange, yellow apple, almond.
-        Floral, berry-forward Ethiopians are a steady «OK». Washed decaf is «not really». Next to buy: natural
-        Central Americans, filter roast.
-      </p>
+const Coffee = ({ phone }: { phone?: number }) => {
+  // on the phone frame the Ethiopia is not on the page yet: the phone is about to add it
+  const bags = phone === undefined ? BAGS : SHELF;
+  const count = bags.length + (phone !== undefined && phone >= 2 ? 1 : 0);
+  return (
+    <Page icon="coffee" name="Coffee">
+      <div className={phone === undefined ? 'ww-ma__beside' : 'ww-ma__beside ww-ma__beside--phone'}>
+        <div className="ww-ma__card ww-ma__card--quiet">
+          <L>Your taste · 7 ratings</L>
+          <p>
+            You like a sweet, nutty natural: «love» on Dry Guatemala four bags in a row — orange, yellow apple,
+            almond. Floral, berry-forward Ethiopians are a steady «OK». Washed decaf is «not really». Next to buy:
+            natural Central Americans, filter roast.
+          </p>
+        </div>
+        <span className="ww-jg__seg ww-ma__tabs">
+          <span>Flat · 2</span>
+          <span className="ww-jg__seg--on">Country house · {count}</span>
+          <span>Cafés</span>
+        </span>
+        <span className="ww-ma__actions">
+          <span className="ww-jg__new">Photograph a bag</span>
+          <L>+ without a photo</L>
+        </span>
+        <div className={phone === undefined ? 'ww-ma__cols ww-ma__cols--3' : 'ww-ma__cols'}>
+          {phone !== undefined && phone >= 2 && (
+            <div className="ww-jg__arrive ww-ma__fresh" key={phone >= 3 ? 'read' : 'pending'}>
+              {phone >= 3 ? <BagCard bag={NEW_BAG} rated={false} /> : <PendingBag bag={NEW_BAG} />}
+            </div>
+          )}
+          {bags.map((bag) => (
+            <BagCard key={bag.name} bag={bag} />
+          ))}
+        </div>
+      </div>
+    </Page>
+  );
+};
+
+/* — …and the same page on a phone: photograph a bag, and an agent fills its card — */
+
+/** The real flow on /coffee (apps/web/src/routes/coffee.tsx and the errands:coffee-intake
+ *  skill, read 22.11.2026 at 031eea5): «СФОТОГРАФУВАТИ ПАЧКУ» opens the camera, the pack
+ *  is saved with its photos and its card says «Розпізнається…»; a loop task, woken by
+ *  the change, has an agent read the label — roaster, name, origin, process, notes — and
+ *  fill the card, saying only what the pack says. Translated; the hint under the button is
+ *  the page's own («Інші боки пачки — … на її картці, до 4 фото»). Compressed for the
+ *  stage: the loop takes minutes, here it takes seconds. The photographed bag is his real
+ *  Ethiopia; it stands aside from the page until the phone adds it. */
+const NEW_BAG = BAGS[1];
+const SHELF = [BAGS[0]]; // one row beside the phone: the new bag lands next to it
+
+/** A bag whose photos no agent has read yet: the photo, and nothing it has not read. */
+function PendingBag({ bag }: { bag: Bag }) {
+  return (
+    <div className="ww-ma__card">
+      <div className="ww-jg__item">
+        <img className="ww-ma__bagphoto" src={bag.photo} alt="" />
+        <span className="ww-jg__itemtext">
+          <span className="ww-jg__itemname ww-ma__muted">Being recognised…</span>
+          <L tone="agent">an agent reads the label</L>
+        </span>
+      </div>
+      <L>1 photo · just now</L>
     </div>
-    <span className="ww-jg__seg ww-ma__tabs">
-      <span>Flat · 2</span>
-      <span className="ww-jg__seg--on">Country house · 3</span>
-      <span>Cafés</span>
-    </span>
-    <span className="ww-ma__actions">
-      <span className="ww-jg__new">Photograph a bag</span>
-      <L>+ without a photo</L>
-    </span>
-    <div className="ww-ma__cols ww-ma__cols--3">
-      {BAGS.map((bag) => (
-        <BagCard key={bag.name} bag={bag} />
-      ))}
+  );
+}
+
+/** the page · the camera · being recognised · recognised */
+const PHONE_MS = [0, 1600, 4000, 7200] as const;
+
+function CoffeePhone({ phase }: { phase: number }) {
+  return (
+    <div className="ww-ma__phone ww-jg__arrive">
+      <div className="ww-jg ww-jg--phone">
+        <span className="ww-ma__phonebar">
+          <L tone="ink">9:41</L>
+          <L>myclaw.app</L>
+        </span>
+        {phase === 1 ? (
+          <div className="ww-ma__camera" key="camera">
+            <img src={NEW_BAG.photo} alt="A bag of coffee in the viewfinder" />
+            <span className="ww-ma__flash" aria-hidden="true" />
+            <span className="ww-ma__shutter" aria-hidden="true" />
+          </div>
+        ) : (
+          <div className="ww-ma__phonepage ww-jg__arrive" key={phase}>
+            <span className="ww-jg__panelhead">
+              <Ico name="coffee" />
+              <span className="ww-jg__panelname">Coffee</span>
+            </span>
+            <span className={`ww-jg__new${phase === 0 ? ' ww-ma__tap' : ''}`}>Photograph a bag</span>
+            <L>Other sides of the bag — on its card, up to 4 photos.</L>
+            {phase >= 2 && (
+              <div className="ww-jg__arrive ww-ma__fresh" key={phase >= 3 ? 'read' : 'pending'}>
+                {phase >= 3 ? <BagCard bag={NEW_BAG} rated={false} /> : <PendingBag bag={NEW_BAG} />}
+              </div>
+            )}
+            <BagCard bag={BAGS[0]} />
+          </div>
+        )}
+      </div>
     </div>
-  </Page>
-);
+  );
+}
 
 /* ─── Money ───────────────────────────────────────────────────────────────── */
 
@@ -573,374 +645,6 @@ const Money = ({ sub = 0 }: { sub?: number }) => {
   return SubPage ? <SubPage key={sub} /> : <MoneyOverview />;
 };
 
-/* ─── Supplies ────────────────────────────────────────────────────────────── */
-
-/** His real shelf, read off the product on 14.11.2026 (names, counts, paces and the
- *  agent's own reasoning, translated) with his own photos (src/assets/supplies/). */
-type Supply = { name: string; photo: string; stock: string; pace?: string; order?: string; due?: boolean };
-const WATER: Supply = {
-  name: 'Still mineral water · Morshynska',
-  photo: waterPhoto,
-  stock: '12 pcs · 1.5 L',
-  pace: '~5.3 a day · enough for ~1 day, until 15 Nov',
-  order: 'Order today · the deadline was 12 Nov',
-  due: true,
-};
-const GRANOLA: Supply = {
-  name: 'Granola with nuts · Good morning, Granola',
-  photo: granolaPhoto,
-  stock: '5 pcs · 330 g',
-  pace: '~1 in 3 days · enough for ~12 days, until 26 Nov',
-  order: 'Order by 23 Nov',
-};
-/** The one the phone adds, in the mobile frame. */
-const TABLETS: Supply = {
-  name: 'Dishwasher tablets · Finish Powerball',
-  photo: tabletsPhoto,
-  stock: '1 pc',
-  pace: 'no pace yet — counted from the first «opened»',
-};
-
-function SupplyCard({ item }: { item: Supply }) {
-  return (
-    <div className={`ww-ma__card ww-ma__card--slim${item.due ? ' ww-ma__card--due' : ''}`}>
-      <div className="ww-jg__item">
-        <img className="ww-ma__supplyphoto" src={item.photo} alt="" />
-        <span className="ww-jg__itemtext">
-          <span className="ww-jg__itemname">{item.name}</span>
-          <L tone="ink">in stock {item.stock}</L>
-          {item.pace && <span className="ww-ma__sub">{item.pace}</span>}
-          {item.order && <L tone={item.due ? 'danger' : 'time'}>{item.order}</L>}
-        </span>
-      </div>
-      <L>opened · the open one is finished · bought · recount</L>
-    </div>
-  );
-}
-
-/** `phone`: the phase of the mobile frame's animation (undefined on the plain
- *  frame) — the page makes room for the phone, and at phase 3 the item the phone
- *  added is on the shelf here too. */
-/* — …and ordering: the «To buy» tab, and the agent filling a Silpo cart from it — */
-
-/**
- * How ordering really works in the product (read on 14.11.2026 off
- * apps/web/src/routes/{zapasy,shopping,supplies}.tsx, the live «Купити» tab and the
- * `errands:silpo` / `errands:silpo-restock` skills) — nothing here is guessed:
- *   - YES on a reorder proposal puts the purchase on the «To buy» list («ТАК puts
- *     the purchase into «Купити», and ticking it there restocks the supply»);
- *   - «To buy» is a list by SHOP — sections «Silpo», «No shop» — of plain
- *     checkbox rows, bought ones struck through and sunk;
- *   - under «Silpo» the agent leaves «Time to rebuy» chips: dashed, unfilled, each
- *     with its argument («last 43 days ago · usually every 3 days»), a + to take it
- *     and a × to dismiss. They come from his in-store RECEIPTS, read through the
- *     chain's own MCP connector, on a recurring task every three days;
- *   - the cart is assembled ON REQUEST, never on a schedule (it is one object,
- *     shared with the Silpo app on his phone): a task, in which the agent reads the
- *     list and the name→article links, settles a slot, finds each line, adds it,
- *     reads the cart back — and hands over a checkout link as the task's button;
- *   - the connector canNOT place an order (no checkout tool among its 42): «the
- *     agent fills the cart, Yarik pays».
- * The chips' names and cadences are his real ones; the tool names are the real ones.
- */
-const REBUY = [
-  { name: 'Yogurt Halychyna Karpatskyi, no sugar, 2.2%', why: 'last 35 days ago · usually every 4 days' },
-  { name: 'Milk chocolate Novi with whole hazelnuts', why: 'last 36 days ago · usually every 3 days' },
-  { name: 'Blueberries, Silpo bowl', why: 'last 43 days ago · usually every 3 days' },
-];
-const NO_SHOP = ['Red pencil / pen', 'Small bags', 'Mop cloth'];
-/** The cart is four lines of his REAL order of 13.11.2026 (№ …244, read through the
- *  connector's `silpo_get_my_online_orders`): the names, the prices and the pack
- *  sizes (`displayRatio`) are the catalogue's own (names shortened to fit a phone),
- *  the quantities his — only the
- *  Gouda is 2 here where he took 4. A self-pickup cart carries a flat 9 ₴ service
- *  fee. The pictures are the catalogue's own (the order's `image` URLs, saved to
- *  src/assets/silpo/ at Yarik's word on 14.11.2026 — the deck must not load them
- *  from images.silpo.ua, it has to work offline). */
-const CART: { list: string; name: string; qty: number; pack: string; price: number; photo: string }[] = [
-  { list: 'Eggs', name: 'Eggs «Yasensvit»', qty: 1, pack: '15 pcs', price: 114.45, photo: eggsPhoto },
-  { list: 'Sliced Gouda', name: 'Gouda Veldhuyzen Kaas, sliced', qty: 2, pack: '150 g', price: 119, photo: goudaPhoto },
-  { list: 'Non-alcoholic beer', name: 'Stella Artois, non-alcoholic', qty: 8, pack: 'can', price: 61.99, photo: stellaPhoto },
-  { list: REBUY[0].name, name: 'Yogurt «Halychyna», no sugar', qty: 4, pack: '300 g', price: 35.99, photo: yogurtPhoto },
-];
-const SERVICE_FEE = 9;
-const money = (n: number) => n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-const GOODS_TOTAL = CART.reduce((sum, line) => sum + line.qty * line.price, 0);
-const CART_TOTAL = GOODS_TOTAL + SERVICE_FEE;
-const CART_PIECES = CART.reduce((sum, line) => sum + line.qty, 0);
-
-/** the list and its chips · I take a chip · the agent fills the cart · the cart is
- *  ready, the phone offers the button · I tap it: the Silpo app, on its cart */
-const SILPO_MS = (() => {
-  const filling = 2000 + 1600;
-  const ready = filling + 2400; // the agent works out of sight
-  return [0, 2000, filling, ready, ready + 3000] as const;
-})();
-
-const Tick = ({ name, bought = false, fresh = false }: { name: string; bought?: boolean; fresh?: boolean }) => (
-  <span className={`ww-ma__tick${bought ? ' ww-ma__tick--bought' : ''}${fresh ? ' ww-jg__arrive ww-ma__tick--fresh' : ''}`}>
-    <span className="ww-ma__tickbox" aria-hidden="true">
-      {bought ? '✓' : ''}
-    </span>
-    {name}
-  </span>
-);
-
-/** The «Silpo» section of the list, as both the big screen and the phone draw it. */
-function SilpoList({ taken, tapChip, chips }: { taken: boolean; tapChip: boolean; chips: number }) {
-  return (
-    <>
-      <span className="ww-ma__row">
-        <L>⌄ Silpo</L>
-        <L>{taken ? CART.length : CART.length - 1}</L>
-      </span>
-      {CART.slice(0, -1).map((line) => (
-        <Tick key={line.list} name={line.list} />
-      ))}
-      {taken && <Tick name={REBUY[0].name} fresh />}
-      {chips > 0 && <L tone="time">✦ Time to rebuy</L>}
-      {REBUY.slice(taken ? 1 : 0, (taken ? 1 : 0) + chips).map((chip, i) => (
-        <span key={chip.name} className={`ww-ma__chip${tapChip && i === 0 ? ' ww-ma__tap' : ''}`}>
-          <span className="ww-ma__chipplus" aria-hidden="true">
-            +
-          </span>
-          <span className="ww-jg__itemtext">
-            <span>{chip.name}</span>
-            <L>{chip.why}</L>
-          </span>
-          <span aria-hidden="true">×</span>
-        </span>
-      ))}
-    </>
-  );
-}
-
-function SuppliesToBuy({ phase }: { phase: number }) {
-  const taken = phase >= 1; // the first chip is on the list
-  return (
-    <Page icon="supplies" name="Supplies">
-      <div className="ww-ma__beside ww-ma__beside--phone">
-        <span className="ww-jg__seg ww-ma__tabs">
-          <span>Flat</span>
-          <span>Country house</span>
-          <span className="ww-jg__seg--on">To buy</span>
-        </span>
-        <div className="ww-ma__cols">
-          <div className="ww-ma__col">
-            <SilpoList taken={taken} tapChip={phase === 0} chips={2} />
-          </div>
-          <div className="ww-ma__col">
-            {/* the cart is filled in the background: no session, no report on the page */}
-            <span className="ww-ma__row">
-              <L>⌄ No shop</L>
-              <L>0</L>
-            </span>
-            {NO_SHOP.map((name) => (
-              <Tick key={name} name={name} bought />
-            ))}
-          </div>
-        </div>
-      </div>
-    </Page>
-  );
-}
-
-/** The phone beside it: the same list in his pocket — and, once the cart is ready,
- *  one button that opens the Silpo app on that cart (the connector returns a
- *  `checkoutMobileLink`, labelled «Оформити в застосунку»). The app's screen is drawn
- *  after three screenshots of his own phone (14.11.2026): a pale lavender ground,
- *  white sheets with big radii, «← Кошик» with a slot pill beside it, order rows as
- *  thumbnail · name · «36 - 1,5л» · bold price · a heart · a blue square «+», and one
- *  blue pill button at the foot. All of it translated into English at his word. He
- *  showed an EMPTY cart and a placed order, so a filled cart is those two combined. */
-function SilpoPhone({ phase }: { phase: number }) {
-  return (
-    <div className="ww-ma__phone ww-jg__arrive">
-      <div className="ww-jg ww-jg--phone">
-        {phase < 4 ? (
-          <>
-            <span className="ww-ma__phonebar">
-              <L tone="ink">9:41</L>
-              <L>myclaw.app</L>
-            </span>
-            <div className="ww-ma__phonepage">
-              <span className="ww-jg__panelhead">
-                <Ico name="supplies" />
-                <span className="ww-jg__panelname">Supplies · To buy</span>
-              </span>
-              <SilpoList taken={phase >= 1} tapChip={false} chips={phase >= 1 ? 0 : 1} />
-              {phase >= 3 && (
-                <div className="ww-ma__card ww-ma__card--warn ww-jg__arrive" key="cart">
-                  <L tone="time">Silpo cart is ready</L>
-                  <span>
-                    {CART.length} lines · {CART_PIECES} pcs · {money(CART_TOTAL)} ₴
-                  </span>
-                  <span className="ww-jg__new ww-ma__tap">Open in the Silpo app ↗</span>
-                </div>
-              )}
-            </div>
-          </>
-        ) : (
-          <div className="ww-sp ww-jg__arrive" key="silpo">
-            <span className="ww-sp__status">
-              <span>9:41</span>
-              <span>●●● ▮</span>
-            </span>
-            <span className="ww-sp__head">
-              <span className="ww-sp__title">← Cart</span>
-              <span className="ww-sp__slot">
-                Tomorrow
-                <br />
-                from 09:30 ›
-              </span>
-            </span>
-            <span className="ww-sp__sheet">
-              <span className="ww-sp__pickup">
-                <strong>Self-pickup</strong>
-                <span className="ww-sp__dim">Tomorrow, 09:30–10:00</span>
-              </span>
-              {CART.map((line) => (
-                <span key={line.name} className="ww-sp__line">
-                  <img className="ww-sp__tile" src={line.photo} alt="" />
-                  <span className="ww-sp__name">
-                    {line.name}
-                    <span>
-                      {line.qty} - {line.pack} · <strong>{money(line.qty * line.price)} ₴</strong>
-                    </span>
-                  </span>
-                  <span className="ww-sp__heart" aria-hidden="true">
-                    ♡
-                  </span>
-                  <span className="ww-sp__plus" aria-hidden="true">
-                    +
-                  </span>
-                </span>
-              ))}
-              <span className="ww-sp__sums">
-                <span>
-                  Service fee <span>{money(SERVICE_FEE)} ₴</span>
-                </span>
-                <strong>
-                  To pay <span>{money(CART_TOTAL)} ₴</span>
-                </strong>
-              </span>
-            </span>
-            <span className="ww-sp__pay">Place the order</span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-const Supplies = ({ phone, silpo }: { phone?: number; silpo?: number }) =>
-  silpo !== undefined ? <SuppliesToBuy phase={silpo} /> : <SuppliesShelf phone={phone} />;
-
-const SuppliesShelf = ({ phone }: { phone?: number }) => (
-  <Page icon="supplies" name="Supplies">
-    <div className={phone === undefined ? 'ww-ma__beside' : 'ww-ma__beside ww-ma__beside--phone'}>
-      <span className="ww-jg__seg ww-ma__tabs">
-        <span>Flat</span>
-        <span className="ww-jg__seg--on">Country house · 1</span>
-        <span>To buy</span>
-      </span>
-      <L>Time to reorder</L>
-      <div className="ww-ma__card ww-ma__card--warn">
-        <span className="ww-jg__itemname">Still mineral water · Morshynska · 36 pcs</span>
-        <L tone="time">Order today · the deadline was 13 Nov</L>
-        <p>
-          You use ~5.3 bottles a day (by the daily counts), 12 are left — enough until 15 Nov, so buy today. 36 (six
-          packs of six) is about a week at this pace.
-        </p>
-        <span className="ww-ma__actions">
-          <span className="ww-jg__new">Yes</span>
-          <L>No</L>
-        </span>
-      </div>
-      {/* on the mobile frame the phone is doing the adding: the form here steps aside */}
-      {phone === undefined && (
-        <div className="ww-ma__card ww-ma__card--slim">
-          <span className="ww-ma__actions ww-ma__actions--spread">
-            <Buttons items={['Photo', 'Link', 'Text']} on="Photo" />
-            <span className="ww-ma__input">name (optional — I will read it off the photo)</span>
-            <span className="ww-jg__new">+ Add to the house</span>
-          </span>
-        </div>
-      )}
-      <div className="ww-ma__cols">
-        {phone !== undefined && phone >= 3 && (
-          <div className="ww-jg__arrive ww-ma__fresh" key="new">
-            <SupplyCard item={TABLETS} />
-          </div>
-        )}
-        <SupplyCard item={WATER} />
-        {!(phone !== undefined && phone >= 3) && <SupplyCard item={GRANOLA} />}
-      </div>
-    </div>
-  </Page>
-);
-
-/* — …and the same app on a phone: photograph a thing, and it is on the shelf — */
-
-/** the form · the camera · recognised · on the shelf */
-const PHONE_MS = [0, 1600, 4000, 6400] as const;
-
-function Phone({ phase }: { phase: number }) {
-  return (
-    <div className="ww-ma__phone ww-jg__arrive">
-      <div className="ww-jg ww-jg--phone">
-        <span className="ww-ma__phonebar">
-          <L tone="ink">9:41</L>
-          <L>myclaw.app</L>
-        </span>
-        {phase === 1 ? (
-          <div className="ww-ma__camera" key="camera">
-            <img src={tabletsPhoto} alt="A bag of dishwasher tablets in the viewfinder" />
-            <span className="ww-ma__flash" aria-hidden="true" />
-            <span className="ww-ma__shutter" aria-hidden="true" />
-          </div>
-        ) : (
-          <div className="ww-ma__phonepage ww-jg__arrive" key={phase}>
-            <span className="ww-jg__panelhead">
-              <Ico name="supplies" />
-              <span className="ww-jg__panelname">Supplies</span>
-            </span>
-            {phase < 3 ? (
-              <div className="ww-ma__card">
-                <Buttons items={['Photo', 'Link', 'Text']} on="Photo" />
-                {phase === 0 ? (
-                  <>
-                    <span className="ww-ma__button ww-ma__button--wide ww-ma__tap">Take a photo</span>
-                    <span className="ww-ma__input">name (optional — I will read it off the photo)</span>
-                  </>
-                ) : (
-                  <>
-                    <div className="ww-jg__item">
-                      <img className="ww-ma__supplyphoto" src={tabletsPhoto} alt="" />
-                      <span className="ww-jg__itemtext">
-                        <L tone="agent">Read off the photo</L>
-                        <span>{TABLETS.name}</span>
-                      </span>
-                    </div>
-                    <L>In stock now · 1 pc</L>
-                  </>
-                )}
-                <span className={`ww-jg__new${phase === 2 ? ' ww-ma__tap' : ''}`}>+ Add to the house</span>
-              </div>
-            ) : (
-              <>
-                <L tone="agent">Added · on the shelf</L>
-                <SupplyCard item={TABLETS} />
-                <SupplyCard item={WATER} />
-              </>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 /* ─── Books ───────────────────────────────────────────────────────────────── */
 
 /** His real shelf, read on 14.11.2026 off the live page (/books) and `books_list`:
@@ -1184,84 +888,6 @@ const Health = () => (
             <L>− 1 sip</L>
           </span>
         </div>
-      </div>
-    </div>
-  </Page>
-);
-
-/* ─── Threat forecast ─────────────────────────────────────────────────────── */
-
-/** Kyiv as the real page (/attack, the «Київ» tab) showed it on the evening of
- *  14.11.2026 — copied at Yarik's word, read off the live page and `attack_list`:
- *  no alert for 10 h 35 min, the assessment prepared at 21:06, and the two classes
- *  at the top of its list with their real levels (the page has twelve; ten more
- *  were low or none). The rationales are the agent's own, translated from Ukrainian
- *  and cut to their first argument. Left out: the «where you are now» card (it
- *  names where he really is) and the city switch. The map is his own screenshot
- *  of the page's embedded alert map that evening (src/assets/threat/): Chernihiv
- *  region under alert, one drone marked in it, Kyiv below, clear.
- *  The 21-day ribbon: the page draws alerts as a continuous strip; here it is
- *  sampled into 63 cells — m calm, o an alert, v a strike-heavy stretch. */
-const RIBBON = 'vommmvmmmvmmmmmvmmomooommmovmmoommmommovommmmoommommmmmommmmmmm'.split('');
-const CLASSES = [
-  {
-    name: 'Ballistic (Iskander-M / KN-23 / S-400)',
-    level: 2,
-    why: 'MID: the 21:00 register names up to 40 missiles, the city of Kyiv among the main targets; the US 48-hour warning still stands. Not HIGH: no launchers on the line, no target on the city.',
-  },
-  {
-    name: 'Jet Shahed / Geran-4/5',
-    level: 1,
-    why: 'LOW: no new target on the capital — the jets crossed Kyiv region in transit, no alert in the city.',
-  },
-];
-const LEVELS = ['Low', 'Medium', 'High'];
-
-const Ribbon = ({ cells = RIBBON }: { cells?: string[] }) => (
-  <>
-    <span className="ww-jg__ribbon" aria-hidden="true">
-      {cells.map((cell, i) => (
-        <span key={i} className={`ww-jg__cell ww-jg__cell--${cell}`} />
-      ))}
-    </span>
-    <span className="ww-jg__ribbonlegend ww-jg__label">
-      <span>21 days ago</span>
-      <span>now</span>
-    </span>
-  </>
-);
-
-const Threat = () => (
-  <Page icon="alert" name="Threat forecast" aside={<L>air threat for Kyiv · the next 24 hours</L>}>
-    <div className="ww-ma__cols ww-ma__cols--wide">
-      <div className="ww-ma__col">
-        <div className="ww-ma__card ww-ma__card--calm">
-          <span className="ww-ma__row">
-            <span className="ww-jg__itemname">Kyiv</span>
-            <L tone="ink">No alert · 10 h 35 min</L>
-          </span>
-          <Ribbon />
-        </div>
-        <L>Assessment prepared 14 Nov at 21:06</L>
-        {CLASSES.map((weapon) => (
-          <div key={weapon.name} className="ww-ma__card">
-            <span className="ww-ma__row">
-              <span className="ww-jg__itemname">{weapon.name}</span>
-              <L tone={weapon.level > 1 ? 'time' : undefined}>{LEVELS[weapon.level - 1]}</L>
-            </span>
-            <span className={`ww-ma__level${weapon.level === 1 ? ' ww-ma__level--low' : ''}`} aria-hidden="true">
-              {LEVELS.map((level, i) => (
-                <span key={level} className={i < weapon.level ? 'ww-ma__level--on' : undefined} />
-              ))}
-            </span>
-            <p>{weapon.why}</p>
-            <L>Disagree with the level</L>
-          </div>
-        ))}
-      </div>
-      <div className="ww-ma__col">
-        <L>Alert map</L>
-        <img className="ww-ma__alertmap" src={droneMap} alt="" />
       </div>
     </div>
   </Page>
@@ -1794,7 +1420,8 @@ const Sport = () => (
 
 /* ─── Music ───────────────────────────────────────────────────────────────── */
 /* The real page (apps/web/src/routes/music.tsx): «Songs · duel and top 30» — the
- * duel card on top (DuelCard: «Which of these is better?», two sides, «Draw»), the
+ * duel card on top (DuelCard: «Which of these is better?», two sides, «Draw» — on the
+ * slide its question reads «Which song do you want to listen to now?», his call 22.11.2026), the
  * ranking under it, and under the ranking the two playlists it mirrors into
  * Spotify every day (left off this frame at his word; the next frame is Spotify). REAL, read 16.11.2026 with music_top_tracks /
  * music_playlist_details / music_status: the ranks, strengths, duel counts, both
@@ -1833,8 +1460,10 @@ const DUELS: { a: number; b: number; pick?: 'a' | 'b' }[] = [
   { a: 7, b: 4, pick: 'a' }, // Holy Hell over Map Change
   { a: 0, b: 3 }, // Silence Speaks or Shadow Moses — waiting for him
 ];
-/** a duel is on screen this long; the pick lands at DUEL_PICK_MS into it */
-const DUEL_MS = 3400;
+/** a duel is on screen this long; the pick lands at DUEL_PICK_MS into it, and the rest is
+ *  the listening hold — the chosen song plays (compressed: in real life the next pair
+ *  waits until the track is over) */
+const DUEL_MS = 4400;
 const DUEL_PICK_MS = 1900;
 /** How far one answer moves two strengths — a Bradley–Terry-style step: the less
  *  expected the win, the bigger the move. Illustrative; the product's own update
@@ -1857,13 +1486,23 @@ function rankingAfter(answered: number) {
   return [...songs].sort((x, y) => y.strength - x.strength);
 }
 
-const Music = ({ t = 0 }: { t?: number }) => {
+/** Where the duel is at `t`: the pair on screen, the side picked (if it has been), how
+ *  many are answered, and the song playing — the last one picked. The Music page and
+ *  the phone beside it both read it, so they agree to the frame. */
+function duelAt(t: number) {
   // it plays once: three answers, then the fourth pair waits; export and the
   // Spotify frame show that end state
   const n = Math.min(Math.floor(t / DUEL_MS), DUELS.length - 1);
   const duel = DUELS[n];
   const picked = duel.pick && t - n * DUEL_MS >= DUEL_PICK_MS ? duel.pick : undefined;
   const answered = n + (picked ? 1 : 0);
+  const lastPick = answered > 0 ? DUELS[answered - 1] : undefined;
+  const playing = lastPick?.pick ? TOP_SONGS[lastPick[lastPick.pick]] : undefined;
+  return { n, duel, picked, answered, playing };
+}
+
+const Music = ({ t = 0 }: { t?: number }) => {
+  const { n, duel, picked, answered } = duelAt(t);
   useAnimating(t < (DUELS.length - 1) * DUEL_MS);
   const ranking = rankingAfter(answered);
   const last = answered > 0 ? DUELS[answered - 1] : undefined;
@@ -1874,9 +1513,22 @@ const Music = ({ t = 0 }: { t?: number }) => {
       <div className="ww-ma__cols ww-ma__cols--music">
         <div className="ww-ma__col">
           <L>Songs · duel and top 30</L>
+          {/* Listening mode (Yarik, 22.11.2026), drawn after the real one — the duel card's
+              «Слухати» toggle (apps/web/src/routes/music.tsx, ListenToggle / ListenNote, and
+              lib/useListenMode.ts, read at 41f7af0): with it on, a tap is the vote AND starts
+              that song in Spotify; the answered pair is held — the chosen side «▶ грає», the
+              other fades — and the next pair comes only when the track is over («Далі →»
+              skips the wait, never stops the music). Its draw button (greyed in this mode) is
+              left out at his word, 22.11.2026; the phone beside the page plays the pick. */}
           <div className="ww-ma__card ww-ma__card--warn">
-            <L tone="time">⚔ {answered > 0 ? `Duel · ${answered} in a row` : 'Duel'}</L>
-            <span className="ww-jg__itemname">Which of these is better?</span>
+            <span className="ww-ma__row">
+              <L tone="time">⚔ {answered > 0 ? `Duel · ${answered} in a row` : 'Duel'}</L>
+              <span className="ww-ma__listen">
+                <Ico name="headphones" />
+                Listening
+              </span>
+            </span>
+            <span className="ww-jg__itemname">Which song do you want to listen to now?</span>
             <span className="ww-ma__duel ww-ma__duel--covers ww-ma__duel--songs ww-jg__arrive" key={n}>
               {(['a', 'b'] as const).map((key) => (
                 <span
@@ -1886,10 +1538,16 @@ const Music = ({ t = 0 }: { t?: number }) => {
                   <img className="ww-ma__cover" src={side(key).cover} alt="" />
                   {side(key).name}
                   <L>{side(key).by}</L>
+                  {picked === key && <L tone="time">▶ Playing</L>}
                 </span>
               ))}
             </span>
-            <span className="ww-ma__button ww-ma__button--wide">Draw</span>
+            {picked && (
+              <span className="ww-ma__hold ww-jg__arrive" key={`hold${n}`}>
+                <span className="ww-ma__holdline">the track is playing — the next pair when it ends</span>
+                <span className="ww-ma__button">Next →</span>
+              </span>
+            )}
           </div>
         </div>
         <div className="ww-ma__col">
@@ -1924,6 +1582,48 @@ const Music = ({ t = 0 }: { t?: number }) => {
     </Page>
   );
 };
+
+/* The phone beside the duel (Yarik, 22.11.2026: «show that song plays when I select it»):
+ * Spotify's now-playing screen, redrawn after the app, showing the song the duel last
+ * picked — listening mode starts it there. Before the first pick nothing plays. The
+ * progress bar restarts with each song (CSS, keyed on the song). */
+function NowPlayingPhone({ t }: { t: number }) {
+  const { playing } = duelAt(t);
+  return (
+    <div className="ww-ma__phone">
+      <div className="ww-jg--phone ww-spo">
+        <span className="ww-spo__status">
+          <span>9:41</span>
+          <span>●●● ▮</span>
+        </span>
+        {playing ? (
+          <div className="ww-spo__page ww-spo__nowpage ww-jg__arrive" key={playing.name}>
+            <span className="ww-spo__nowhead">
+              <strong>Now playing</strong>
+            </span>
+            <img className="ww-spo__nowcover" src={playing.cover} alt="" />
+            <span className="ww-spo__nowtitle">
+              <strong>{playing.name}</strong>
+              <span className="ww-spo__dim">{playing.by}</span>
+            </span>
+            <span className="ww-spo__bar" aria-hidden="true">
+              <span />
+            </span>
+            <span className="ww-spo__controls" aria-hidden="true">
+              <span>⏮</span>
+              <span className="ww-spo__pause">❚❚</span>
+              <span>⏭</span>
+            </span>
+          </div>
+        ) : (
+          <div className="ww-spo__page ww-spo__nowpage ww-spo__idle">
+            <span className="ww-spo__dim">Nothing playing</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 /* Spotify on his phone: the two playlists the Music page keeps — reconstructed
  * from the Spotify app's own layout, with his real playlists, covers, descriptions
@@ -2047,31 +1747,45 @@ const Tree = () => (
   </Page>
 );
 
-/* ─── How one is born: the Coffee miniapp ─────────────────────────────────── */
+/* ─── How one is born: the Books miniapp ─────────────────────────────────── */
 
-const BIRTH_ASK_STREAM = ['Read(bag-front.jpg)', 'WebSearch(Funt Coffee Суха Гватемала)', 'Write(coffee-bags.html)'];
+/** Staged (Yarik, 22.11.2026: the first miniapp slide is Books now): the book is his
+ *  real last five-star read, The Selfish Gene, finished 24 days before 14 November — so
+ *  the task is dated the day he finished it. The real page was built the same way, over
+ *  more than one task; the notes say so. */
+const BIRTH_ASK_STREAM = ['WebSearch(The Selfish Gene, Richard Dawkins)', 'Write(reading-list.html)'];
 const BIRTH_BUILD_STREAM = [
-  'Write(packages/db-schema/src/coffee.ts)',
-  'Write(apps/web/src/routes/coffee.tsx)',
+  'Write(packages/db-schema/src/books.ts)',
+  'Write(apps/web/src/routes/books.tsx)',
   'Bash(pnpm --filter web test)',
   'Bash(railway up --ci)',
 ];
-/** asked · the agent works · the artifact · «make it permanent» · the agent builds ·
- *  done, the row is in the sidebar · the app opens the page */
+const BIRTH_TASK_ID = 'b4e19c27';
+/** The artifact is a live UI, not a picture (Yarik, 22.11.2026): it asks me to rate the
+ *  book, and a pointer clicks the fifth star. The first click of the slide stops right
+ *  there (BIRTH_STOP_MS); the second plays the rest. RATE_TAP_MS is the pointer's wait
+ *  after the artifact appears; it then travels for TAP_TRAVEL_MS (the CSS animation's). */
+const RATE_TAP_MS = 1400;
+const BIRTH_RATED_MS = 1800 + (BIRTH_ASK_STREAM.length + 1) * STREAM_MS + RATE_TAP_MS + TAP_TRAVEL_MS;
+const BIRTH_STOP_MS = BIRTH_RATED_MS + 900;
+/** asked · the agent works · the artifact (rated on the first click's end) · «make it
+ *  permanent» · the agent builds · done, the row is in the sidebar · the app opens the page */
 const BIRTH_MS = (() => {
   const worked = 1800 + (BIRTH_ASK_STREAM.length + 1) * STREAM_MS;
-  const asked = worked + 2600;
+  const asked = BIRTH_STOP_MS + 600;
   const building = asked + 1800;
   const built = building + (BIRTH_BUILD_STREAM.length + 1) * STREAM_MS;
   return [0, 1800, worked, asked, building, built, built + 2400] as const;
 })();
 
-function CoffeeBirth({ moment, t }: { moment: number; t: number }) {
+function BooksBirth({ moment, t }: { moment: number; t: number }) {
+  const rated = t >= BIRTH_RATED_MS;
   const agentHasIt = moment === 1 || moment === 4 || moment === 0 || moment === 3;
+  const book = TOP_BOOKS[0];
   return (
     <div className="ww-jg__page ww-ma__task">
-      <span className="ww-jg__title">Keep track of my coffee</span>
-      <span className="ww-jg__label">ID 91c4e7a0</span>
+      <span className="ww-jg__title">Keep track of what I read</span>
+      <span className="ww-jg__label">ID {BIRTH_TASK_ID}</span>
       <Fields
         fields={[
           agentHasIt
@@ -2079,14 +1793,14 @@ function CoffeeBirth({ moment, t }: { moment: number; t: number }) {
             : { label: 'Status', value: 'Paused', tone: 'hold' },
           { label: 'Priority', value: 'Low' },
           { label: 'Assignee', value: agentHasIt ? 'Claude Code' : '@me' },
-          { label: 'Created', value: 'Nov 13, 08:40' },
+          { label: 'Created', value: 'Oct 21, 22:15' },
         ]}
       />
       <div className="ww-jg__timeline ww-jg__timeline--fade">
         {moment === 5 && (
           <div className="ww-jg__arrive" key="built">
             <Comment who="Claude Code" tag="Session report" when="now">
-              <p>Done: Coffee is a page of its own now — myclaw.app/coffee, and it is in the sidebar.</p>
+              <p>Done: Books is a page of its own now — myclaw.app/books, and it is in the sidebar.</p>
             </Comment>
           </div>
         )}
@@ -2103,17 +1817,36 @@ function CoffeeBirth({ moment, t }: { moment: number; t: number }) {
         {moment >= 2 && (
           <div className="ww-jg__arrive" key="artifact">
             <Comment who="Claude Code" tag="Session report" when={moment === 2 ? 'now' : '5m ago'}>
-              <p>Recorded the bag. Here it is — tell me what you think of it right on the card:</p>
+              <p>Recorded it. How would you rate it? Tap the stars:</p>
               <div className="ww-ma__artifact">
-                <BagCard bag={BAGS[0]} rated={false} />
+                <div className="ww-ma__card ww-ma__card--slim">
+                  <div className="ww-jg__item">
+                    <img className="ww-ma__bookcover" src={book.cover} alt="" />
+                    <span className="ww-jg__itemtext">
+                      <L>Read · 1</L>
+                      <span className="ww-jg__itemname">{book.title}</span>
+                      <L>{book.author} · finished today</L>
+                      <span className="ww-ma__stars">
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <span
+                            key={n}
+                            className={`ww-ma__star${rated ? ' ww-ma__star--on' : ''}${n === 5 ? ' ww-jg__tapped' : ''}`}
+                          >
+                            ★{n === 5 && moment === 2 && <Tap delay={RATE_TAP_MS} />}
+                          </span>
+                        ))}
+                        {rated && <L tone="agent">5 / 5 · saved</L>}
+                      </span>
+                    </span>
+                  </div>
+                </div>
               </div>
             </Comment>
           </div>
         )}
         {moment === 1 && <InFlight key="asking" lines={BIRTH_ASK_STREAM} since={BIRTH_MS[1]} t={t} />}
         <Comment who="@me" when={moment < 2 ? 'now' : '6m ago'} plain>
-          <p>I opened a new bag of coffee. Keep track of my bags and of what I think of each.</p>
-          <Thumb src={dryGuatemala} alt="A bag of Funt Coffee, Dry Guatemala" />
+          <p>I finished The Selfish Gene. Keep track of the books I read, and of how I rate each.</p>
         </Comment>
       </div>
     </div>
@@ -2569,19 +2302,17 @@ type Miniapp = {
   name: string;
   icon: IconName;
   path: string;
-  page: (props: { sub?: number; phone?: number; silpo?: number; t?: number }) => JSX.Element;
+  page: (props: { sub?: number; phone?: number; t?: number }) => JSX.Element;
   /** subpages the page walks through by itself before settling back on its overview */
   tour?: { path: string }[];
 };
 /** In the order they are revealed — which is also the order of the sidebar here,
  *  so every click appends a row at its foot. */
 const MINIAPPS: Miniapp[] = [
-  { name: 'Coffee', icon: 'coffee', path: 'coffee', page: Coffee },
-  { name: 'Money', icon: 'money', path: 'money', page: Money, tour: MONEY_TOUR },
-  { name: 'Supplies', icon: 'supplies', path: 'supplies', page: Supplies },
   { name: 'Books', icon: 'books', path: 'books', page: Books },
+  { name: 'Money', icon: 'money', path: 'money', page: Money, tour: MONEY_TOUR },
+  { name: 'Coffee', icon: 'coffee', path: 'coffee', page: Coffee },
   { name: 'Movies', icon: 'movies', path: 'movies', page: Movies },
-  { name: 'Threat forecast', icon: 'alert', path: 'threats', page: Threat },
   { name: 'Home', icon: 'home', path: 'home', page: Home },
   { name: 'Sleep', icon: 'sleep', path: 'sleep', page: Sleep },
   { name: 'Health', icon: 'health', path: 'health', page: Health },
@@ -2590,10 +2321,12 @@ const MINIAPPS: Miniapp[] = [
   { name: 'Family tree', icon: 'tree', path: 'family-tree', page: Tree },
 ];
 
-/** The slide's frames: one per miniapp — and Supplies has a second, on a phone. */
-const FRAMES: { app: number; mobile?: true; silpo?: true; spotify?: true }[] = MINIAPPS.flatMap((app, i) =>
-  app.name === 'Supplies'
-    ? [{ app: i }, { app: i, mobile: true as const }, { app: i, silpo: true as const }]
+/** The slide's frames: one per miniapp — Coffee's is on a phone, and Music has a second,
+ *  Spotify on a phone. */
+type Frame = { app: number; mobile?: true; spotify?: true };
+const FRAMES: Frame[] = MINIAPPS.flatMap((app, i): Frame[] =>
+  app.name === 'Coffee'
+    ? [{ app: i, mobile: true as const }]
     : app.name === 'Music'
       ? [{ app: i }, { app: i, spotify: true as const }]
       : [{ app: i }],
@@ -2608,9 +2341,11 @@ function navOf(count: number): NavGroup[] {
   ];
 }
 
-function Scene({ stage }: { stage: number }) {
-  // only the first frame has a clock: it plays the birth of the Coffee page
-  const t = useClock(0);
+function Scene({ stage, beat = 1 }: { stage: number; beat?: number }) {
+  // only the first frame has a clock: it plays the birth of the Books page
+  // the birth is two clicks: beat 0 plays up to the rating and holds; beat 1 plays the rest
+  const tClock = useClock(beat);
+  const t = beat === 0 ? Math.min(tClock, BIRTH_STOP_MS) : BIRTH_STOP_MS + tClock;
   const born = stage > 1 || t >= BIRTH_MS[6];
   const moment = stage > 1 ? 6 : BIRTH_MS.reduce((m, at, i) => (t >= at ? i : m), 0);
   const frame = FRAMES[stage - 1];
@@ -2623,7 +2358,6 @@ function Scene({ stage }: { stage: number }) {
   const sub = current.tour && step >= 1 && step <= current.tour.length ? step : 0;
   // the mobile frame plays on the same per-frame clock
   const phone = frame.mobile ? PHONE_MS.reduce<number>((m, at, i) => (tStage >= at ? i : m), 0) : undefined;
-  const silpo = frame.silpo ? SILPO_MS.reduce<number>((m, at, i) => (tStage >= at ? i : m), 0) : undefined;
   const spotify = frame.spotify ? SPOTIFY_MS.reduce<number>((m, at, i) => (tStage >= at ? i : m), 0) : undefined;
   // Home is the second page with a birth: its frame replays the real task it grew
   // out of, on the per-frame clock, and only then opens the page and walks its cards
@@ -2635,8 +2369,7 @@ function Scene({ stage }: { stage: number }) {
   const bornAt = homeBirth ? HOME_BORN_MS : bTimes ? bTimes.born : 0;
   const hBorn = tStage >= bornAt;
   useAnimating(
-    (stage === 1 && !born) ||
-      (silpo !== undefined && silpo < SILPO_MS.length - 1) ||
+    (stage === 1 && (beat === 0 ? tClock < BIRTH_STOP_MS : !born)) ||
       (!!current.tour && step <= current.tour.length) ||
       (homeBirth && tStage < HOME_BORN_MS + HOME_WALK_MS) ||
       (!!bTimes && tStage < bTimes.end) ||
@@ -2661,12 +2394,12 @@ function Scene({ stage }: { stage: number }) {
               ? 'myclaw.app/tasks/6a0e0cfa'
               : birth
                 ? `myclaw.app/tasks/${birth.id}`
-                : 'myclaw.app/tasks/91c4e7a0'
+                : `myclaw.app/tasks/${BIRTH_TASK_ID}`
         }
       >
         <App
           active={onPage ? current.name : 'Tasks'}
-          fresh={frame.mobile || frame.silpo || frame.spotify ? undefined : current.name}
+          fresh={frame.spotify ? undefined : current.name}
           lit={onPage ? [] : [current.name]}
           nav={navOf(rows)}
           dense
@@ -2676,7 +2409,6 @@ function Scene({ stage }: { stage: number }) {
               key={current.name}
               sub={sub}
               phone={phone}
-              silpo={silpo}
               t={frame.spotify ? Number.MAX_SAFE_INTEGER : homeBirth || bTimes ? Math.max(0, tStage - bornAt) : tStage}
             />
           ) : homeBirth ? (
@@ -2684,39 +2416,62 @@ function Scene({ stage }: { stage: number }) {
           ) : birth && bTimes ? (
             <TaskReplay birth={birth} times={bTimes} t={tStage} />
           ) : (
-            <CoffeeBirth moment={moment} t={t} />
+            <BooksBirth moment={moment} t={t} />
           )}
         </App>
       </Browser>
-      {phone !== undefined && <Phone phase={phone} />}
-      {silpo !== undefined && <SilpoPhone phase={silpo} />}
+      {phone !== undefined && <CoffeePhone phase={phone} />}
       {spotify !== undefined && <SpotifyPhone phase={spotify} />}
+      {current.name === 'Music' && spotify === undefined && onPage && <NowPlayingPhone t={tStage} />}
     </>
   );
 }
 
 /** The frames are two slides, with an architecture slide between them (Yarik, 16.11.2026):
- *  the first frame — Coffee being born out of a task — and then every other page. Both
+ *  the first frame — Books being born out of a task — and then every other page. Both
  *  draw the same thing; `revealStage` is the frame's number in FRAMES, from 1. */
-function MiniappsFrame({ revealStage }: { revealStage: number }) {
+function MiniappsFrame({ revealStage, beat }: { revealStage: number; beat?: number }) {
     const stage = Math.min(Math.max(revealStage, 1), FRAMES.length);
-    const mobile = !!FRAMES[stage - 1].mobile || !!FRAMES[stage - 1].silpo;
-    // Movies carries a headline of its own: «Add» on its card files a task (Yarik, 17.11.2026)
-    const bonus = MINIAPPS[FRAMES[stage - 1].app].name === 'Movies';
+    const mobile = !!FRAMES[stage - 1].mobile;
+    // Movies carries a headline of its own: «Add» on its card files a task (Yarik, 17.11.2026);
+    // the birth's first click is about the artifact being live, the rest about it staying
+    // (Yarik, 22.11.2026: «bonus: interactive artifacts», then «bonus: permanent artifacts»)
+    const tasks = MINIAPPS[FRAMES[stage - 1].app].name === 'Movies';
+    const interactive = stage === 1 && beat === 0;
+    const verdict = mobile ? 'fixed' : 'bonus';
+    // pages with a headline of their own (his calls, 22.11.2026)
+    const OWN_CLAIM: Record<string, string> = {
+      Home: 'smart home',
+      Sleep: 'research',
+      Health: 'research',
+      Sport: 'data from wearable devices',
+      Music: 'integrate with your services',
+      'Family tree': 'deep research',
+    };
+    const own = OWN_CLAIM[MINIAPPS[FRAMES[stage - 1].app].name];
+    const claim = tasks
+      ? 'miniapps can add a task to the queue'
+      : own
+        ? own
+      : mobile
+        ? 'also available as a mobile app'
+        : interactive
+          ? 'interactive artifacts'
+          : 'permanent artifacts';
     return (
       <>
         <CornerRings corner="bottom-right" />
-        <div className="ww-imp ww-imp--claim">
+        <div className={`ww-imp ww-imp--claim${MINIAPPS[FRAMES[stage - 1].app].name === 'Music' ? ' ww-imp--phone' : ''}`}>
           <div className="ww-asst__claim ww-asst__claim--great">
             <span className="ww-asst__verdict">
               <span aria-hidden="true">✓</span>
-              {bonus ? 'bonus' : 'fixed'}
+              {verdict}
             </span>
-            <span key={bonus ? 'bonus' : mobile ? 'mobile' : 'miniapps'} className={mobile && FRAMES[stage - 1].silpo ? undefined : 'ww-jg__arrive'}>
-              {bonus ? 'miniapps can add a task to the queue' : mobile ? 'also available as a mobile app' : 'artifacts that stay: miniapps'}
+            <span key={claim} className="ww-jg__arrive">
+              {claim}
             </span>
           </div>
-          <Scene stage={stage} />
+          <Scene stage={stage} beat={beat} />
         </div>
       </>
     );
@@ -2724,24 +2479,29 @@ function MiniappsFrame({ revealStage }: { revealStage: number }) {
 
 export const MiniappBirthSlide: SlideDefinition = {
   id: 'improve-miniapp-birth',
-  content: () => <MiniappsFrame revealStage={1} />,
+  maxRevealStages: 1,
+  content: ({ revealStage }) => <MiniappsFrame revealStage={1} beat={revealStage} />,
   notes:
     'An artifact does not have to die with its task. The first frame plays by itself — talk over it: '
-    + 'I tell the agent about a new bag of coffee and ask it to keep track; it answers with an '
-    + 'artifact — the bag as a card I can rate. And then the sentence that matters: «make this '
-    + 'artifact permanent — create a miniapp». The agent writes the table and the page, tests, '
-    + 'deploys — watch the sidebar — and Coffee is a page of the app. That is how every one of '
-    + 'them was born: a task, an artifact, «keep it». ',
+    + 'I tell the agent I finished The Selfish Gene and ask it to keep track of what I read; it answers '
+    + 'with an artifact — and the artifact is alive: it asks me to rate the book, and I click the fifth '
+    + 'star right there in the chat. [reveal] And then the sentence that matters: «make this artifact permanent — create a miniapp». The agent writes the '
+    + 'table and the page, tests, deploys — watch the sidebar — and Books is a page of the app: the two '
+    + 'books I am reading now and how far, and my real ranking — the five-star books first, ordered by '
+    + 'the duels the page asks me («which of these is better?»). Real titles, real progress, real order, '
+    + 'as of 14 November. That is how every one of them was born: a task, an artifact, «keep it». '
+    + 'Honest: the birth is staged — the task, its id and its time are made up for the slide (the book '
+    + 'and its finish date are real); the real page was built the same way, over more than one task. ',
 };
 
-/** The first frame that belongs to the second run of pages: the Silpo cart. The frames
- *  before it — Money, Supplies, Supplies on a phone — are followed by an architecture
- *  slide that adds the mobile app (Yarik, 16.11.2026). */
-const SILPO_FRAME = FRAMES.findIndex((frame) => frame.silpo) + 1;
+/** The first frame that belongs to the second run of pages: Movies. The frames before it —
+ *  Money, and Coffee on a phone — are followed by an architecture slide that adds the
+ *  mobile app (Yarik, 16.11.2026; Coffee replaced Supplies there on 22.11.2026). */
+const MOVIES_FRAME = FRAMES.findIndex((frame) => MINIAPPS[frame.app].name === 'Movies') + 1;
 
 export const MiniappsSlide: SlideDefinition = {
   id: 'improve-miniapps',
-  maxRevealStages: SILPO_FRAME - 2,
+  maxRevealStages: MOVIES_FRAME - 2,
   initialRevealStage: 1,
   // frame 1 is MiniappBirthSlide's
   content: ({ revealStage }) => <MiniappsFrame revealStage={revealStage + 1} />,
@@ -2751,12 +2511,14 @@ export const MiniappsSlide: SlideDefinition = {
     + '[2] Money — net worth, this month in and out against the budget, the last transactions. It '
     + 'then walks its own subpages by itself, about three seconds each — budget, income, accounts '
     + '— and comes back; keep talking, do not click through it. '
-    + '[3] Supplies — what is about to run out, the agent\'s arithmetic, and a yes / no to reorder; '
-    + 'under it the shelf itself: what is in stock, at what pace it goes, when to order. '
-    + '[click] And the headline changes: it is also a mobile app. Watch the phone — it plays by '
-    + 'itself: I open Supplies, photograph a bag of dishwasher tablets, the agent reads the name off '
-    + 'the photo, I press Add — and it is on the shelf, on the phone and on the big screen. That is '
-    + 'how everything on this page got there: I have never typed a product name. ',
+    + '[3] Coffee — and the headline changes: it is also a mobile app. Watch the phone — it plays by '
+    + 'itself: I open Coffee, tap «photograph a bag», shoot the pack — and that is all I do. The card '
+    + 'says «being recognised»: a loop task wakes up, an agent reads the label off the photo — roaster, '
+    + 'origin, process, tasting notes — and fills the card, on the phone and on the big screen. It '
+    + 'writes only what the pack says; if it cannot read it, it hands the bag back to me. I rate each '
+    + 'bag as I drink it, and the taste summary on top is rebuilt from my verdicts — it is what the '
+    + 'agent reads when it suggests what to buy next. I have never typed a coffee name. Honest: the '
+    + 'loop takes minutes, not seconds; the bags and photos are mine. ',
 };
 
 /** The first frame of the last run: Sleep. The run before it ends on Home, and an
@@ -2765,33 +2527,17 @@ export const MiniappsSlide: SlideDefinition = {
 const SLEEP_FRAME = FRAMES.findIndex((frame) => MINIAPPS[frame.app].name === 'Sleep') + 1;
 
 /** The run is cut once more after Movies: an architecture slide follows it — a miniapp
- *  putting a task into the queue — and Threat forecast and Home come after (Yarik, 17.11.2026). */
-const THREAT_FRAME = FRAMES.findIndex((frame) => MINIAPPS[frame.app].name === 'Threat forecast') + 1;
+ *  putting a task into the queue — and Home comes after (Yarik, 17.11.2026; Threat
+ *  forecast, which stood before Home, was removed on 22.11.2026). */
+const HOME_FRAME = FRAMES.findIndex((frame) => MINIAPPS[frame.app].name === 'Home') + 1;
 
 export const MiniappsMoreSlide: SlideDefinition = {
   id: 'improve-miniapps-more',
-  maxRevealStages: THREAT_FRAME - SILPO_FRAME,
+  maxRevealStages: HOME_FRAME - MOVIES_FRAME,
   initialRevealStage: 1,
-  content: ({ revealStage }) => <MiniappsFrame revealStage={revealStage + SILPO_FRAME - 1} />,
+  content: ({ revealStage }) => <MiniappsFrame revealStage={revealStage + MOVIES_FRAME - 1} />,
   notes:
-    'And ordering — it plays by itself, on both screens. This is my shopping list, by '
-    + 'shop: eggs, sliced Gouda, non-alcoholic beer. Below it, dashed, are the agent\'s proposals: '
-    + 'every three days it reads my supermarket RECEIPTS through the chain\'s own MCP connector and '
-    + 'notices what I usually buy and have not bought — «yogurt: last 35 days ago, usually every 4 '
-    + 'days». One tap takes it. Then, out of sight, the agent fills my real Silpo cart through that '
-    + 'connector — finds each line in the catalogue, adds it, reads the cart back. Nothing to '
-    + 'watch: on the phone a button simply appears: open in the Silpo app. I tap — and I am in the '
-    + 'supermarket\'s own app, on that cart, one button from paying. The agent cannot press that '
-    + 'one: the connector has no checkout tool, and I would not want one. '
-    + 'Honest: on the slide the cart fills by itself for clarity — in real life I ask for it, '
-    + 'never on a schedule, because it is the same cart the app shows and I may be standing at the '
-    + 'shelf. The four lines are from my real order of 13 November — real names, prices and pack '
-    + 'sizes; the app\'s screen is drawn after my own phone, translated into English — I had an '
-    + 'empty cart and a placed order to go by, so a filled cart is those two combined. '
-    + '[4] Books — the two I am reading now and how far, and my real '
-    + 'ranking: the five-star books first, ordered by the duels the page asks me («which of these '
-    + 'is better?»). Real titles, real progress, real order, as of 14 November. '
-    + '[5] Movies — just one corner of the page: what to watch next. The agent argues from my own '
+    '[4] Movies — just one corner of the page: what to watch next. The agent argues from my own '
     + 'ratings, names the risk, and I answer with one button — Add or Not this. Honest: the card is '
     + 'the product\'s, but these two titles are MY recommendations to you — The Rehearsal and You Can '
     + 'See Everything, both Nathan Fielder — and the pitches are written for this slide. '
@@ -2801,16 +2547,11 @@ export const MiniappsMoreSlide: SlideDefinition = {
 
 export const MiniappsHomeSlide: SlideDefinition = {
   id: 'improve-miniapps-home',
-  maxRevealStages: SLEEP_FRAME - THREAT_FRAME,
+  maxRevealStages: SLEEP_FRAME - HOME_FRAME,
   initialRevealStage: 1,
-  content: ({ revealStage }) => <MiniappsFrame revealStage={revealStage + THREAT_FRAME - 1} />,
+  content: ({ revealStage }) => <MiniappsFrame revealStage={revealStage + HOME_FRAME - 1} />,
   notes:
-    '[6] Threat forecast — Kyiv exactly as my page showed it on the evening of 14 November: no '
-    + 'alert for ten hours, 21 days of alerts as a ribbon, and the next 24 hours per weapon class — '
-    + 'twelve of them, two shown — each with the agent\'s reasoning from the channels it reads, and '
-    + 'a button to disagree with the level. (Rationales translated and shortened.) The map is a '
-    + 'screenshot of that evening: Chernihiv region under alert with a drone in it, Kyiv clear. '
-    + '[7] Home — and this one shows where it came from, like Coffee did. The frame first replays '
+    '[5] Home — and this one shows where it came from, like Books did. The frame first replays '
     + 'the real task, about twenty seconds: on 31 August I asked one question — «can you list all '
     + 'devices connected to my home WiFi?». It scanned: 14 devices, five it could not name. I asked '
     + 'what each of them can tell us; then «let\'s set up Home Assistant on Railway». Two weeks, one '
@@ -2833,7 +2574,7 @@ export const MiniappsLastSlide: SlideDefinition = {
   initialRevealStage: 1,
   content: ({ revealStage }) => <MiniappsFrame revealStage={revealStage + SLEEP_FRAME - 1} />,
   notes:
-    'And these two show where they came from too. [8] Sleep — the frame first replays the real '
+    'And these two show where they came from too. [6] Sleep — the frame first replays the real '
     + 'task, about thirty seconds: in October Pavlyna\'s next-sleep forecast went blank, and I '
     + 'asked the agent to research how infants sleep by age and design our own. It came back with '
     + 'the science — wake windows are not research, an infant\'s sleep cycle is 50–60 minutes — and '
@@ -2843,7 +2584,7 @@ export const MiniappsLastSlide: SlideDefinition = {
     + 'seconds: me, then my kids, Martyn and Pavlyna. Mine is the watch: regularity and a score per '
     + 'night. The kids\' come from the baby-tracking app we log in — every nap, and today\'s forecast. '
     + 'Real nights, 2–15 November. '
-    + '[9] Health — the same, for water: on 11 November I asked for a hydration miniapp, grounded in '
+    + '[7] Health — the same, for water: on 11 November I asked for a hydration miniapp, grounded in '
     + 'research first. The research: «8 glasses» has no evidence; about 2 L from drinks; the need moves '
     + 'with activity and climate. Then I rejected five plans in a row — where I am, sips not cups, '
     + 'the bedroom at night, home sensors, humidity and reminders — approved the sixth, and it shipped. '
@@ -2852,7 +2593,7 @@ export const MiniappsLastSlide: SlideDefinition = {
     + '(The family\'s profiles are on the real page and not here.) Honest: both tasks are real — '
     + 'titles, dates, my replies (translated, shortened) — but compressed to a line a report, and the '
     + 'five rejections are one comment on the slide. '
-    + '[10] Sport — steps, three weeks, workouts (say it: one in eight weeks). ',
+    + '[8] Sport — steps, three weeks, workouts (say it: one in eight weeks). ',
 };
 
 /** The last frame stands alone: Family tree. Music and its Spotify phone come before an
@@ -2865,8 +2606,10 @@ export const MiniappsEndSlide: SlideDefinition = {
   initialRevealStage: 1,
   content: ({ revealStage }) => <MiniappsFrame revealStage={revealStage + MUSIC_FRAME - 1} />,
   notes:
-    '[11] Music — 2,680 liked songs, and no way to say which I like most — so the page asks me, '
-    + 'one duel at a time: which of these two is better? It plays three by itself, and every '
+    '[9] Music — 2,680 liked songs, and no way to say which I like most — so the page asks me, '
+    + 'one duel at a time: which song do you want to listen to now? And it is literal: with listening '
+    + 'mode on, my tap is the vote AND it starts that song in Spotify; the next pair waits until the '
+    + 'track is over (on the slide that wait is compressed). It plays three by itself, and every '
     + 'answer moves the ranking on the right — watch Prisoner climb from ninth to fourth. The '
     + 'starting ranking is my real one, with each song\'s strength. Honest: the pairs and the picks '
     + 'are staged for the slide, and the step each answer makes is illustrative. [click] And it syncs into my Spotify. '
@@ -2882,7 +2625,7 @@ export const MiniappsTreeSlide: SlideDefinition = {
   initialRevealStage: 1,
   content: ({ revealStage }) => <MiniappsFrame revealStage={revealStage + TREE_FRAME - 1} />,
   notes:
-    '[12] Family tree — and the last one is not a page at all: it is a research task that runs '
+    '[10] Family tree — and the last one is not a page at all: it is a research task that runs '
     + 'for a month. My great-great-grandparents, the Husaks, came from a hamlet called Arsenivka, '
     + 'and nobody knew which parish kept its books. The agent reads century-old archives for me: a '
     + '1901 church directory — the hamlet did not exist yet; ninety-two death acts of 1925 — the '
@@ -2895,9 +2638,9 @@ export const MiniappsTreeSlide: SlideDefinition = {
     + 'None of them is a chat. Every one of them started as a task. So chat is no longer the only '
     + 'UX — it is the one I use when nothing better exists yet. '
     + 'Honest about the picture: recreations of the real pages — their sections and controls are the '
-    + 'real ones. Coffee, Supplies, Books, Health, the Threat forecast, Home and Sleep carry my real data (Coffee\'s verdicts are '
+    + 'real ones. Books, Coffee, Health, Home and Sleep carry my real data (Coffee\'s verdicts are '
     + 'sharpened — in real life I have mostly said «OK»; Health shows only my own card); Movies is '
     + 'my two picks in the product\'s card; the rest have invented data, because the real ones hold '
-    + 'my real life. The birth of Coffee is staged; the real page was built the same way, over more '
+    + 'my real life. The birth of Books is staged; the real page was built the same way, over more '
     + 'than one task.',
 };

@@ -54,6 +54,7 @@ const ICONS = {
   check: 'M5 12l5 5 9-10',
   cross: 'M6 6l12 12 M18 6L6 18',
   loop: 'M4 9h13l-3-3 M20 15H7l3 3',
+  headphones: 'M4 15v-3a8 8 0 0 1 16 0v3 M4 15h3v5H5a1 1 0 0 1-1-1z M20 15h-3v5h2a1 1 0 0 0 1-1z',
 } as const;
 export type IconName = keyof typeof ICONS;
 
@@ -81,10 +82,8 @@ const NAV: NavGroup[] = [
     items: [
       { name: 'Coffee', icon: 'coffee' },
       { name: 'Money', icon: 'money' },
-      { name: 'Supplies', icon: 'supplies' },
       { name: 'Books', icon: 'books' },
       { name: 'Movies', icon: 'movies' },
-      { name: 'Threat forecast', icon: 'alert' },
       { name: 'Home', icon: 'home' },
       { name: 'Health', icon: 'health' },
     ],

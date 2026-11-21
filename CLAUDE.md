@@ -51,7 +51,7 @@ src/
 │   ├── AssistantSessionSlide.tsx # the session that tests it (no title band): one errand, eight beats, a prop beside it
 │   ├── RouteMap.tsx              # the maps app with three routes — the session's map reveal and the Artifacts slide share it
 │   ├── improve.tsx               # «How do we improve it?» — the task board and the artifact (two slides, one `BoardFrame`), the runner walk-through, agents arguing over a review, the empty queue, the self-playing pace week, free OpenRouter models on Codex; `Herdr` + `CodexPane`
-│   ├── MiniappsSlide.tsx         # «artifacts that stay: miniapps» — Coffee is BORN in a task, then one page a click; Supplies on a phone, a Silpo cart; Home replays its real task, then walks its cards
+│   ├── MiniappsSlide.tsx         # «artifacts that stay: miniapps» — Books is BORN in a task, then one page a click; Coffee on a phone (photograph a bag, an agent fills its card); Home replays its real task, then walks its cards
 │   ├── ledgerApp.tsx             # the assistant's web app shell both of them draw in (sidebar, task cards, timeline)
 │   ├── factory.tsx               # the ARCHITECTURE drawing (three slides, one `Scene` each) + the finale: «It builds / learns / repairs itself», the loop tasks, the Ford photo
 │   ├── FactoryFloorSlide.tsx     # the factory everyone imagines, from above — a self-playing animation; also exports the belt, figures and clock
@@ -258,8 +258,9 @@ tool, and for MCP servers it gives you the real tool names (`list-events`, `slac
 ## The miniapps slide, and what one evening of pairing on it taught (14.11.2026)
 
 `MiniappsSlide.tsx` is one slide of many frames. `MINIAPPS` lists the pages in reveal order (which is
-also the sidebar's order, so each click appends a row); `FRAMES` turns them into frames — Supplies
-owns three (the shelf, the phone that photographs an item, the Silpo cart). A page may carry a
+also the sidebar's order, so each click appends a row); `FRAMES` turns them into frames — Coffee's
+only frame is on a phone, Music has a second (Spotify). Supplies with its Silpo cart, and Threat forecast,
+were removed on 22.11.2026 (Yarik), and Books replaced Coffee as the page that is born first. A page may carry a
 `tour` (Money walks its subpages by itself). To add a page: write its component from the `Page` / `L`
 / `Buttons` / `Heat` parts, add one `MINIAPPS` row, add its note line. Frame numbers: `bunx vite-node
 scripts/frames.mts`.
@@ -317,7 +318,7 @@ rest of the rule stands (no ages, medicines, doctors, and nothing of theirs on a
 **`bunx vite-node scripts/frames.mts` can fail under bunx** (`Cannot find package … fdir`, 14.11.2026).
 The fallback that worked: step `#slide-N` in Playwright until the page's own text shows up.
 
-**A page can have a BIRTH of its own.** Coffee's is frame 1; Home's is inside the Home frame
+**A page can have a BIRTH of its own.** Books' is frame 1 (`BooksBirth`, staged); Home's is inside the Home frame
 (`HomeBirth`, `HOME_BIRTH_MS`): the frame replays the real task the page grew out of, then opens the
 page, and the page's own clock starts at the birth's end (`t = tStage - HOME_BORN_MS`). In export
 mode the clock is at its maximum, so the PDF shows the finished page. A replayed real task carries
@@ -347,8 +348,9 @@ architecture as it started (`ArchitectureSlide`) → `RunnerSlide` → `AnyAgent
 architecture with the daemon (`ArchitectureDaemonSlide`) → with two laptops (`ArchitectureTwoSlide`)
 → `IdleSlide` (an empty queue costs nothing) → `PaceSlide` (a self-playing week) → `FreeModelsSlide`
 → `TaskBoardSlide` → `ArchitectureWebSlide` → `ArtifactSlide` → `MiniappBirthSlide` →
-`ArchitectureAppsSlide` → `MiniappsSlide` (Money, Supplies, Supplies on a phone) →
-`ArchitectureMobileSlide` → `MiniappsMoreSlide` (Silpo … Home) → `ArchitectureHomeSlide` →
+`ArchitectureAppsSlide` → `MiniappsSlide` (Money, Coffee on a phone) →
+`ArchitectureMobileSlide` → `MiniappsMoreSlide` (Movies) → `ArchitectureAppTaskSlide` →
+`MiniappLoopsSlide` → `MiniappsHomeSlide` (Home) → `ArchitectureHomeSlide` →
 `MiniappsLastSlide` (Sleep, Health, Sport) → `ArchitectureHealthSlide` → `MiniappsEndSlide` (Music,
 Spotify) → `ArchitectureServicesSlide` → `MiniappsTreeSlide`.
 

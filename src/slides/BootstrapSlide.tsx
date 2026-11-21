@@ -458,17 +458,22 @@ const STEPS: Line[][] = [
 
 /** The scene's only clock, restarted whenever the beat changes. */
 export function useClock(resetKey: number): number {
-  const [t, setT] = useState(0);
+  // The time is kept WITH the key it belongs to: on the render where the key has just
+  // changed (a click), the effect has not reset it yet, and the old beat's time would
+  // draw the new beat at its END for one frame — a visible blink (22.11.2026). So a
+  // time from another key reads as 0.
+  const start = EXPORT_MODE ? Number.MAX_SAFE_INTEGER : 0;
+  const [clock, setClock] = useState({ key: resetKey, t: start });
   useEffect(() => {
     if (EXPORT_MODE) {
-      setT(Number.MAX_SAFE_INTEGER);
+      setClock({ key: resetKey, t: Number.MAX_SAFE_INTEGER });
       return;
     }
-    setT(0);
-    const id = setInterval(() => setT((v) => v + TICK_MS), TICK_MS);
+    setClock({ key: resetKey, t: 0 });
+    const id = setInterval(() => setClock((c) => ({ key: c.key, t: c.t + TICK_MS })), TICK_MS);
     return () => clearInterval(id);
   }, [resetKey]);
-  return t;
+  return clock.key === resetKey ? clock.t : start;
 }
 
 /** How long a line takes to arrive. */

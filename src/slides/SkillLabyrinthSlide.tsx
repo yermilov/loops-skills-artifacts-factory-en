@@ -61,8 +61,8 @@ const WAY_OUT: ReactNode[] = [
 /**
  * The labyrinth's exit: the three skills you now have, and what depends on what
  * (an arrow is «depends on»): the process uses skill-authoring; skill-authoring
- * uses research and research uses skill-authoring; and skill-authoring is itself
- * written with skill-authoring. Drawn 1:1 in stage px (IBM Plex Mono, 0.6 em
+ * uses research and research uses skill-authoring; skill-authoring is itself
+ * written with skill-authoring, and research needs research — how to do research. Drawn 1:1 in stage px (IBM Plex Mono, 0.6 em
  * advance at the code tier), bottom right, on the «three skills» beat only.
  */
 const CH = 18; // px per character of the code tier (30 px × 0.6)
@@ -79,7 +79,7 @@ const BASE_Y = AUTH.y + NODE_H / 2;
 
 function SkillGraph() {
   return (
-    <svg className="ww-labyrinth__graph ww-overlay reveal-in" width="680" height="360" viewBox="0 0 680 360" aria-label="development-process depends on skill-authoring; skill-authoring and research depend on each other; skill-authoring depends on itself">
+    <svg className="ww-labyrinth__graph ww-overlay reveal-in" width="680" height="360" viewBox="0 0 680 360" aria-label="development-process depends on skill-authoring; skill-authoring and research depend on each other; skill-authoring and research each depend on themselves">
       <defs>
         <marker id="ww-dep-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
           <path d="M0 0L10 5L0 10z" className="ww-labyrinth__arrowhead" />
@@ -94,6 +94,12 @@ function SkillGraph() {
       <path
         className="ww-labyrinth__edge"
         d={`M${AUTH.cx - 50} ${AUTH.y + NODE_H} C ${AUTH.cx - 80} ${AUTH.y + NODE_H + 96}, ${AUTH.cx + 80} ${AUTH.y + NODE_H + 96}, ${AUTH.cx + 50} ${AUTH.y + NODE_H + 6}`}
+        markerEnd="url(#ww-dep-arrow)"
+      />
+      {/* research → itself: you research how to do research (Yarik, 22.11.2026) */}
+      <path
+        className="ww-labyrinth__edge"
+        d={`M${RES.cx - 50} ${RES.y + NODE_H} C ${RES.cx - 80} ${RES.y + NODE_H + 96}, ${RES.cx + 80} ${RES.y + NODE_H + 96}, ${RES.cx + 50} ${RES.y + NODE_H + 6}`}
         markerEnd="url(#ww-dep-arrow)"
       />
       {[DEV, AUTH, RES].map((n) => (
@@ -123,7 +129,9 @@ const T_AUTH = node('skill-authoring', 170, 196);
 const T_RES = node('research', 530, 196);
 const MKT = node('marketplace-dev', 1260, 30);
 const PLG = node('plugin-dev', 1260, 236);
-const ALL_STAGE = 6;
+const ALL_STAGE = 6; // the «how?» bullet — the bullets already make room for the band
+/** …and the diagram comes on the click after it (Yarik, 22.11.2026). */
+const ALL_GRAPH_STAGE = ALL_STAGE + 1;
 
 function SkillGraphAll() {
   const baseY = T_AUTH.y + NODE_H / 2;
@@ -167,6 +175,12 @@ function SkillGraphAll() {
       ))}
       <path className="ww-labyrinth__edge ww-labyrinth__edge--new" d={`M${MKT.x + 24} ${MKT.y + NODE_H} C 880 170, 520 150, ${T_AUTH.x + T_AUTH.w - 30} ${T_AUTH.y - 6}`} markerEnd="url(#ww-dep-arrow-new)" />
       <path className="ww-labyrinth__edge ww-labyrinth__edge--new" d={`M${PLG.x + 30} ${PLG.y + NODE_H} C 900 372, 420 372, ${T_AUTH.x + T_AUTH.w - 34} ${T_AUTH.y + NODE_H + 6}`} markerEnd="url(#ww-dep-arrow-new)" />
+      {/* research → itself: you research how to do research (Yarik, 22.11.2026) */}
+      <path
+        className="ww-labyrinth__edge"
+        d={`M${T_RES.cx - 50} ${T_RES.y + NODE_H} C ${T_RES.cx - 80} ${T_RES.y + NODE_H + 96}, ${T_RES.cx + 80} ${T_RES.y + NODE_H + 96}, ${T_RES.cx + 50} ${T_RES.y + NODE_H + 6}`}
+        markerEnd="url(#ww-dep-arrow2)"
+      />
       {[T_DEV, T_AUTH, T_RES, MKT, PLG].map((n) => (
         <g key={n.label}>
           <rect className={`ww-labyrinth__node${n === MKT || n === PLG ? ' ww-labyrinth__node--new' : ''}`} x={n.x} y={n.y} width={n.w} height={NODE_H} rx={NODE_H / 2} />
@@ -186,7 +200,7 @@ function SkillGraphAll() {
  * are named in the notes).
  */
 const YYSTACK_URL = 'https://github.com/yermilov/yystack';
-const YYSTACK_STAGE = WAY_IN.length + WAY_OUT.length + 1;
+const YYSTACK_STAGE = ALL_GRAPH_STAGE + 1;
 
 function Yystack() {
   return (
@@ -252,7 +266,7 @@ export const SkillLabyrinthSlide: SlideDefinition = {
           </figure>
         )}
         {step === GRAPH_STAGE && <SkillGraph />}
-        {step === ALL_STAGE && <SkillGraphAll />}
+        {step === ALL_GRAPH_STAGE && <SkillGraphAll />}
         {step === YYSTACK_STAGE && <Yystack />}
       </>
     );
@@ -266,8 +280,8 @@ export const SkillLabyrinthSlide: SlideDefinition = {
     + 'made it out of this labyrinth, you have at least three skills: the process, skill-authoring and '
     + 'research — and look how they depend on each other: the process is written with skill-authoring, '
     + 'skill-authoring needs research, research is itself a skill written with skill-authoring, and '
-    + 'skill-authoring improves itself. [reveal] Next: put them in a marketplace, right in your repository, organized into '
-    + 'plugins. [reveal] How? Skills again: the research skill explores how to build a great marketplace and set up plugins, and skill-authoring turns that into a marketplace-dev and a plugin-dev skill. And here is the labyrinth '
+    + 'skill-authoring improves itself — and research needs research too: you research how to do research. [reveal] Next: put them in a marketplace, right in your repository, organized into '
+    + 'plugins. [reveal] How? Skills again: the research skill explores how to build a great marketplace and set up plugins, and skill-authoring turns that into a marketplace-dev and a plugin-dev skill. [reveal] And here is the labyrinth '
     + 'again: every one of the three now depends on both of them — and the two new ones depend on '
     + 'themselves, on each other and on skill-authoring. '
     + '[reveal] Or skip the labyrinth: mine are public, in the yermilov/yystack '

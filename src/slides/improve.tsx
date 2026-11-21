@@ -767,13 +767,18 @@ const WALK: number[][] = [
 /** Which pane is focused at each step: -1 the runner's own, else a task's. */
 const WALK_FOCUS = [-1, -1, 0, 0, 0, 0, 0, 0, 0, -1, -1, 1, -1, 2, 2];
 
-function RunnerWalk() {
+/** The walk is cut in two slides (Yarik, 22.11.2026): steps 0–9 follow the first task
+ *  (a fresh context each), steps 10–14 — the next two tasks on other models and agents —
+ *  are the bonus slide after «any agent». `from`/`to` are the steps a slide plays. */
+const MODELS_FROM = 10;
+
+function RunnerWalk({ from = 0, to = WALK.length - 1 }: { from?: number; to?: number }) {
   const t = useClock(0);
   const all = t >= Number.MAX_SAFE_INTEGER;
-  const last = WALK.length - 1;
+  const len = to - from + 1;
   // one pass, a pause on the last step, then again
-  const step = all ? last : Math.min(Math.floor(t / WALK_MS) % (WALK.length + 2), last);
-  useAnimating(!all && t < WALK.length * WALK_MS);
+  const step = all ? to : from + Math.min(Math.floor(t / WALK_MS) % (len + 2), len - 1);
+  useAnimating(!all && t < len * WALK_MS);
 
   const focus = WALK_FOCUS[step];
   const runOf = (task: WalkTask): Run => (step >= task.done ? 'done' : step >= task.prompt ? 'working' : 'idle');
@@ -860,8 +865,8 @@ function RunnerWalk() {
           <span aria-hidden="true">✓</span>
           fixed
         </span>
-        <span key={step >= 10 ? 'models' : 'context'}>
-          {step >= 10 ? 'different models/agents for different types of tasks' : 'fresh context for each task'}
+        <span>
+          {from >= MODELS_FROM ? 'different models + effort for different tasks' : 'fresh context for each task'}
         </span>
       </div>
     <div className="ww-imp__runner ww-imp__runner--full">
@@ -1202,7 +1207,7 @@ export const RunnerSlide: SlideDefinition = {
     <>
       <CornerRings corner="top-right" />
       <div className="ww-imp ww-imp--claim">
-        <RunnerWalk />
+        <RunnerWalk to={MODELS_FROM - 1} />
       </div>
     </>
   ),
@@ -1217,10 +1222,6 @@ export const RunnerSlide: SlideDefinition = {
     + 'over from the previous eleven. It starts the agent the task names, with the model and the '
     + 'effort the task names. It sends the prompt — follow the do-task skill. It waits until the '
     + 'agent is done, and uploads the session log to the server. '
-    + 'Then two more tasks arrive, and that is the point of the headline: booking the car '
-    + 'service is complex agentic work — Opus, medium effort. Putting it in the calendar is '
-    + 'trivial — Sonnet. And a cover for a playlist is image generation, which goes to Codex. '
-    + 'I can set the model on the task; an agent filing a task picks it from a table. '
     + 'And what we lose from the «great» list: nothing. Each pane IS Claude Code — every feature '
     + 'it ships still arrives for free, and the panes start with remote control on, so the phone '
     + 'still works. '
@@ -1228,6 +1229,29 @@ export const RunnerSlide: SlideDefinition = {
     + 'herdr calls are the real ones, the tasks are staged; the model beside each agent is the '
     + 'deck\'s addition, the real sidebar does not print it. The real daemon, `myclaw start`, is about five thousand lines, '
     + 'because it also heartbeats, reaps dead panes and survives a sleeping laptop.',
+};
+
+/** The rest of the walk, after «any agent» (Yarik, 22.11.2026): two more tasks, each on
+ *  the model, the effort and the agent its kind of work calls for. */
+export const ModelsSlide: SlideDefinition = {
+  id: 'improve-models',
+  content: () => (
+    <>
+      <CornerRings corner="top-right" />
+      <div className="ww-imp ww-imp--claim">
+        <RunnerWalk from={MODELS_FROM} />
+      </div>
+    </>
+  ),
+  notes:
+    'Fixed by the same loop — it plays by itself. Two more tasks arrive, and each gets its own '
+    + 'model and effort: booking the car service was complex agentic work — Opus, medium effort. '
+    + 'Putting it in the calendar is trivial — Sonnet. And a cover for a playlist is image '
+    + 'generation, which goes to Codex, on high effort. I can set the model on the task; an agent '
+    + 'filing a task picks it from a table. '
+    + 'Honest about the picture: the same shortened real session as the runner slide — the herdr '
+    + 'calls are the real ones, the tasks are staged, and the model beside each agent is the '
+    + 'deck\'s addition.',
 };
 
 /* ─── 6 · Any agent — and they talk ───────────────────────────────────────── */
@@ -1329,9 +1353,12 @@ const REVIEWER_BUSY = [3, 7, 10];
 function ReviewWalk() {
   const t = useClock(0);
   const all = t >= Number.MAX_SAFE_INTEGER;
-  const last = REVIEW_STEPS - 1;
-  const step = all ? last : Math.min(Math.floor(t / WALK_MS) % (REVIEW_STEPS + 2), last);
-  useAnimating(!all && t < REVIEW_STEPS * WALK_MS);
+  // One step more up front (Yarik, 22.11.2026): before any herdr call the author loads
+  // herdr's skill — that is how it knows the commands. `step` keeps the numbering the
+  // rest of the walk is written in, so the skill step is −1 → 0.
+  const raw = all ? REVIEW_STEPS : Math.min(Math.floor(t / WALK_MS) % (REVIEW_STEPS + 3), REVIEW_STEPS);
+  const step = raw - 1;
+  useAnimating(!all && t < (REVIEW_STEPS + 1) * WALK_MS);
 
   const at = (from: number, ...lines: PaneLine[]): PaneLine[] => (step >= from ? lines : []);
   const reviewer: Run = REVIEWER_BUSY.includes(step) ? 'working' : step >= 4 ? 'done' : 'idle';
@@ -1341,6 +1368,7 @@ function ReviewWalk() {
   const author: PaneLine[] = [
     { kind: 'tool', text: 'Bash(pnpm lint && pnpm test)' },
     { kind: 'sub', text: '✔ 0 problems · 17 passed' },
+    ...at(0, { kind: 'tool', text: 'Skill(herdr)' }, { kind: 'sub', text: 'Successfully loaded skill' }),
     ...at(1, { kind: 'tool', text: 'Bash(herdr pane split --direction right)' }, { kind: 'sub', text: 'pane w1:p2' }),
     ...at(
       2,
@@ -1429,7 +1457,8 @@ export const AnyAgentSlide: SlideDefinition = {
     'A bonus we did not ask for. The daemon does not care WHAT it starts in the pane — and once '
     + 'agents can open panes themselves, they can talk to one another. One case, the one I use '
     + 'on every commit: the review. On the left is the author, Claude Code. Lint and tests pass, '
-    + 'and it drives herdr itself: split the pane, start an agent of the OTHER vendor in it — '
+    + 'and it drives herdr itself. First it loads herdr\'s skill — that is how it knows the commands, '
+    + 'nobody taught it. Then: split the pane, start an agent of the OTHER vendor in it — '
     + 'Codex — and prompt it with the diff, waiting for the answer. Two findings come back, each with a '
     + 'priority. Now the part that makes it a conversation. A review is advice, not an edit '
     + 'script: the author checks each finding against the code. The first is real. The second is '

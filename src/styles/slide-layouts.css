@@ -1588,6 +1588,14 @@
   font-family: var(--font-mono);
   color: var(--ww-text-muted);
 }
+/* the candidate the draw landed on: its bar and share turn magenta as the token comes out */
+.ww-llm__cand--picked .ww-llm__bar {
+  background: var(--ww-magenta);
+}
+.ww-llm__cand--picked .ww-llm__share {
+  color: var(--ww-magenta);
+  font-weight: 700;
+}
 
 /* Beat 3 — the script on the left, the chat window on the right. */
 .ww-llm__script {
@@ -4663,10 +4671,6 @@
   border-color: var(--jg-ochre-300);
   background: var(--jg-ochre-50);
 }
-.ww-ma__card--calm {
-  border-color: var(--jg-moss-300);
-  background: var(--jg-moss-50);
-}
 .ww-ma__card--quiet {
   border-color: var(--jg-paper-200);
   background: var(--jg-paper-100);
@@ -4937,15 +4941,7 @@
 .ww-ma__actions--spread {
   justify-content: space-between;
 }
-.ww-ma__input {
-  flex: 1;
-  padding: 6px 20px;
-  border: 2px solid var(--jg-ink-200);
-  border-radius: 4px;
-  font-size: var(--font-size-code);
-  color: var(--jg-ink-300);
-}
-/* supplies: the shelf, and the phone beside it */
+/* a page with the phone beside it (Coffee) */
 .ww-ma__beside {
   flex: 1;
   min-height: 0;
@@ -4965,16 +4961,6 @@
 }
 .ww-ma__beside--phone .ww-jg__label {
   white-space: normal;
-}
-.ww-ma__card--due {
-  border-color: var(--jg-vermilion-300);
-}
-.ww-ma__supplyphoto {
-  flex: none;
-  width: 110px;
-  height: 140px;
-  object-fit: cover;
-  border-radius: 4px;
 }
 .ww-ma__cols--books {
   grid-template-columns: 1fr 1.25fr;
@@ -5182,175 +5168,6 @@
     outline-color: transparent;
     outline-offset: 22px;
   }
-}
-/* the «To buy» list: checkbox rows, and the agent's dashed proposals under them */
-.ww-ma__tick {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 8px 20px;
-  border: 2px solid var(--jg-ink-200);
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--ww-white) 60%, var(--jg-paper));
-}
-.ww-ma__tick--bought {
-  color: var(--jg-ink-300);
-  text-decoration: line-through;
-}
-.ww-ma__tick--fresh {
-  border-color: var(--jg-moss);
-  background: var(--jg-moss-50);
-}
-.ww-ma__tickbox {
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border: 3px solid var(--jg-ink-300);
-  border-radius: 4px;
-  font-size: var(--font-size-code);
-  text-decoration: none;
-}
-.ww-ma__tick--bought .ww-ma__tickbox {
-  border-color: var(--jg-moss);
-  background: var(--jg-moss);
-  color: var(--jg-paper);
-}
-.ww-ma__chip {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 6px 20px;
-  border: 2px dashed var(--jg-ochre-300);
-  border-radius: 4px;
-}
-.ww-ma__chip > .ww-jg__itemtext {
-  flex: 1;
-  min-width: 0;
-}
-.ww-ma__chip .ww-jg__label {
-  white-space: normal;
-  text-transform: none;
-  letter-spacing: 0;
-}
-.ww-ma__chipplus {
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border: 3px dashed var(--jg-ochre-300);
-  border-radius: 4px;
-  color: var(--jg-ochre);
-}
-/* the supermarket's app, on its cart: its own colours, never the deck's */
-.ww-sp {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-  padding: 0 0 34px;
-  background: var(--sp-ground);
-  color: var(--sp-ink);
-  font-family: var(--jg-sans);
-}
-.ww-sp__status,
-.ww-sp__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 40px;
-}
-.ww-sp__status {
-  padding-top: 26px;
-  font-size: var(--font-size-code);
-  font-weight: 700;
-}
-.ww-sp__title {
-  font-weight: 700;
-}
-.ww-sp__slot {
-  padding: 8px 22px;
-  border-radius: 18px;
-  background: var(--ww-white);
-  color: var(--sp-blue);
-  font-size: var(--font-size-code);
-  font-weight: 600;
-  line-height: 1.15;
-}
-.ww-sp__sheet {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 26px 34px;
-  border-radius: 44px;
-  background: var(--ww-white);
-}
-.ww-sp__pickup {
-  display: flex;
-  flex-direction: column;
-}
-.ww-sp__dim {
-  color: var(--sp-dim);
-  font-size: var(--font-size-code);
-}
-.ww-sp__line {
-  display: grid;
-  grid-template-columns: 72px minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 16px;
-  padding-top: 14px;
-  border-top: 2px solid var(--sp-ground);
-}
-.ww-sp__tile {
-  width: 72px;
-  height: 72px;
-  border-radius: 14px;
-  object-fit: contain;
-}
-.ww-sp__name {
-  display: flex;
-  flex-direction: column;
-  font-size: var(--font-size-code);
-  line-height: 1.2;
-}
-.ww-sp__heart {
-  color: var(--sp-heart);
-}
-.ww-sp__plus {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  height: 60px;
-  border: 4px solid var(--sp-blue);
-  border-radius: 14px;
-  color: var(--sp-blue);
-  font-weight: 700;
-}
-.ww-sp__sums {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: auto;
-}
-.ww-sp__sums > * {
-  display: flex;
-  justify-content: space-between;
-}
-.ww-sp__pay {
-  margin: 0 34px;
-  padding: 18px 0;
-  border-radius: var(--radius-pill);
-  background: var(--sp-blue);
-  color: var(--ww-white);
-  font-weight: 700;
-  text-align: center;
 }
 /* the three-week calendar heatmap */
 .ww-ma__heatwrap {
@@ -5633,6 +5450,31 @@
 .ww-ma__duel > .ww-ma__side--off {
   opacity: 0.4;
 }
+/* the duel's listening mode: the toggle, switched on; Draw greyed; the hold under it */
+.ww-ma__listen {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--jg-mono);
+  font-size: var(--font-size-code);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--jg-ochre);
+}
+.ww-ma__listen .ww-jg__ico {
+  width: 26px;
+  height: 26px;
+}
+.ww-ma__hold {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.ww-ma__holdline {
+  white-space: normal;
+  color: var(--jg-ink-500);
+}
 .ww-ma__rankbox {
   position: relative;
   display: block;
@@ -5694,6 +5536,79 @@
   font-family: var(--jg-sans);
   font-size: var(--font-size-code);
   line-height: 1.25;
+}
+/* the phone always beside the page (the Music frames): the browser leaves it room */
+.ww-imp--phone > .ww-imp__browser {
+  margin-right: 430px;
+}
+/* Spotify's now-playing screen: the song the duel just picked */
+.ww-spo__nowpage {
+  gap: 28px;
+  padding-top: 30px;
+}
+.ww-spo__nowhead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+.ww-spo__nowcover {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 20px 40px color-mix(in srgb, var(--ww-ink) 60%, transparent);
+}
+.ww-spo__nowtitle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--font-size-body);
+}
+.ww-spo__nowtitle .ww-spo__dim {
+  font-size: var(--font-size-code);
+}
+.ww-spo__bar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--spo-chip);
+  overflow: hidden;
+}
+.ww-spo__bar span {
+  display: block;
+  width: 40%; /* where the animation ends — and what the PDF shows, animations off */
+  height: 100%;
+  background: var(--spo-ink);
+  animation: ww-spo-progress 12s linear forwards;
+}
+@keyframes ww-spo-progress {
+  from {
+    width: 2%;
+  }
+  to {
+    width: 40%;
+  }
+}
+.ww-spo__controls {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  font-size: var(--font-size-body);
+}
+.ww-spo__pause {
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--spo-ink);
+  color: var(--spo-ground);
+  font-size: var(--font-size-code);
+}
+.ww-spo__idle {
+  justify-content: center;
+  align-items: center;
 }
 .ww-spo__status {
   flex: none;
@@ -5864,14 +5779,6 @@
   width: 4px;
   background: var(--jg-ink);
 }
-/* threat forecast */
-.ww-ma__alertmap {
-  width: 100%;
-  height: 795px;
-  object-fit: cover;
-  object-position: center 60%;
-  border-radius: 4px;
-}
 /* sleep */
 .ww-ma__nights {
   width: 100%;
@@ -5985,7 +5892,30 @@
   gap: 4px;
   font-size: var(--font-size-code);
 }
-/* the task the Coffee page is born in */
+/* a coffee bag no agent has read yet: the card says so, in the page's muted voice */
+.ww-ma__muted {
+  color: var(--jg-ink-400);
+  font-style: italic;
+}
+/* the artifact's rating: five stars, empty until the pointer clicks the fifth */
+.ww-ma__stars {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-heading);
+  line-height: 1;
+}
+.ww-ma__star {
+  color: var(--jg-ink-200);
+  transition: color 240ms var(--ease);
+}
+.ww-ma__star--on {
+  color: var(--jg-ochre);
+}
+.ww-ma__stars .ww-jg__label {
+  margin-left: 14px;
+}
+/* the task the Books page is born in */
 .ww-ma__task {
   flex: 1;
 }
@@ -6014,7 +5944,6 @@
   width: 28px;
   height: 28px;
 }
-
 
 /* 5 · the Agents page's own card, lifted out beside the loop: the week's usage as a
    line against the dotted diagonal of an even pace */
@@ -7102,6 +7031,20 @@
   border-radius: 10px;
   background: var(--ww-ink);
   color: var(--ww-mint);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code);
+  white-space: nowrap;
+}
+.ww-loops__event {
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-tight);
+  color: var(--ww-text-muted);
+}
+.ww-loops__event code {
+  padding: 2px 14px;
+  border-radius: 10px;
+  background: var(--ww-lavender);
+  color: var(--ww-purple);
   font-family: var(--font-mono);
   font-size: var(--font-size-code);
   white-space: nowrap;

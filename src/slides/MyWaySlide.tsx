@@ -12,7 +12,7 @@ import meme from '../assets/history/something-of-an-engineer.jpg';
  */
 
 /** Beat 2: what the rest of the talk is about, in the photo's quiet top-left corner. */
-const AGENDA = ['working on AI-native projects', 'building your own AI assistant', 'demystifying buzzwords'];
+const AGENDA = ['building your own AI assistant', 'working on AI-native projects', 'demystifying buzzwords'];
 /** Every term the deck actually explains, in the order the talk reaches it. */
 const BUZZWORDS = ['tokens', 'harness', 'tool', 'context', 'MCP', 'AGENTS.md', 'loops', 'skills', 'artifacts'];
 const AGENDA_LAST = 'software factories';
@@ -72,7 +72,7 @@ export const MyWaySlide: SlideDefinition = {
     + 'a way to write things down. None of it was built for this. All of it fits together. '
     + 'No new harness, nothing to keep up with — the answer to the slide where I was catching up '
     + 'with Claude Code every week. And then: here is what those parts are. '
-    + '[reveal] So, what we\'ll talk about: working on AI-native projects; building your own AI assistant; '
+    + '[reveal] So, what we\'ll talk about: building your own AI assistant; working on AI-native projects; '
     + 'demystifying the buzzwords — tokens, harness, tool, context, MCP, AGENTS.md, loops, skills, '
     + 'artifacts; and software factories.',
 };

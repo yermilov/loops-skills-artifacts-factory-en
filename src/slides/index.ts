@@ -56,12 +56,14 @@ import {
   RunnerSlide,
   IdleSlide,
   AnyAgentSlide,
+  ModelsSlide,
   PaceSlide,
   FreeModelsSlide,
 } from './improve';
 import { TextVsCodeSlide } from './TextVsCodeSlide';
+import { EffortSlide } from './EffortSlide';
 import { MiniappBirthSlide, MiniappsSlide, MiniappsMoreSlide, MiniappsHomeSlide, MiniappsLastSlide, MiniappsEndSlide, MiniappsTreeSlide } from './MiniappsSlide';
-import { ArchitectureSlide, ArchitectureDaemonSlide, ArchitectureTwoSlide, ArchitectureWebSlide, ArchitectureAppsSlide, ArchitectureMobileSlide, ArchitectureHomeSlide, ArchitectureHealthSlide, ArchitectureServicesSlide, RepairsItselfSlide, RepairLoopsSlide, FordFactorySlide, FactoryRevealSlide, ArchitectureAppTaskSlide, BuildsItselfSlide, LearnsItselfSlide } from './factory';
+import { ArchitectureSlide, ArchitectureDaemonSlide, ArchitectureTwoSlide, ArchitectureWebSlide, ArchitectureAppsSlide, ArchitectureMobileSlide, ArchitectureHomeSlide, ArchitectureHealthSlide, ArchitectureServicesSlide, RepairsItselfSlide, RepairLoopsSlide, FordFactorySlide, FactoryRevealSlide, ArchitectureAppTaskSlide, BuildsItselfSlide, LearnsItselfSlide, MiniappLoopsSlide } from './factory';
 
 /**
  * LAYOUT GALLERY — one example of every WAWTech layout, kept as reference code
@@ -131,11 +133,13 @@ export const slides = [
   HerdrApiSlide,
   RunnerSlide,
   AnyAgentSlide,
+  ModelsSlide,
+  EffortSlide,
+  FreeModelsSlide,
   ArchitectureDaemonSlide,
   ArchitectureTwoSlide,
   IdleSlide,
   PaceSlide,
-  FreeModelsSlide,
   TaskBoardSlide,
   ArchitectureWebSlide,
   ArtifactSlide,
@@ -146,6 +150,7 @@ export const slides = [
   ArchitectureMobileSlide,
   MiniappsMoreSlide,
   ArchitectureAppTaskSlide,
+  MiniappLoopsSlide,
   MiniappsHomeSlide,
   ArchitectureHomeSlide,
   MiniappsLastSlide,

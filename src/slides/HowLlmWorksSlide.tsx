@@ -58,14 +58,36 @@ const END = '<|endoftext|>';
 
 /** The prompt, already split the way a tokenizer would roughly split it. */
 const PROMPT = ['The', 'capital', 'of', 'France', 'is'];
-/** What the loop adds, token by token, until it emits the end of the text. */
-const COMPLETION = ['Paris', ',', 'the', 'largest', 'city', 'in', 'the', 'country', '.', END];
-
+/**
+ * The distribution over the first token — and the pick is REAL sampling (Yarik,
+ * 22.11.2026): every time beat 1 opens, one candidate is drawn by its share, so
+ * Paris comes out 94 times in 100 and now and then the room sees «the» or «a».
+ * The shares add up to 1. Each candidate carries the rest of its sentence, so
+ * beat 2's loop carries on from whatever was drawn and still ends in END.
+ * The shares are illustrative, not measured (said in the notes).
+ */
 const CANDIDATES = [
-  { token: 'Paris', share: 0.94 },
-  { token: 'the', share: 0.02 },
-  { token: 'a', share: 0.01 },
+  { token: 'Paris', share: 0.94, rest: [',', 'the', 'largest', 'city', 'in', 'the', 'country', '.'] },
+  { token: 'the', share: 0.03, rest: ['city', 'of', 'Paris', '.'] },
+  { token: 'a', share: 0.01, rest: ['city', 'called', 'Paris', '.'] },
+  { token: 'located', share: 0.01, rest: ['in', 'the', 'north', 'of', 'the', 'country', '.'] },
+  { token: 'one', share: 0.01, rest: ['of', 'the', 'oldest', 'cities', 'in', 'Europe', '.'] },
 ];
+type Candidate = (typeof CANDIDATES)[number];
+
+/** One draw from the distribution. The PDF always shows the likely world: Paris. */
+function sample(): Candidate {
+  if (EXPORT_MODE) return CANDIDATES[0];
+  let r = Math.random();
+  for (const c of CANDIDATES) {
+    r -= c.share;
+    if (r < 0) return c;
+  }
+  return CANDIDATES[0];
+}
+
+/** What the loop adds, token by token, until it emits the end of the text. */
+const completionOf = (c: Candidate) => [c.token, ...c.rest, END];
 
 const PREFACE = ['You are ChatGPT, a helpful assistant.', 'Answer briefly and politely.'];
 const SCRIPT = [
@@ -83,17 +105,22 @@ const REPLY = ['Four', 'minutes,', 'then', 'cold', 'water.', END];
  * frame looks the same every time the beat is opened.
  */
 function useClock(resetKey: number): number {
-  const [t, setT] = useState(0);
+  // The time is kept WITH the key it belongs to: on the render where the key has just
+  // changed (a click), the effect has not reset it yet, and the old beat's time would
+  // draw the new beat at its END for one frame — a visible blink (22.11.2026). So a
+  // time from another key reads as 0.
+  const start = EXPORT_MODE ? Number.MAX_SAFE_INTEGER : 0;
+  const [clock, setClock] = useState({ key: resetKey, t: start });
   useEffect(() => {
     if (EXPORT_MODE) {
-      setT(Number.MAX_SAFE_INTEGER);
+      setClock({ key: resetKey, t: Number.MAX_SAFE_INTEGER });
       return;
     }
-    setT(0);
-    const id = setInterval(() => setT((v) => v + TICK_MS), TICK_MS);
+    setClock({ key: resetKey, t: 0 });
+    const id = setInterval(() => setClock((c) => ({ key: c.key, t: c.t + TICK_MS })), TICK_MS);
     return () => clearInterval(id);
   }, [resetKey]);
-  return t;
+  return clock.key === resetKey ? clock.t : start;
 }
 
 /** How many of a list's tokens have arrived by `t`. */
@@ -137,6 +164,12 @@ function Tokens({
 
 function LlmScene({ stage }: { stage: number }) {
   const t = useClock(stage);
+  // a fresh draw each time beat 1 opens; beat 2 keeps the one beat 1 drew
+  const [pick, setPick] = useState<Candidate>(sample);
+  useEffect(() => {
+    if (stage === 1) setPick(sample());
+  }, [stage]);
+  const COMPLETION = completionOf(pick);
 
   // Beat 1 ends with the first token landing on the left; beat 2 carries the
   // loop on from there; beat 3 shows the dialogue, ending on an empty
@@ -241,7 +274,10 @@ function LlmScene({ stage }: { stage: number }) {
             {t >= CANDIDATES_MS && stage < 2 && (
               <div className="ww-llm__cands">
                 {CANDIDATES.map(({ token, share }) => (
-                  <div key={token} className="ww-llm__cand">
+                  <div
+                    key={token}
+                    className={`ww-llm__cand${t >= FIRST_TOKEN_MS && token === pick.token ? ' ww-llm__cand--picked' : ''}`}
+                  >
                     <span className="ww-llm__token">{token}</span>
                     <span className="ww-llm__bar" style={{ width: `${Math.round(share * 100)}%` }} />
                     <span className="ww-llm__share">{Math.round(share * 100)}%</span>
@@ -291,8 +327,10 @@ export const HowLlmWorksSlide: SlideDefinition = {
   notes:
     'Beat 1 — it is a LANGUAGE model, nothing more: you hand it text, it hands back one token, '
     + 'the most likely continuation. It scores every token it could say next — that is the '
-    + 'distribution on the right — and one of them is then picked; the percentages are '
-    + 'illustrative, not measured. Then watch where the token goes: it is appended to the text, '
+    + 'distribution on the right — and one of them is then picked — really picked: the slide draws '
+    + 'at random by those shares every time this beat opens, so 94 times in 100 it says Paris, and '
+    + 'now and then «the city of Paris» or something stranger. If it does, enjoy it — that is the point. '
+    + 'The percentages are illustrative, not measured. Then watch where the token goes: it is appended to the text, '
     + 'which is the whole of beat 2. '
     + 'Beat 2 — the only trick: append that token to the text and run it again. Token by token '
     + 'the text completes itself. There is no plan and no answer, just the next token, over and over. '

@@ -378,7 +378,7 @@ const SERVICES = [
 ] as const;
 
 /** The queue inside the server, top first. */
-const QUEUE = ['keep track of my coffee', 'slot 2', 'slot 3'] as const;
+const QUEUE = ['keep track of what I read', 'slot 2', 'slot 3'] as const;
 
 /** Railway, as the cloud the server lives in (Yarik, 16.11.2026: a circle is nobody's
  *  sign for a server — draw the hosting as a cloud, the server and its parts inside it).
@@ -434,7 +434,7 @@ const SCENE_FIRST: Scene = {
       // two columns on the one screen: my chat, and the /loop that works the queue
       agents: ['/loop'],
       busy: '/loop',
-      doing: 'coffee tracker',
+      doing: 'book tracker',
       ask: 'M 1270 275 C 1150 275, 1120 330, 1013 330',
       poll: 'M 1270 365 C 1150 365, 1130 410, 1035 410',
       task: 'M 1027 410 C 1130 410, 1150 365, 1262 365',
@@ -478,7 +478,7 @@ const SCENE_DAEMON: Scene = {
       via: 'daemon',
       agents: ['Claude Code', 'Codex'],
       busy: 'Claude Code',
-      doing: 'coffee',
+      doing: 'books',
       reviewer: 'Codex',
     },
   ],
@@ -503,7 +503,7 @@ const SCENE_TWO: Scene = {
       ...SCENE_DAEMON.laptops[0],
       top: 150,
       tasks: [
-        ['keep track of my coffee', 'coffee'],
+        ['keep track of what I read', 'books'],
         ['book the car service', 'car'],
         ['plan the weekend trip', 'trip'],
       ],
@@ -698,7 +698,7 @@ const SCENE_NOW: Scene = {
       top: 100,
       agents: ['Claude Code', 'Codex'],
       busy: 'Claude Code',
-      doing: 'coffee tracker',
+      doing: 'book tracker',
       poll: 'M 1270 205 C 1150 205, 1130 335, 1023 335',
       task: 'M 1015 335 C 1130 335, 1150 205, 1262 205',
       report: 'M 1270 260 C 1180 260, 1150 375, 1025 375',
@@ -969,7 +969,7 @@ function Architecture({ scene: given, build }: { scene: Scene; build?: Scene[] }
                 {laptop.chat && (
                   <span className={`ww-arch__pane${lit(1, 6) ? ' ww-arch__pane--on' : ''}`}>
                     <b>my chat</b>
-                    <i>{mine === 6 ? '✓ done' : mine === 1 || all ? (job ? `› ${job[1]}` : '› track my coffee') : '○'}</i>
+                    <i>{mine === 6 ? '✓ done' : mine === 1 || all ? (job ? `› ${job[1]}` : '› track my books') : '○'}</i>
                   </span>
                 )}
                 {(() => {
@@ -1203,8 +1203,9 @@ export const ArchitectureAppTaskSlide: SlideDefinition = {
   ),
   notes:
     'One small arrow, and it closes a loop. Until now a task came from me — from the web page, '
-    + 'the phone, a chat. Now a miniapp can put one into the queue itself: a button on a page '
-    + 'files a task, and the same laptops pick it up like any other. The pages are no longer '
+    + 'the phone, a chat. Now a miniapp can put one into the queue itself: a tap on a page records '
+    + 'an event, a loop task waiting on it is let into the queue, and the same laptops pick it up '
+    + 'like any other. The pages are no longer '
     + 'only where results land — they are one more place work starts from.',
 };
 
@@ -1321,7 +1322,7 @@ export const FactoryRevealSlide: SlideDefinition = {
  *  picture the deck has already drawn, again, under a title: `ww-self` holds it. */
 export const BuildsItselfSlide: SlideDefinition = {
   id: 'factory-builds-itself',
-  title: 'It builds itself',
+  title: 'Software factory builds your product and builds itself',
   content: () => (
     <div className="ww-self">
       <Architecture scene={BUILD_SCENES[0]} build={BUILD_SCENES} />
@@ -1339,7 +1340,7 @@ export const BuildsItselfSlide: SlideDefinition = {
 
 export const LearnsItselfSlide: SlideDefinition = {
   id: 'factory-learns-itself',
-  title: 'It learns from itself',
+  title: 'Software factory learns from its work',
   content: () => (
     <div className="ww-self">
       <div className="ww-gb">
@@ -1359,7 +1360,7 @@ export const LearnsItselfSlide: SlideDefinition = {
  *  cron that feeds the queue, then the loop tasks themselves, one per click. */
 export const RepairsItselfSlide: SlideDefinition = {
   id: 'factory-repairs-itself',
-  title: 'It repairs itself',
+  title: 'Software factory repairs itself',
   content: () => (
     <div className="ww-self">
       <Architecture scene={SCENE_CRON} />
@@ -1374,7 +1375,7 @@ export const RepairsItselfSlide: SlideDefinition = {
 
 export const RepairLoopsSlide: SlideDefinition = {
   id: 'factory-repair-loops',
-  title: 'It repairs itself',
+  title: 'Software factory repairs itself',
   maxRevealStages: REPAIR_LOOPS.length,
   initialRevealStage: 1,
   content: ({ revealStage }) => {
@@ -1422,6 +1423,136 @@ export const RepairLoopsSlide: SlideDefinition = {
     + 'loops ship their small fix themselves. Honest: the briefs and the skill '
     + 'names are the real ones; the names on the left are simplified for the slide, and the short '
     + 'versions are my cuts of skills that run to hundreds of lines.',
+};
+
+/** What a miniapp puts into the queue (Yarik, 22.11.2026: after «miniapps can add a task to
+ *  the queue», four real examples in the repair-loops' style). Read off juggernaut at
+ *  41f7af0 (21.11.2026): a miniapp never files a task itself — in the same transaction as
+ *  my tap it records a LOOP EVENT (`emitLoopEvent`, packages/platform/src/loop-events.ts),
+ *  a recurring series waits on that event's key, and the server releases its next
+ *  occurrence into the queue; the occurrence carries a «⚡ Запущено подією …» comment.
+ *    `event`  — the real key, and what emits it (from the key's own catalogue line)
+ *    `series` — the real series title, translated (for the notes)
+ *    `skill`  — the real skill that is the series' method (each skill says so of itself)
+ *    `prompt` — that skill cut to five sentences of what it DOES; mine, not a quote
+ *  The one-sentence brief on the card is the same as the repair loops'; the series' own
+ *  briefs were not read (the live database is out of reach here) — the skills' wording
+ *  («this is the method for the series …») is what it rests on. */
+const MINIAPP_LOOPS: { name: string; miniapp: string; event: string; why: string; series: string; skill: string; prompt: string[] }[] = [
+  {
+    name: 'Read a coffee bag off its photos',
+    miniapp: 'Coffee',
+    event: 'coffee.changed',
+    why: 'a bag got a photo',
+    series: 'Coffee: recognise the photos and update the taste',
+    skill: 'errands:coffee-intake',
+    prompt: [
+      'Take every bag with unread photos.',
+      'Read all its photos as one label: the name on the front, the weight and the roast date on the back.',
+      'Fill the card — roaster, origin, process, notes — with only what the bag says, and link it to a coffee already on file instead of a duplicate.',
+      'Pick the front as the card\'s cover.',
+      'If new verdicts arrived, rewrite the taste profile at the top of the page.',
+    ],
+  },
+  {
+    name: 'Recommend the next movie',
+    miniapp: 'Movies',
+    event: 'media.suggestion.answered',
+    why: 'I tapped Add or Not this',
+    series: 'Recommend a film / series, and a book / audiobook',
+    skill: 'collections:media-recommendations',
+    prompt: [
+      'Find the categories with an open slot — film, series, book, audiobook.',
+      'Read what I added and what I turned down, and why: that is the taste memory.',
+      'Propose one title for each open slot, and explain each pick using my own ratings.',
+      'Add its outside ratings — IMDb, Rotten Tomatoes, Goodreads.',
+      'Report, and wait for my next tap.',
+    ],
+  },
+  {
+    name: 'Recommend which coffee to order',
+    miniapp: 'Coffee',
+    event: 'coffee.stock.low',
+    why: 'one bag or none is left at home',
+    series: 'Buy coffee',
+    skill: 'errands:funt-coffee-order',
+    prompt: [
+      'Decide whether to order at all: my newest comment, the stock on the page, my order history.',
+      'Put my usual basket into the roaster\'s cart — and coffee for the army, a tenth of the order.',
+      'Propose up to two coffees to try next, from my taste profile.',
+      'Go as far as checkout and check the total and the delivery point.',
+      'Stop before paying — paying is mine — and report.',
+    ],
+  },
+  {
+    name: 'Answer my question about a book',
+    miniapp: 'Books',
+    event: 'books.note_message.added',
+    why: 'I asked a question in a book note',
+    series: 'Answer the questions about books',
+    skill: 'collections:book-questions',
+    prompt: [
+      'Read every open question whose newest message is mine.',
+      'Answer each one in its own thread, follow-ups included.',
+      'No spoilers past where I am in the book.',
+      'Read the files on the note when there are any.',
+      'Report what was answered.',
+    ],
+  },
+];
+
+export const MiniappLoopsSlide: SlideDefinition = {
+  id: 'factory-miniapp-loops',
+  title: 'Miniapps put tasks into the queue',
+  maxRevealStages: MINIAPP_LOOPS.length,
+  initialRevealStage: 1,
+  content: ({ revealStage }) => {
+    const at = Math.min(Math.max(revealStage, 1), MINIAPP_LOOPS.length) - 1;
+    const loop = MINIAPP_LOOPS[at];
+    return (
+      <>
+        <CornerRings corner="bottom-left" />
+        <div className="ww-loops">
+          <div className="ww-loops__list">
+            {MINIAPP_LOOPS.map((item, i) => (
+              <Reveal key={item.event + item.skill} at={i + 1} stage={revealStage}>
+                <div className={i === at ? 'ww-loops__name ww-loops__name--on' : 'ww-loops__name'}>{item.name}</div>
+              </Reveal>
+            ))}
+          </div>
+          <div key={loop.skill} className="ww-loops__panel ww-jg__arrive">
+            <div className="ww-loops__head">
+              <span>loop task · {loop.miniapp}</span>
+              <span>⚡ woken by an event</span>
+            </div>
+            <div className="ww-loops__event">
+              <code>{loop.event}</code> — {loop.why}
+            </div>
+            <div className="ww-loops__brief">
+              The method of this task is the skill <code>{loop.skill}</code>. Load it and run it.
+            </div>
+            <div className="ww-loops__skillhead">SKILL.md, in short</div>
+            <div className="ww-loops__prompt">
+              {loop.prompt.map((line) => (
+                <span key={line}>{line} </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  },
+  notes:
+    'One per click — what that «Add» button, and taps like it, really do. A miniapp never files a '
+    + 'task itself. In the same transaction as my tap it records an EVENT; a '
+    + 'loop task is waiting on that event, and the server lets its next run into the queue — the '
+    + 'run even says «started by an event». And the run is the same thing as every loop: one '
+    + 'sentence that names a skill. '
+    + MINIAPP_LOOPS.map((loop, i) => `[${i + 1}] ${loop.name} — on ${loop.miniapp}, when ${loop.why}, the app emits ${loop.event}, which wakes the series «${loop.series}». `).join('')
+    + 'So the miniapp is the UI, and the agents are its back office. '
+    + 'Honest: the events, the series, the skills and their steps are the real ones (the series '
+    + 'titles translated); the short versions are my cuts of much longer skills, and the one-line '
+    + 'brief on the card is the shape every loop\'s brief has — I did not read these four series\' own.',
 };
 
 /** «How everyone imagines a software factory» — the picture people have in their heads,
