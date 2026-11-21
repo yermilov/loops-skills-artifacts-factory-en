@@ -42,9 +42,9 @@ const BULLETS: ReactNode[] = [
   </>,
 ];
 
-/** Beat 0: the skill (frontmatter only); 1: the loop; 2: the steps start, one a beat —
- *  no bullet of their own: the file shows them. */
-const STEPS_FROM = 2;
+/** Beat 0: the skill (frontmatter only) and the loop, both bullets together (Yarik,
+ *  22.11.2026); 1: the steps start, one a beat — no bullet of their own: the file shows them. */
+const STEPS_FROM = 1;
 
 export const SelfLearningSlide: SlideDefinition = {
   id: 'self-learning',
@@ -56,7 +56,6 @@ export const SelfLearningSlide: SlideDefinition = {
     // the step that appeared last, after the renumbering, goes bold: it was inserted on top
     const lastAt = Math.max(...STEPS.map((s) => s.at));
     const fresh = shownSteps === lastAt ? [HEAD.split('\n').length + visible.findIndex((s) => s.at === lastAt) + 1] : [];
-    const shownBullets = Math.min(BULLETS.length, revealStage + 1);
     return (
       <>
         <CornerRings corner="bottom-right" />
@@ -65,8 +64,8 @@ export const SelfLearningSlide: SlideDefinition = {
             <CodeBlock language="markdown" filename="do-task/SKILL.md" code={code} highlightLines={fresh} />
           </div>
           <ul className="ww-skillunit__notes">
-            {BULLETS.slice(0, shownBullets).map((b, i) => (
-              <li key={i} className={i === revealStage ? 'reveal-in' : undefined}>
+            {BULLETS.map((b, i) => (
+              <li key={i} className={revealStage === 0 ? 'reveal-in' : undefined}>
                 {b}
               </li>
             ))}
@@ -76,8 +75,8 @@ export const SelfLearningSlide: SlideDefinition = {
     );
   },
   notes:
-    'DRAFT. Now let\'s turn the loop itself into a skill: do-task. [reveal] So the loop becomes: '
-    + 'fetch the next task, and /do-task. [reveal] And here is what do-task does. First, do the task. '
+    'DRAFT. Now let\'s turn the loop itself into a skill: do-task. So the loop becomes: '
+    + 'fetch the next task, then run /do-task. [reveal] And here is what do-task does. First, do the task. '
     + '[reveal] Then look back at the skills it used — [reveal] and suggest changes to them, or new '
     + 'skills. [reveal] Commit those to the marketplace, so every machine gets them on the next '
     + 'auto-update. [reveal] Upload the session log to the server and attach it to the task. '

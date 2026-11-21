@@ -21,12 +21,10 @@ import bobbyFinn from '../assets/labyrinth/bobby-finn-no.jpg';
 /** The obvious answer is the title itself; the slide opens on it alone, and the
  *  first click knocks it down. */
 const WAY_IN: ReactNode[] = [
-  // Bobby Finn's teacher voice: the «because» deliberately explains nothing.
+  // Bobby Finn's teacher voice: the «because» deliberately explains nothing. One bullet
+  // since 22.11.2026 (Yarik): the best practices are what the skill is made from.
   <>
-    <Emphasis color="magenta">NOOOO because...</Emphasis> create a <Code>skill-authoring</Code> skill
-  </>,
-  <>
-    read up on the best practices:{' '}
+    <Emphasis color="magenta">NOOOO because...</Emphasis> convert the best practices (
     <SlideLink href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices">
       platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices
     </SlideLink>
@@ -34,6 +32,7 @@ const WAY_IN: ReactNode[] = [
     <SlideLink href="https://agentskills.io/skill-creation/best-practices">
       agentskills.io/skill-creation/best-practices
     </SlideLink>
+    ) into a <Code>skill-authoring</Code> skill
   </>,
   <>
     <Emphasis color="magenta">NOOOO because...</Emphasis> ask Claude to do the research on how to write great
@@ -53,10 +52,9 @@ const WAY_OUT: ReactNode[] = [
     plugins
   </>,
   <>
-    how? create <Code>marketplace-dev</Code> and <Code>plugin-dev</Code> skills
-  </>,
-  <>
-    install the marketplace for your agents and <Emphasis color="magenta">force regular auto-updates</Emphasis>
+    how? use the <Code>research</Code> skill to explore how to create a great marketplace and set up
+    plugins, and the <Code>skill-authoring</Code> skill to create <Code>marketplace-dev</Code> and{' '}
+    <Code>plugin-dev</Code> skills
   </>,
 ];
 
@@ -111,7 +109,7 @@ function SkillGraph() {
 }
 
 /** The «three skills» beat — the last of the way in. */
-const GRAPH_STAGE = 5;
+const GRAPH_STAGE = 4;
 
 /**
  * The labyrinth again, on «how? create marketplace-dev and plugin-dev»: the same
@@ -125,7 +123,7 @@ const T_AUTH = node('skill-authoring', 170, 196);
 const T_RES = node('research', 530, 196);
 const MKT = node('marketplace-dev', 1260, 30);
 const PLG = node('plugin-dev', 1260, 236);
-const ALL_STAGE = 7;
+const ALL_STAGE = 6;
 
 function SkillGraphAll() {
   const baseY = T_AUTH.y + NODE_H / 2;
@@ -209,69 +207,72 @@ function Yystack() {
         <a className="ww-labyrinth__yystack-url" href={YYSTACK_URL}>
           github.com/yermilov/yystack
         </a>
-        <Code>/plugin marketplace add yermilov/yystack</Code>
+        {/* the skills CLI (vercel-labs/skills, skills.sh) installs into most coding agents, not only
+            Claude Code, and reads yystack's .claude-plugin/marketplace.json to find the plugins' skills */}
+        <Code>npx skills add yermilov/yystack</Code>
       </div>
     </aside>
   );
 }
 
 /** The three «NOOOO because...» beats: Bobby Finn peeks up on each. */
-const FINN_STAGES = [1, 3, 4];
+const FINN_STAGES = [1, 2, 3];
 
 const ALL = [...WAY_IN, ...WAY_OUT];
 /** How many bullets fit under the title at the deck's shortest stage (1080) —
  *  fewer from the second labyrinth on, to leave the bottom band for it. */
 const WINDOW = 6;
-const WINDOW_WITH_BAND = 4;
+const WINDOW_WITH_BAND = 3; // the «how?» bullet runs to three lines
 
 export const SkillLabyrinthSlide: SlideDefinition = {
   id: 'skill-labyrinth',
   title: 'Learn how to write great skills',
   maxRevealStages: YYSTACK_STAGE,
   content: ({ revealStage }) => {
+    const step = revealStage;
     // one list, one bullet a click; once it outgrows the slide, the oldest
     // bullets leave from the top, one by one
     // (the yystack beat adds no bullet — the list stays as the last click left it)
-    const shown = Math.min(revealStage, ALL.length);
+    const shown = Math.min(step, ALL.length);
     const first = Math.max(0, shown - (shown >= ALL_STAGE ? WINDOW_WITH_BAND : WINDOW));
     return (
       <>
         <CornerRings corner="bottom-right" />
         <ul className="ww-labyrinth">
           {ALL.slice(first, shown).map((b, i) => (
-            <li key={first + i} className={first + i === revealStage - 1 ? 'reveal-in' : undefined}>
+            <li key={first + i} className={first + i === step - 1 ? 'reveal-in' : undefined}>
               {b}
             </li>
           ))}
         </ul>
-        {FINN_STAGES.includes(revealStage) && (
-          <figure key={revealStage} className="ww-labyrinth__finn ww-overlay">
+        {FINN_STAGES.includes(step) && (
+          <figure key={step} className="ww-labyrinth__finn ww-overlay">
             <img src={bobbyFinn} alt="Bobby Finn, as the English teacher, mid-«NO»" />
             <figcaption>@itsbobbyfinn</figcaption>
           </figure>
         )}
-        {revealStage === GRAPH_STAGE && <SkillGraph />}
-        {revealStage === ALL_STAGE && <SkillGraphAll />}
-        {revealStage === YYSTACK_STAGE && <Yystack />}
+        {step === GRAPH_STAGE && <SkillGraph />}
+        {step === ALL_STAGE && <SkillGraphAll />}
+        {step === YYSTACK_STAGE && <Yystack />}
       </>
     );
   },
   notes:
-    'So: learn how to write great skills — the obvious answer. [reveal] NOOOO — because! (say it like '
-    + 'Bobby Finn\'s English teacher, he pops up from below for a second): make a '
-    + 'skill that writes skills; a skill-authoring skill. [reveal] Fine — then read the best practices: '
-    + 'Anthropic\'s, agentskills.io. [reveal] NOOOO because... (him again): ask Claude to do that research for you. '
+    'So: learn how to write great skills — the obvious answer. [reveal] NOOOO — because! (Say it like '
+    + 'Bobby Finn\'s English teacher. He pops up from below for a second.) Take the best practices from '
+    + 'Anthropic and agentskills.io and turn them into a skill that writes skills: a skill-authoring '
+    + 'skill. [reveal] NOOOO because... (him again): ask Claude to do that research for you. '
     + '[reveal] NOOOO because... (and again): the research itself is a skill — how to do research. [reveal] If you '
     + 'made it out of this labyrinth, you have at least three skills: the process, skill-authoring and '
     + 'research — and look how they depend on each other: the process is written with skill-authoring, '
     + 'skill-authoring needs research, research is itself a skill written with skill-authoring, and '
     + 'skill-authoring improves itself. [reveal] Next: put them in a marketplace, right in your repository, organized into '
-    + 'plugins. [reveal] How? Skills again — a marketplace-dev and a plugin-dev skill. And here is the labyrinth '
+    + 'plugins. [reveal] How? Skills again: the research skill explores how to build a great marketplace and set up plugins, and skill-authoring turns that into a marketplace-dev and a plugin-dev skill. And here is the labyrinth '
     + 'again: every one of the three now depends on both of them — and the two new ones depend on '
-    + 'themselves, on each other and on skill-authoring. [reveal] Then '
-    + 'install the marketplace for your agents and force regular auto-updates, so every agent always '
-    + 'runs the latest version. [reveal] Or skip the labyrinth: mine are public, in the yermilov/yystack '
-    + 'marketplace — the QR and the link are on the screen, one command installs it: meta:skill-authoring, '
-    + 'meta:plugin-dev and meta:enable-autoupdate, and research:deep-research as the research skill — '
-    + 'install them and you start out of the labyrinth. Leave the QR up for a few seconds.',
+    + 'themselves, on each other and on skill-authoring. '
+    + '[reveal] Or skip the labyrinth: mine are public, in the yermilov/yystack '
+    + 'marketplace — the QR and the link are on the screen. Run npx skills add yermilov/yystack and pick '
+    + 'the skills and the agents you want: skill-authoring, plugin-dev — in mine one skill covers both '
+    + 'the marketplace and the plugins — and deep-research as the research skill. Install them and you '
+    + 'start out of the labyrinth. Leave the QR up for a few seconds.',
 };
