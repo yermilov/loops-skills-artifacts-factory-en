@@ -1115,7 +1115,7 @@ export const IdleSlide: SlideDefinition = {
     + 'and that is the first token spent.',
 };
 
-/** Local models, in the shape of the free-models slide that follows it (Yarik, 22.11.2026:
+/** Local models, in the shape of the free-models slide before it (they were swapped, 22.11.2026) (Yarik, 22.11.2026:
  *  «додай перед слайдом про безкоштовні моделі подібний слайд про локальні моделі на основі
  *  того що ми з тобою сьогодні і вчора дослідили»). Everything on it is the run of
  *  21–22.11.2026 (juggernaut task 95005765), as the `agent-ops:local-model` skill and the
@@ -1123,7 +1123,7 @@ export const IdleSlide: SlideDefinition = {
  *  (MLX, 100 % GPU, 64k context) on the M3 Pro 36 GB, under Codex with a separate, empty
  *  CODEX_HOME (with the real one — plugins + the juggernaut MCP — the first request died of a
  *  Metal out-of-memory); the same three oracle tasks free-model-trial uses, every one PASS;
- *  the hosted column is the same model on OpenRouter the day before. Real numbers, cut to
+ *  the hosted benchmark is the same model on OpenRouter the day before. Real numbers, cut to
  *  minutes and seconds; the setup is the skill's, with `-s workspace-write --json` and the
  *  env-file plumbing left out — and `~/.codex-local` stands for the run's scratch CODEX_HOME
  *  (a separate home with only those keys: no plugins, no MCP servers). */
@@ -1140,11 +1140,12 @@ const LOCAL_SETUP: { text: string }[] = [
   { text: '    --oss --local-provider ollama \\' },
   { text: '    -m inkling-2-mini' },
 ];
-const LOCAL_RUNS: [task: string, local: string, hosted: string][] = [
-  ['locate', '11 min 51 s', '15 s'],
-  ['table', '17 min 10 s', '25 s'],
-  ['fix', '50 min 47 s', '55 s'],
-];
+/** The run's verdict as two short lists (Yarik, 22.11.2026), from the same numbers: the
+ *  three oracle tasks all PASS; 11 min 51 s / 17 min 10 s / 50 min 47 s on the laptop
+ *  against 15 / 25 / 55 s for the same model on OpenRouter (41–55×). Only what does NOT work is on the slide — what works he
+ *  narrates (Yarik, 22.11.2026) — 41–55× slower; 13 tokens/s out, 140 in, nothing cached;
+ *  the full Codex home (plugins + the MCP server) ran Metal out of memory. */
+const LOCAL_FAILS = ['41–55× the hosted runtime', '0 tokens cached: each step re-reads it all', 'my full Codex config: out of GPU memory'];
 
 export const LocalModelsSlide: SlideDefinition = {
   id: 'improve-local',
@@ -1154,10 +1155,10 @@ export const LocalModelsSlide: SlideDefinition = {
     <>
       <CornerRings corner="top-right" />
       <div className="ww-imp ww-imp--claim">
-        <div className="ww-asst__claim ww-asst__claim--not">
+        <div className="ww-asst__claim ww-asst__claim--almost">
           <span className="ww-asst__verdict">
-            <span aria-hidden="true">✕</span>
-            not yet
+            <span aria-hidden="true">~</span>
+            almost
           </span>
           <span>a local model, on my own laptop</span>
         </div>
@@ -1167,39 +1168,30 @@ export const LocalModelsSlide: SlideDefinition = {
           </div>
           <div className={`ww-imp__grades ww-imp__local ${revealStage >= 1 ? 'reveal-in' : 'reveal-hidden'}`}>
             <span className="ww-imp__localhead">inkling-2-mini · M3 Pro, 36 GB</span>
-            <div className="ww-imp__localrow ww-imp__localrow--head">
-              <span />
-              <span>laptop</span>
-              <span>hosted</span>
-            </div>
-            {LOCAL_RUNS.map(([task, local, hosted]) => (
-              <div key={task} className="ww-imp__localrow">
-                <span className="ww-imp__grademark">
-                  <span aria-hidden="true">✓</span>
-                  {task}
-                </span>
-                <span>{local}</span>
-                <span>{hosted}</span>
+            <span className="ww-imp__localsub">what doesn&apos;t work</span>
+            {LOCAL_FAILS.map((line) => (
+              <div key={line} className="ww-imp__localitem ww-imp__grade--bad">
+                <span className="ww-imp__grademark" aria-hidden="true">✕</span>
+                <span>{line}</span>
               </div>
             ))}
-            <span className="ww-imp__localfoot">13 tokens/s out · 140 tokens/s in</span>
-            <span className="ww-imp__localfoot ww-imp__localfoot--hot">0 tokens cached</span>
           </div>
         </div>
       </div>
     </>
   ),
   notes:
-    'The obvious next thought: why pay at all — run the model on my own laptop. So yesterday and '
-    + 'today I did exactly that. On the left is the whole setup: Ollama, started with a 64k context '
+    'The next thought: why depend on a provider at all — run the model on my own laptop. A few days ago '
+    + 'I did exactly that. On the left is the whole setup: Ollama, started with a 64k context '
     + 'because its default 32k is too small for an agent, a 20 GB open-weights model, and Codex '
     + 'pointed at it. One trap: with my normal Codex config — every plugin, my own MCP server with '
     + 'hundreds of tools — the very first request ran the GPU out of memory. It only worked from an '
     + 'empty Codex home of its own — that is the CODEX_HOME on the left. '
-    + '[reveal] On the right, the same three tasks every model of mine gets, with known answers: find a '
-    + 'function, build a table, fix a bug. All three correct. And look at the clock: twelve minutes, '
-    + 'seventeen, fifty — the same model hosted did each in under a minute. Thirteen tokens a second '
-    + 'out is fine; the killer is the bottom line: nothing is cached. Every step of the agent sends '
+    + '[reveal] Say what works — it is not on the slide: the same three tasks every model of mine gets, '
+    + 'with known answers — find a function, build a table, fix a bug — all three correct; the setup is '
+    + 'three commands; thirteen tokens a second out is fine. On the slide is what does not: the clock — '
+    + 'twelve minutes, seventeen, fifty — the same model hosted did each in under a minute. And the '
+    + 'killer: nothing is cached. Every step of the agent sends '
     + 'the whole growing conversation again, and the laptop reads it all again — one and a half to '
     + 'four minutes a step. So: the quality is there, the speed is not. Good for an experiment on a '
     + 'plane, not for my queue — yet. Honest: the other agents were running on the same laptop and it '
@@ -1278,8 +1270,8 @@ export const FreeModelsSlide: SlideDefinition = {
     </>
   ),
   notes:
-    'So when the subscription is above pace, or the task is not worth it, the models that cost '
-    + 'nothing are hosted ones. OpenRouter lists free variants of new models, and Codex can talk to any '
+    'And when the subscription is above pace, or the task is not worth it, there are models that '
+    + 'cost nothing. OpenRouter lists free variants of new models, and Codex can talk to any '
     + 'provider. On the left is all the setup: one provider block in the config, and three flags '
     + 'on launch — the provider, web search off, because OpenRouter rejects that tool, and the '
     + 'model. My daemon passes the same thing per task, so the other panes stay on the '

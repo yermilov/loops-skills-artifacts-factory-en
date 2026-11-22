@@ -371,9 +371,10 @@ event trigger with a debounce and an optional fallback date, wakes. `MINIAPP_LOO
 series' real `wake` rule and `SCENE_APPTASK_WOKEN` (the apptask slide's scene) queues those same
 four series, with the chat idle (`Scene.idleChat`, also on the cron scene). Re-read the series
 (`get_task` on an occurrence: `recurrenceCadence`, `triggers`) before changing either.
-The models run, as of 22.11.2026: `ModelsSlide` → `EffortSlide` → `LocalModelsSlide` (Inkling 2
-Mini on the M3 under Codex, the `agent-ops:local-model` run of 21–22.11.2026; two beats) →
-`FreeModelsSlide`.
+The models run, as of 22.11.2026 (evening): `ModelsSlide` → `EffortSlide` → `FreeModelsSlide` →
+`LocalModelsSlide` (Inkling 2 Mini on the M3 under Codex, the `agent-ops:local-model` run of
+21–22.11.2026; two beats, «~ almost» in `--ww-yellow`, and only what does NOT work on the slide —
+what works he narrates).
 
 - **«It builds itself» is the architecture in `build` mode**: `<Architecture build={BUILD_SCENES}>`
   plays the scenes daemon → … → services one round of the journey each (`BUILD_MS` a step), and the

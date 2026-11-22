@@ -28,6 +28,7 @@
   --ww-magenta: #fc00ab;        /* accent 2 (subtitle box, pills) */
   --ww-ink: #0a0418;            /* title box on the title slide */
   --ww-white: #ffffff;
+  --ww-yellow: #ffd23f;         /* NOT from the template: the «almost» verdict, between mint and magenta */
   --ww-linkedin: #0a66c2;       /* the LinkedIn QR on the about-me slide */
   /* Editor's red — NOT from the template. The one place a correction is being
    * made on the slide rather than drawn by it: the rename chain on the
