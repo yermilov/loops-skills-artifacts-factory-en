@@ -512,6 +512,13 @@ from then on it runs with no internet — reload included. Pieces:
 Push to `main` → `.github/workflows/deploy.yml` builds and deploys to Pages (source: GitHub
 Actions). Solo project: commit straight to `main`, messages `Add/Update/Fix/Remove …`.
 
+**`git fetch` before the first edit.** Yarik also commits from day sessions on another checkout,
+so this one can be several commits behind (22.11.2026: four, including a rewrite of the very slide
+the task named — the first take had to be redone on top of them). And when the cross-vendor
+reviewer runs (`juggernaut review`), tell it in the prompt not to start a dev server or Playwright
+and hand it your screenshots: its permission prompts block it, and an agent may not answer them
+for it.
+
 **GitHub account.** Run `gh auth status` first: on Yarik's own Mac only `yermilov` is logged in
 (checked 14.11.2026) and a plain `git push` is right. The switching dance below applies ONLY on a
 machine where the work EMU account is also logged in.
