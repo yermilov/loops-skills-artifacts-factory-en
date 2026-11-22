@@ -61,6 +61,8 @@ import {
 } from './improve';
 import { TextVsCodeSlide } from './TextVsCodeSlide';
 import { EffortSlide } from './EffortSlide';
+import { FreeModelsSlide } from './FreeModelsSlide';
+import { LocalModelsSlide } from './LocalModelsSlide';
 import { MiniappBirthSlide, MiniappsSlide, MiniappsMoreSlide, MiniappsHomeSlide, MiniappsLastSlide, MiniappsEndSlide, MiniappsTreeSlide } from './MiniappsSlide';
 import { ArchitectureSlide, ArchitectureDaemonSlide, ArchitectureTwoSlide, ArchitectureWebSlide, ArchitectureAppsSlide, ArchitectureMobileSlide, ArchitectureHomeSlide, ArchitectureHealthSlide, ArchitectureServicesSlide, RepairsItselfSlide, RepairLoopsSlide, FordFactorySlide, FactoryRevealSlide, ArchitectureAppTaskSlide, BuildsItselfSlide, LearnsItselfSlide, MiniappLoopsSlide } from './factory';
 
@@ -134,6 +136,8 @@ export const slides = [
   AnyAgentSlide,
   ModelsSlide,
   EffortSlide,
+  FreeModelsSlide,
+  LocalModelsSlide,
   ArchitectureDaemonSlide,
   ArchitectureTwoSlide,
   IdleSlide,

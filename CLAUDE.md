@@ -50,7 +50,7 @@ src/
 │   ├── AssistantReadySlide.tsx   # «Our barebones AI assistant is ready» — the full-bleed announcement over a Phantom Menace still
 │   ├── AssistantSessionSlide.tsx # the session that tests it (no title band): one errand, eight beats, a prop beside it
 │   ├── RouteMap.tsx              # the maps app with three routes — the session's map reveal and the Artifacts slide share it
-│   ├── improve.tsx               # «How do we improve it?» — the task board and the artifact (two slides, one `BoardFrame`), the runner walk-through, agents arguing over a review, the empty queue, the self-playing pace week, free OpenRouter models on Codex; `Herdr` + `CodexPane`
+│   ├── improve.tsx               # «How do we improve it?» — the task board and the artifact (two slides, one `BoardFrame`), the runner walk-through, agents arguing over a review, the empty queue, the self-playing pace week; `Herdr` + `CodexPane`, `RunnerCode` (the two model-written slides import it)
 │   ├── MiniappsSlide.tsx         # «artifacts that stay: miniapps» — Books is BORN in a task, then one page a click; Coffee on a phone (photograph a bag, an agent fills its card); Home replays its real task, then walks its cards
 │   ├── ledgerApp.tsx             # the assistant's web app shell both of them draw in (sidebar, task cards, timeline)
 │   ├── factory.tsx               # the ARCHITECTURE drawing (three slides, one `Scene` each) + the finale: «It builds / learns / repairs itself», the loop tasks, the Ford photo
@@ -371,10 +371,15 @@ event trigger with a debounce and an optional fallback date, wakes. `MINIAPP_LOO
 series' real `wake` rule and `SCENE_APPTASK_WOKEN` (the apptask slide's scene) queues those same
 four series, with the chat idle (`Scene.idleChat`, also on the cron scene). Re-read the series
 (`get_task` on an occurrence: `recurrenceCadence`, `triggers`) before changing either.
-The models run, as of 22.11.2026 (evening): `ModelsSlide` → `EffortSlide` → `FreeModelsSlide` →
-`LocalModelsSlide` (Inkling 2 Mini on the M3 under Codex, the `agent-ops:local-model` run of
-21–22.11.2026; two beats, «~ almost» in `--ww-yellow`, and only what does NOT work on the slide —
-what works he narrates).
+The models run, as of 22.11.2026 (night): `ModelsSlide` → `EffortSlide` → `FreeModelsSlide` →
+`LocalModelsSlide`. **Both of those were WRITTEN BY THE MODEL THEY ARE ABOUT** (Yarik's idea,
+22.11.2026): `src/slides/FreeModelsSlide.tsx` by nemotron-3.5-super-vl:free on OpenRouter,
+`src/slides/LocalModelsSlide.tsx` by Inkling 2 Mini on this laptop, each under `codex exec` with an
+empty CODEX_HOME from one brief, in a throwaway worktree. Each file's header says what the model
+did and the only lines that are ours — keep that true. Fix a fact there, but do not «tidy» their
+layout or wording: that is the slide's point. To regenerate one, give the model everything in the
+brief and forbid exploring the repo — Inkling's first try read the CSS for 83 min and ran Metal
+out of memory without writing anything.
 
 - **«It builds itself» is the architecture in `build` mode**: `<Architecture build={BUILD_SCENES}>`
   plays the scenes daemon → … → services one round of the journey each (`BUILD_MS` a step), and the
