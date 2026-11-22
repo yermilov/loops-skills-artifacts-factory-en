@@ -216,6 +216,9 @@ type Scene = {
   appTask?: true;
   /** the server's cron puts the loop tasks into the queue: a line inside the cloud, on the right */
   cronTask?: true;
+  /** nobody types the work on this scene (the cron or a miniapp starts it): the laptop's chat
+   *  column stays idle instead of echoing the task as if I had asked for it */
+  idleChat?: true;
   /** which of ON_SERVER stand in the cloud beside the server */
   onServer: string[];
   /** the server's own integrations, under it */
@@ -592,6 +595,34 @@ const SCENE_APPTASK: Scene = {
   fresh: ['apptask'],
   appTask: true,
 };
+/** What the apptask slide draws: SCENE_APPTASK (which the later scenes spread) with a queue of
+ *  the woken series instead of the errands — the same four as MINIAPP_LOOPS, the next slide,
+ *  read off the live series on 22.11.2026 (Yarik: «онови приклади на основі того як в juggernaut
+ *  все реально налаштовано»): «Порекомендуй фільм/серіал…», «Купити каву», «Кава: розпізнати фото
+ *  й оновити смак», «Відповісти на питання про книжки» — all four on the Claude Code agent. Nobody
+ *  asks on this slide, as on the cron one: no screen starts step 1 and the chat stays idle. */
+const SCENE_APPTASK_WOKEN: Scene = {
+  ...SCENE_APPTASK,
+  idleChat: true,
+  screens: SCENE_APPTASK.screens.map((screen) => ({ ...screen, asks: undefined })),
+  badges: SCENE_APPTASK.badges.filter(([n]) => n !== 1),
+  laptops: SCENE_APPTASK.laptops.map((laptop, owner) => ({
+    ...laptop,
+    // all four series are on the Claude Code agent, so Claude Code takes them on both laptops
+    busy: 'Claude Code',
+    reviewer: laptop.reviewer ? 'Codex' : undefined,
+    tasks:
+      owner === 0
+        ? [
+            ['recommend a film', 'film'],
+            ['buy coffee', 'coffee'],
+          ]
+        : [
+            ['read a coffee bag photo', 'photo'],
+            ['answer a book question', 'books'],
+          ],
+  })),
+};
 
 /** And the daemon is not only a task runner: being a program on a machine that is AT HOME,
  *  it also reads the house on a timer — the router, the camera, which devices are on the
@@ -658,6 +689,7 @@ const SCENE_CRON: Scene = {
   ...SCENE_SERVICES,
   fresh: ['cron'],
   cronTask: true,
+  idleChat: true,
   onServer: ['miniapps', 'cron'],
   screens: SCENE_SERVICES.screens.map((screen) => ({ ...screen, asks: undefined })),
   badges: SCENE_SERVICES.badges.filter(([n]) => n !== 1),
@@ -962,14 +994,14 @@ function Architecture({ scene: given, build }: { scene: Scene; build?: Scene[] }
         const job = jobOf(owner);
         const doing = job ? job[1] : laptop.doing;
         return (
-        <div key={laptop.name} className={`ww-arch__mac${fresh(`laptop:${laptop.name}`)}${(lit(2, 3, 4, 5) || (laptop.chat && lit(1, 6))) && !all ? ' ww-arch--glow' : ''}`} style={{ top: laptop.top }}>
+        <div key={laptop.name} className={`ww-arch__mac${fresh(`laptop:${laptop.name}`)}${(lit(2, 3, 4, 5) || (laptop.chat && !scene.idleChat && lit(1, 6))) && !all ? ' ww-arch--glow' : ''}`} style={{ top: laptop.top }}>
           <div className="ww-arch__screen">
             <div className="ww-arch__mini">
               <div className={`ww-arch__panes${laptop.chat ? ' ww-arch__panes--cols' : ''}`}>
                 {laptop.chat && (
-                  <span className={`ww-arch__pane${lit(1, 6) ? ' ww-arch__pane--on' : ''}`}>
+                  <span className={`ww-arch__pane${lit(1, 6) && !scene.idleChat ? ' ww-arch__pane--on' : ''}`}>
                     <b>my chat</b>
-                    <i>{mine === 6 ? '✓ done' : mine === 1 || all ? (job ? `› ${job[1]}` : '› track my books') : '○'}</i>
+                    <i>{scene.idleChat ? '○' : mine === 6 ? '✓ done' : mine === 1 || all ? (job ? `› ${job[1]}` : '› track my books') : '○'}</i>
                   </span>
                 )}
                 {(() => {
@@ -1198,7 +1230,7 @@ export const ArchitectureAppTaskSlide: SlideDefinition = {
   content: () => (
     <>
       <CornerRings corner="top-right" />
-      <Architecture scene={SCENE_APPTASK} />
+      <Architecture scene={SCENE_APPTASK_WOKEN} />
     </>
   ),
   notes:
@@ -1435,15 +1467,23 @@ export const RepairLoopsSlide: SlideDefinition = {
  *    `series` — the real series title, translated (for the notes)
  *    `skill`  — the real skill that is the series' method (each skill says so of itself)
  *    `prompt` — that skill cut to five sentences of what it DOES; mine, not a quote
- *  The one-sentence brief on the card is the same as the repair loops'; the series' own
- *  briefs were not read (the live database is out of reach here) — the skills' wording
- *  («this is the method for the series …») is what it rests on. */
-const MINIAPP_LOOPS: { name: string; miniapp: string; event: string; why: string; series: string; skill: string; prompt: string[] }[] = [
+ *    `wake`   — the series' real wake rule: the debounce (it runs once that many minutes pass
+ *               with no newer event, so a burst of taps is one run) and the fallback date
+ *  Read off the live series on 22.11.2026 (Yarik: «онови приклади на основі того як в juggernaut
+ *  все реально налаштовано»): the four briefs ARE the one sentence on the card («Метод цієї
+ *  задачі — скіл X. Завантаж його і виконуй…», translated, the rest of it cut), the event keys
+ *  match, and the cadences are coffee.changed 10 min / no fallback, media.suggestion.answered
+ *  2 min / none, coffee.stock.low none / 18 days, books.note_message.added 5 min / 2 days.
+ *  All four run on the Claude Code agent. Nine series wait on miniapp events in all (also
+ *  supplies, medical documents and three for the family tree). «Купити каву» was woken by its
+ *  event that very morning, 22.11.2026 10:13. */
+const MINIAPP_LOOPS: { name: string; miniapp: string; event: string; why: string; wake: string; series: string; skill: string; prompt: string[] }[] = [
   {
     name: 'Read a coffee bag off its photos',
     miniapp: 'Coffee',
     event: 'coffee.changed',
     why: 'a bag got a photo',
+    wake: 'runs after 10 quiet min',
     series: 'Coffee: recognise the photos and update the taste',
     skill: 'errands:coffee-intake',
     prompt: [
@@ -1459,6 +1499,7 @@ const MINIAPP_LOOPS: { name: string; miniapp: string; event: string; why: string
     miniapp: 'Movies',
     event: 'media.suggestion.answered',
     why: 'I tapped Add or Not this',
+    wake: 'runs after 2 quiet min',
     series: 'Recommend a film / series, and a book / audiobook',
     skill: 'collections:media-recommendations',
     prompt: [
@@ -1474,6 +1515,7 @@ const MINIAPP_LOOPS: { name: string; miniapp: string; event: string; why: string
     miniapp: 'Coffee',
     event: 'coffee.stock.low',
     why: 'one bag or none is left at home',
+    wake: 'runs at once · else in 18 days',
     series: 'Buy coffee',
     skill: 'errands:funt-coffee-order',
     prompt: [
@@ -1489,6 +1531,7 @@ const MINIAPP_LOOPS: { name: string; miniapp: string; event: string; why: string
     miniapp: 'Books',
     event: 'books.note_message.added',
     why: 'I asked a question in a book note',
+    wake: 'runs after 5 quiet min · else in 2 days',
     series: 'Answer the questions about books',
     skill: 'collections:book-questions',
     prompt: [
@@ -1523,11 +1566,12 @@ export const MiniappLoopsSlide: SlideDefinition = {
           <div key={loop.skill} className="ww-loops__panel ww-jg__arrive">
             <div className="ww-loops__head">
               <span>loop task · {loop.miniapp}</span>
-              <span>⚡ woken by an event</span>
+              <span>⚡ waits for an event</span>
             </div>
             <div className="ww-loops__event">
               <code>{loop.event}</code> — {loop.why}
             </div>
+            <div className="ww-loops__wake">{loop.wake}</div>
             <div className="ww-loops__brief">
               The method of this task is the skill <code>{loop.skill}</code>. Load it and run it.
             </div>
@@ -1550,9 +1594,11 @@ export const MiniappLoopsSlide: SlideDefinition = {
     + 'sentence that names a skill. '
     + MINIAPP_LOOPS.map((loop, i) => `[${i + 1}] ${loop.name} — on ${loop.miniapp}, when ${loop.why}, the app emits ${loop.event}, which wakes the series «${loop.series}». `).join('')
     + 'So the miniapp is the UI, and the agents are its back office. '
-    + 'Honest: the events, the series, the skills and their steps are the real ones (the series '
-    + 'titles translated); the short versions are my cuts of much longer skills, and the one-line '
-    + 'brief on the card is the shape every loop\'s brief has — I did not read these four series\' own.',
+    + 'Under the event, the rule each one waits by: a few quiet minutes, so a burst of taps is one '
+    + 'run — and some have a fallback date, so with no event at all the coffee is still checked '
+    + 'after 18 days. Nine series in my queue wait on a miniapp like this. '
+    + 'Honest: the events, the wait rules, the series, the briefs and the skills are the real ones '
+    + '(titles and briefs translated); the short versions are my cuts of much longer skills.',
 };
 
 /** «How everyone imagines a software factory» — the picture people have in their heads,

@@ -1115,6 +1115,97 @@ export const IdleSlide: SlideDefinition = {
     + 'and that is the first token spent.',
 };
 
+/** Local models, in the shape of the free-models slide that follows it (Yarik, 22.11.2026:
+ *  «додай перед слайдом про безкоштовні моделі подібний слайд про локальні моделі на основі
+ *  того що ми з тобою сьогодні і вчора дослідили»). Everything on it is the run of
+ *  21–22.11.2026 (juggernaut task 95005765), as the `agent-ops:local-model` skill and the
+ *  `local-model-trial` ledger record it: Inkling 2 Mini (26.4B MoE, ~20 GB) on Ollama 0.40.17
+ *  (MLX, 100 % GPU, 64k context) on the M3 Pro 36 GB, under Codex with a separate, empty
+ *  CODEX_HOME (with the real one — plugins + the juggernaut MCP — the first request died of a
+ *  Metal out-of-memory); the same three oracle tasks free-model-trial uses, every one PASS;
+ *  the hosted column is the same model on OpenRouter the day before. Real numbers, cut to
+ *  minutes and seconds; the setup is the skill's, with `-s workspace-write --json` and the
+ *  env-file plumbing left out — and `~/.codex-local` stands for the run's scratch CODEX_HOME
+ *  (a separate home with only those keys: no plugins, no MCP servers). */
+const LOCAL_SETUP: { text: string }[] = [
+  { text: '$ brew install ollama' },
+  { text: '$ OLLAMA_CONTEXT_LENGTH=65536 ollama serve' },
+  { text: '$ ollama pull inkling-2-mini      # 20 GB' },
+  { text: '' },
+  { text: '# ~/.codex-local/config.toml: empty' },
+  { text: 'model_provider = "ollama"' },
+  { text: 'model_context_window = 65536' },
+  { text: '' },
+  { text: '$ CODEX_HOME=~/.codex-local codex exec \\' },
+  { text: '    --oss --local-provider ollama \\' },
+  { text: '    -m inkling-2-mini' },
+];
+const LOCAL_RUNS: [task: string, local: string, hosted: string][] = [
+  ['locate', '11 min 51 s', '15 s'],
+  ['table', '17 min 10 s', '25 s'],
+  ['fix', '50 min 47 s', '55 s'],
+];
+
+export const LocalModelsSlide: SlideDefinition = {
+  id: 'improve-local',
+  // two beats, like the free-models slide after it: the setup alone, then what it did
+  maxRevealStages: 1,
+  content: ({ revealStage }) => (
+    <>
+      <CornerRings corner="top-right" />
+      <div className="ww-imp ww-imp--claim">
+        <div className="ww-asst__claim ww-asst__claim--not">
+          <span className="ww-asst__verdict">
+            <span aria-hidden="true">✕</span>
+            not yet
+          </span>
+          <span>a local model, on my own laptop</span>
+        </div>
+        <div className="ww-imp__runner ww-imp__runner--full ww-imp__runner--free">
+          <div className="ww-imp__runnerleft">
+            <RunnerCode code={LOCAL_SETUP} hot={() => false} />
+          </div>
+          <div className={`ww-imp__grades ww-imp__local ${revealStage >= 1 ? 'reveal-in' : 'reveal-hidden'}`}>
+            <span className="ww-imp__localhead">inkling-2-mini · M3 Pro, 36 GB</span>
+            <div className="ww-imp__localrow ww-imp__localrow--head">
+              <span />
+              <span>laptop</span>
+              <span>hosted</span>
+            </div>
+            {LOCAL_RUNS.map(([task, local, hosted]) => (
+              <div key={task} className="ww-imp__localrow">
+                <span className="ww-imp__grademark">
+                  <span aria-hidden="true">✓</span>
+                  {task}
+                </span>
+                <span>{local}</span>
+                <span>{hosted}</span>
+              </div>
+            ))}
+            <span className="ww-imp__localfoot">13 tokens/s out · 140 tokens/s in</span>
+            <span className="ww-imp__localfoot ww-imp__localfoot--hot">0 tokens cached</span>
+          </div>
+        </div>
+      </div>
+    </>
+  ),
+  notes:
+    'The obvious next thought: why pay at all — run the model on my own laptop. So yesterday and '
+    + 'today I did exactly that. On the left is the whole setup: Ollama, started with a 64k context '
+    + 'because its default 32k is too small for an agent, a 20 GB open-weights model, and Codex '
+    + 'pointed at it. One trap: with my normal Codex config — every plugin, my own MCP server with '
+    + 'hundreds of tools — the very first request ran the GPU out of memory. It only worked from an '
+    + 'empty Codex home of its own — that is the CODEX_HOME on the left. '
+    + '[reveal] On the right, the same three tasks every model of mine gets, with known answers: find a '
+    + 'function, build a table, fix a bug. All three correct. And look at the clock: twelve minutes, '
+    + 'seventeen, fifty — the same model hosted did each in under a minute. Thirteen tokens a second '
+    + 'out is fine; the killer is the bottom line: nothing is cached. Every step of the agent sends '
+    + 'the whole growing conversation again, and the laptop reads it all again — one and a half to '
+    + 'four minutes a step. So: the quality is there, the speed is not. Good for an experiment on a '
+    + 'plane, not for my queue — yet. Honest: the other agents were running on the same laptop and it '
+    + 'was swapping; I keep trying a new local model every few days, as a loop task.',
+};
+
 /** Free models, with no code walk and no terminal (Yarik, 16.11.2026: «давай без кода і
  *  панелі, просто як налаштувати кодекс і твій вердикт по моделям які ми тестували»).
  *  Left: what it takes to point Codex at OpenRouter — one provider block and three flags
@@ -1187,8 +1278,8 @@ export const FreeModelsSlide: SlideDefinition = {
     </>
   ),
   notes:
-    'And when the subscription is above pace, or the task is not worth it, there are models that '
-    + 'cost nothing. OpenRouter lists free variants of new models, and Codex can talk to any '
+    'So when the subscription is above pace, or the task is not worth it, the models that cost '
+    + 'nothing are hosted ones. OpenRouter lists free variants of new models, and Codex can talk to any '
     + 'provider. On the left is all the setup: one provider block in the config, and three flags '
     + 'on launch — the provider, web search off, because OpenRouter rejects that tool, and the '
     + 'model. My daemon passes the same thing per task, so the other panes stay on the '

@@ -365,6 +365,15 @@ self-playing machine, seen from above) → `EngineersFactorySlide` (the factory 
 QR · a stub for the encore «How I prepared this talk» · slides QR). Earlier in the arc,
 `ArchitectureAppTaskSlide` stands after the Movies frame, whose headline is «✓ bonus miniapps can
 add a task to the queue»; that cut the miniapps run once more (`THREAT_FRAME`, `MiniappsHomeSlide`).
+**What a miniapp really does to the queue (read off the live series, 22.11.2026):** it never
+inserts a task — the user's write emits a loop event and an event-driven series, parked behind an
+event trigger with a debounce and an optional fallback date, wakes. `MINIAPP_LOOPS` carries each
+series' real `wake` rule and `SCENE_APPTASK_WOKEN` (the apptask slide's scene) queues those same
+four series, with the chat idle (`Scene.idleChat`, also on the cron scene). Re-read the series
+(`get_task` on an occurrence: `recurrenceCadence`, `triggers`) before changing either.
+The models run, as of 22.11.2026: `ModelsSlide` → `EffortSlide` → `LocalModelsSlide` (Inkling 2
+Mini on the M3 under Codex, the `agent-ops:local-model` run of 21–22.11.2026; two beats) →
+`FreeModelsSlide`.
 
 - **«It builds itself» is the architecture in `build` mode**: `<Architecture build={BUILD_SCENES}>`
   plays the scenes daemon → … → services one round of the journey each (`BUILD_MS` a step), and the
