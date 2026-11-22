@@ -58,8 +58,6 @@ import {
   AnyAgentSlide,
   ModelsSlide,
   PaceSlide,
-  FreeModelsSlide,
-  LocalModelsSlide,
 } from './improve';
 import { TextVsCodeSlide } from './TextVsCodeSlide';
 import { EffortSlide } from './EffortSlide';
@@ -136,8 +134,6 @@ export const slides = [
   AnyAgentSlide,
   ModelsSlide,
   EffortSlide,
-  FreeModelsSlide,
-  LocalModelsSlide,
   ArchitectureDaemonSlide,
   ArchitectureTwoSlide,
   IdleSlide,
