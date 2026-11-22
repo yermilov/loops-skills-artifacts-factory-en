@@ -56,7 +56,7 @@ src/
 │   ├── factory.tsx               # the ARCHITECTURE drawing (three slides, one `Scene` each) + the finale: «It builds / learns / repairs itself», the loop tasks, the Ford photo
 │   ├── FactoryFloorSlide.tsx     # the factory everyone imagines, from above — a self-playing animation; also exports the belt, figures and clock
 │   ├── EngineersFactorySlide.tsx # the factory by his philosophy: one belt through five engineers' sections, in the same world
-│   ├── BehindScenes.tsx          # the encore on the closing slide: a film of real prompts and replies (data in behindScenesData.ts)
+│   ├── BehindScenes.tsx          # the encore on the closing slide: a film of real prompts and replies (data in behindScenesData.ts); its last beat is the local model under `codex exec` writing its own slide
 │   ├── AgendaSlide.tsx           # template p.3 — exports AGENDA (the four words)
 │   ├── sectionSlide.tsx          # factory for section openers (template p.11/18)
 │   ├── sections.tsx              # one opener per AGENDA word

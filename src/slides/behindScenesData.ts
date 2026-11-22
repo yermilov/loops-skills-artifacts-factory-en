@@ -13,7 +13,12 @@
  */
 export type Beat = {
   at: string;
-  where: 'web' | 'code';
+  /** `codex`: a `codex exec` run of another model, drawn in the same terminal with Codex's marks */
+  where: 'web' | 'code' | 'codex';
+  /** the terminal's title bar, when it is not the Claude Code pane in this repo */
+  title?: string;
+  /** the run ended in an error, and `reply` is that error as the CLI printed it */
+  failed?: boolean;
   prompt: string;
   reply: string;
   page?: number;
@@ -604,5 +609,38 @@ export const BEATS: Beat[] = [
     ],
     total: 67,
     minutes: 33,
+  },
+  {
+    // The local model writing its own slide (Yarik, 22.11.2026 20:54: «додамо behind the scenes
+    // ще одну сцену про те як локальна модель генерувала свій слайд»). Cut from the two
+    // `codex exec --json` logs of that afternoon: the prompt is the brief's own lines (try 2,
+    // brief-local-try2.md on the task), the steps are the model's real commands — try 1's nine
+    // reads (of its 11), its OOM, then try 2's one heredoc. The two `↻`/`■` lines between them
+    // are ours, saying what happened; the reply is the error Codex printed at the end of try 2,
+    // after the file was already written (34 min in). 12 commands in all; try 1 ran
+    // 13:13→14:35Z, try 2 14:36→15:34Z, so 83 + 58 min.
+    at: '22 Nov',
+    where: 'codex',
+    title: 'codex exec --oss --local-provider ollama -m inkling-2-mini',
+    prompt: 'Read this first. … Do not explore the repository. Your FIRST action is to write the file with one shell command (a heredoc). …\n# Write one slide for a conference talk\n… You are writing this slide about yourself. That is the joke and the point: Yaroslav asked the model the slide is about to write the slide. …',
+    reply: 'stream disconnected before completion: mlx runner failed: panic: mlx: [METAL] Command buffer execution failed: Insufficient Memory',
+    failed: true,
+    page: 48,
+    steps: [
+      "ls && cat src/slides/improve.tsx | head -100",
+      'grep -n "RunnerCode" -A 60 src/slides/improve.tsx',
+      'grep -rn "ww-imp__grade\\|ww-imp__claim\\|ww-imp__runner\\b\\|ww-imp__runner--fu…',
+      "sed -n '3040,3110p;3840,3880p;6300,6470p' src/styles/slide-layouts.css",
+      'grep -rn "ww-imp__runner--free\\|ww-imp__grades\\|ww-imp__local" src/slides -l; …',
+      'ls src/slides',
+      "sed -n '1,80p' src/slides/AssistantSessionSlide.tsx",
+      "sed -n '90,110p' src/slides/EffortSlide.tsx",
+      'grep -rn "reveal-hidden\\|reveal-in" src/styles/*.css',
+      '■ [METAL] Insufficient Memory — 83 min of reading, no file',
+      '↻ try 2: the same brief, «Do not explore the repository» on top',
+      "cat > src/slides/LocalModelsSlide.tsx << 'EOF'",
+    ],
+    total: 12,
+    minutes: 141,
   },
 ];

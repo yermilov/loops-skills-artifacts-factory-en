@@ -19,6 +19,8 @@ import { Comment, SessionFoot } from './ledgerApp';
  * is the deck's own terminal (`.ww-boot…`, BootstrapSlide — the banner, the
  * `>` line, `⏺` tool calls, the prompt box), a web beat is the task page built
  * from `ledgerApp.tsx` (his comment, the «In flight» card, the session report).
+ * The last beat (22.11.2026) is not Claude at all: the local model under `codex exec`
+ * writing its own slide (`where: 'codex'`), in the same terminal with Codex's marks.
  *
  * It plays by itself on one clock and loops: a beat is the prompt being typed,
  * the model's real tool calls ticking past (his ask: «add more of real
@@ -67,7 +69,8 @@ export function BehindScenes() {
   const working = !still && t >= beat.typed + THINK && t < beat.worked;
   const done = Math.min(steps.length, Math.floor((t - beat.typed - THINK) / STEP) + 1);
   const answered = still || t >= beat.worked;
-  const tally = beat.total ? `${beat.total} tool calls${beat.minutes ? ` · ${beat.minutes} min` : ''}` : '';
+  const cx = beat.where === 'codex';
+  const tally = beat.total ? `${beat.total} ${cx ? 'commands' : 'tool calls'}${beat.minutes ? ` · ${beat.minutes} min` : ''}` : '';
   const typing = !still && t < beat.typed;
   const thinking = !still && t >= beat.typed && t < beat.typed + THINK;
   const arrived = still ? 1 : seg(t, beat.replied - 500, 500);
@@ -77,27 +80,36 @@ export function BehindScenes() {
   const thumb = beat.page === undefined ? undefined : thumbOf(beat.page);
 
   const pane =
-    beat.where === 'code' ? (
-      // a Claude Code session, drawn with the deck's own terminal (BootstrapSlide's `.ww-boot…`)
+    beat.where !== 'web' ? (
+      // a Claude Code session, drawn with the deck's own terminal (BootstrapSlide's `.ww-boot…`);
+      // a `codex` beat is another model under `codex exec` in the same window, with Codex's marks
+      // (`›` before the prompt, `$` before a command) and no Claude prompt box under it
       <div className="ww-boot__term ww-bts__term">
         <div className="ww-boot__chrome">
           <span className="ww-dot ww-dot--red" />
           <span className="ww-dot ww-dot--amber" />
           <span className="ww-dot ww-dot--green" />
-          <span className="ww-boot__title">~/src/loops-skills-artifacts-factory-en — claude</span>
+          <span className="ww-boot__title">{beat.title ?? '~/src/loops-skills-artifacts-factory-en — claude'}</span>
         </div>
         <div className="ww-boot__body">
           <div className="ww-boot__you ww-bts__pre">
-            <span className="ww-boot__caret">&gt;</span> {prompt}
+            <span className="ww-boot__caret">{cx ? '›' : '>'}</span> {prompt}
             {typing && <span className="ww-boot__cursor ww-boot__cursor--inline" />}
           </div>
           {!still &&
             t >= beat.typed + THINK &&
-            steps.slice(0, done).map((step, i) => (
-              <div key={i} className="ww-boot__tool ww-bts__line">
-                <span className={`ww-boot__bullet${i < done - 1 || answered ? ' ww-boot__bullet--done' : ' ww-boot__bullet--busy'}`}>⏺</span> {step}
-              </div>
-            ))}
+            steps.slice(0, done).map((step, i) =>
+              // `■ …` is an error the CLI printed, `↻ …` our own note of a restart — neither is a call
+              /^[■↻] /.test(step) ? (
+                <div key={i} className={`ww-boot__fire ww-bts__line${step.startsWith('■') ? ' ww-boot__fire--error' : ''}`}>
+                  {step}
+                </div>
+              ) : (
+                <div key={i} className="ww-boot__tool ww-bts__line">
+                  <span className={`ww-boot__bullet${i < done - 1 || answered ? ' ww-boot__bullet--done' : ' ww-boot__bullet--busy'}`}>{cx ? '$' : '⏺'}</span> {step}
+                </div>
+              ),
+            )}
           {thinking && (
             <div className="ww-boot__fire">
               <span aria-hidden="true">✻</span> Thinking…
@@ -109,19 +121,21 @@ export function BehindScenes() {
             </div>
           )}
           {reply && (
-            <div className="ww-boot__say ww-bts__pre">
-              <span className="ww-boot__bullet">⏺</span> {reply}
+            <div className={`${beat.failed ? 'ww-boot__fire--error' : 'ww-boot__say'} ww-bts__pre`}>
+              {beat.failed ? <span>■</span> : <span className="ww-boot__bullet">⏺</span>} {reply}
               {!still && t < beat.replied && <span className="ww-boot__cursor ww-boot__cursor--inline" />}
             </div>
           )}
         </div>
-        <div className="ww-boot__prompt">
-          <div className="ww-boot__input">
-            <span className="ww-boot__caret">&gt;</span>
-            <span className="ww-boot__cursor" />
+        {!cx && (
+          <div className="ww-boot__prompt">
+            <div className="ww-boot__input">
+              <span className="ww-boot__caret">&gt;</span>
+              <span className="ww-boot__cursor" />
+            </div>
+            <div className="ww-boot__hint">? for shortcuts</div>
           </div>
-          <div className="ww-boot__hint">? for shortcuts</div>
-        </div>
+        )}
       </div>
     ) : (
       // the task's page in the assistant's web app, drawn with the deck's own pieces of it (ledgerApp.tsx)
@@ -160,7 +174,7 @@ export function BehindScenes() {
       <div className="ww-bts__film">
         {pane}
         {thumb && (
-          <figure className={`ww-bts__slide ww-bts__slide--${beat.where}`} style={{ opacity: arrived.toFixed(2), transform: `translateX(${((1 - arrived) * 60).toFixed(0)}px) rotate(1.5deg)` }}>
+          <figure className={`ww-bts__slide ww-bts__slide--${beat.where === 'web' ? 'web' : 'code'}`} style={{ opacity: arrived.toFixed(2), transform: `translateX(${((1 - arrived) * 60).toFixed(0)}px) rotate(1.5deg)` }}>
             <img src={thumb} alt="" />
           </figure>
         )}
