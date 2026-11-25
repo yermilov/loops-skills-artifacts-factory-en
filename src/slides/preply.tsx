@@ -9,9 +9,12 @@ import classroomShot from '../assets/preply/classroom.png';
 import insightsCards from '../assets/preply/insights.webp';
 import insightsPoster from '../assets/preply/insights-poster.png';
 import practiceShot from '../assets/preply/practice.png';
+import b2bClients from '../assets/preply/b2b-clients.png';
+import dashboardClip from '../assets/preply/dashboard.mp4';
+import dashboardPoster from '../assets/preply/dashboard-poster.jpg';
 
 /*
- * Two slides about Preply. Brand's review (Elisa Alston, Nov 2026) set their look: Preply pink,
+ * Three slides about Preply. Brand's review (Elisa Alston, Nov 2026) set their look: Preply pink,
  * black and grey only — text black, pink for small highlights — and Figtree, Preply's web face.
  * The WAWTech page is kept (paper, greyed corner rings, the four type tiers); `.ww-preply` and
  * `.slide:has(.ww-preply)` remap its colours and font (slide-layouts.css), and the hub and step
@@ -31,6 +34,12 @@ import practiceShot from '../assets/preply/practice.png';
  *   practice.png  PUBLIC: Preply's App Store listing (id1352790442), screenshot «Practice what
  *                 matters.», 1290×2796, cropped to the phone (headline removed) and cut out of its
  *                 gradient background (transparent PNG).
+ *   b2b-clients.png, dashboard.mp4  From Brand (Elisa Alston, Slack DM 25.11.2026), her two-slide
+ *                 deck «Preply B2B at a glance», merged into one slide (Yarik): the client-logo wall
+ *                 of slide 1, cropped out of its 2000 px render; the corporate-dashboard GIF of slide
+ *                 2 (1536×992, 7.9 s), cropped to its frame with a little margin (1290×850 at 120,70) and re-encoded to MP4, dashboard-poster.jpg its
+ *                 first frame. The
+ *                 title, the three points and the 2000+ are her words too.
  *   match.mp4     The clip itself comes from the internal «Human led learning powered by AI» deck
  *                 (slide 11 GIF, first 5.5 s of 32 s), but the same screens are public: App Store
  *                 screenshot «Set your goals.» and Kyiv AI Day 2026, slide 27.
@@ -126,6 +135,75 @@ export const PreplyProductSlide: SlideDefinition = {
     + 'with a real human tutor. You tell us your goal and pick a tutor. [reveal] Then you learn live, '
     + 'one-on-one, by video. [reveal] And between lessons, AI keeps you going: lesson insights after every '
     + 'class, and AI exercises built from what you did in your last lesson — listen, read, speak.',
+};
+
+/* Line icons for the three points, in the spirit of her slide's pink ones (globe · AI document ·
+ * insight lines). viewBox 0 0 48 48, stroke = Preply pink. */
+const B2B_ICONS = {
+  tutors: (
+    <svg viewBox="0 0 48 48" className="ww-preply-b2b__icon" aria-hidden="true">
+      <circle cx="24" cy="24" r="19" />
+      <path d="M5 24h38M24 5v38M10 13h28M10 35h28" />
+    </svg>
+  ),
+  ai: (
+    <svg viewBox="0 0 48 48" className="ww-preply-b2b__icon" aria-hidden="true">
+      <path d="M30 6H8v36h16M15 15h14M15 23h8" />
+      <path d="M35 22l2.5 7.5L45 32l-7.5 2.5L35 42l-2.5-7.5L25 32l7.5-2.5z" />
+    </svg>
+  ),
+  insights: (
+    <svg viewBox="0 0 48 48" className="ww-preply-b2b__icon" aria-hidden="true">
+      <path d="M6 12h36M6 24h36M6 36h36" />
+    </svg>
+  ),
+};
+
+const B2B_POINTS = [
+  { icon: B2B_ICONS.tutors, text: <><b>1:1 language training</b> with the world’s best selection of business tutors</> },
+  { icon: B2B_ICONS.ai, text: <>All-in-one learning ecosystem <b>powered by AI</b></> },
+  { icon: B2B_ICONS.insights, text: <><b>Actionable insights</b> on employee engagement, progress, and satisfaction</> },
+];
+
+/** 1½ · Preply Business — Brand's two «Preply B2B at a glance» slides (Elisa Alston, 25.11.2026)
+ *  merged into one: her second slide's title and three points across the top, its dashboard
+ *  walkthrough bottom left, her first slide's 2000+ client wall bottom right. No corner logo: the
+ *  title is too long for it, and the slide before carries it. */
+export const PreplyBusinessSlide: SlideDefinition = {
+  id: 'preply-business',
+  title: <>Language training built for <span className="ww-preply-b2b__hl">global</span> companies</>,
+  content: (
+    <>
+      <CornerRings corner="bottom-left" />
+      <div className="ww-preply ww-preply-b2b">
+        <div className="ww-preply-b2b__points">
+          {B2B_POINTS.map((p, i) => (
+            <div key={i} className="ww-preply-b2b__point">
+              {p.icon}
+              <div>{p.text}</div>
+            </div>
+          ))}
+        </div>
+        <div className="ww-preply-b2b__dash">
+          <Loop src={dashboardClip} poster={dashboardPoster} contain />
+        </div>
+        <div className="ww-preply-b2b__clients">
+          <div className="ww-preply-b2b__band">2000+ happy corporate clients</div>
+          <div className="ww-preply-b2b__wall">
+            <img src={b2bClients} alt="Preply Business clients: Amazon, Datadog, Miro, ByteDance, Delivery Hero, Indeed, Dropbox, JetBrains and more" />
+          </div>
+        </div>
+      </div>
+    </>
+  ),
+  notes:
+    'And Preply is not only for people learning on their own. Preply Business is language training '
+    + 'for companies: one-on-one lessons with the world’s best selection of business tutors — 10k+ '
+    + 'business English tutors. Around the lessons, an all-in-one learning '
+    + 'ecosystem powered by AI. And for the company, the dashboard you see: balance used, lesson '
+    + 'attendance, progress, satisfaction. 2000+ corporate clients — Amazon, Miro, Dropbox, '
+    + 'JetBrains among them. '
+    + 'Title, points, dashboard, numbers and logos from Preply Brand (Elisa Alston, Nov 2026).',
 };
 
 /* Ashby job board (api.ashbyhq.com/posting-api/job-board/preply), 2026-11-09: open roles in

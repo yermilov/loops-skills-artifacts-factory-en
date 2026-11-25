@@ -2,7 +2,7 @@ import { HnSkepticsSlide } from './HnSkepticsSlide';
 import { CopilotSlide } from './CopilotSlide';
 import { TitleSlide } from './TitleSlide';
 import { AboutMeSlide } from './AboutMeSlide';
-import { PreplyProductSlide, PreplyHiringSlide } from './preply';
+import { PreplyProductSlide, PreplyBusinessSlide, PreplyHiringSlide } from './preply';
 import {
   ChatGptLaunchSlide,
   ChatUiSlide,
@@ -92,6 +92,7 @@ export const slides = [
   TitleSlide,
   AboutMeSlide,
   PreplyProductSlide,
+  PreplyBusinessSlide,
   PreplyHiringSlide,
   ChatGptLaunchSlide,
   HowLlmWorksSlide,

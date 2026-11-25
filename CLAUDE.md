@@ -43,7 +43,7 @@ src/
 │   ├── index.ts                  # THE SLIDE ORDER — register slides here
 │   ├── TitleSlide.tsx            # template p.1 + p.2: talk, subtitle, speaker, venue
 │   ├── AboutMeSlide.tsx          # about me, no title band — Preply / Grammarly / photo + LinkedIn QR
-│   ├── preply.tsx                # Preply: product (three steps, reveal one by one), «We are hiring» — booth, cities, careers QR
+│   ├── preply.tsx                # Preply: product (three steps, reveal one by one), Business (Brand's two B2B slides merged), «We are hiring» — booth, cities, careers QR
 │   ├── history.tsx               # «Origins of AI agents» 2022 + 2023 — Remotion clips
 │   ├── MusicPrototypeSlide.tsx   # 2024 — live Ghostty/oh-my-zsh terminal + macOS Music, random song
 │   ├── BootstrapSlide.tsx        # the Claude Code session replay — also EXPORTS its engine (Line, played, Row, useClock)

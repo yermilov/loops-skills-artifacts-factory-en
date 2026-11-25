@@ -706,6 +706,78 @@
   border-bottom: 0;
 }
 
+/* Preply Business — Brand's two «B2B at a glance» slides merged: three points across the top,
+ * the dashboard clip bottom left, the client wall bottom right. */
+/* Pink on the one word, as on Brand's own slide (pink for small highlights, per Brand). */
+.ww-preply-b2b__hl { color: var(--pp-tokyo-pink); }
+.ww-preply-b2b {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--space-lg) var(--space-xl);
+}
+.ww-preply-b2b__points {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+}
+.ww-preply-b2b__point {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-tight);
+}
+.ww-preply-b2b__point b { font-weight: 700; }
+.ww-preply-b2b__icon {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  fill: none;
+  stroke: var(--pp-tokyo-pink);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ww-preply-b2b__dash {
+  min-width: 0;
+  min-height: 0;
+  border-radius: var(--radius-card);
+  background: var(--ww-white);
+  overflow: hidden;
+}
+.ww-preply-b2b__clients {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--pp-tokyo-pink) 16%, var(--ww-white));
+}
+/* Brand runs it up a vertical band; across the top it fits at the body tier. */
+.ww-preply-b2b__band {
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+.ww-preply-b2b__wall {
+  min-height: 0;
+  border: 6px solid var(--pp-tokyo-pink);
+  border-radius: var(--radius-card);
+  background: var(--ww-white);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: var(--space-xs);
+}
+.ww-preply-b2b__wall img { display: block; height: 100%; max-height: 560px; width: auto; aspect-ratio: 830 / 800; }
+
 /* ─── History (a recreated interface, filling the stage) ──────────────── */
 
 /* ─── The autocomplete era (CopilotSlide.tsx) — the Cursor clip's editor ────
