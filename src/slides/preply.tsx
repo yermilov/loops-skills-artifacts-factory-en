@@ -10,6 +10,7 @@ import insightsCards from '../assets/preply/insights.webp';
 import insightsPoster from '../assets/preply/insights-poster.png';
 import practiceShot from '../assets/preply/practice.png';
 import b2bClients from '../assets/preply/b2b-clients.png';
+import boothPhoto from '../assets/preply/booth.webp';
 import dashboardClip from '../assets/preply/dashboard.mp4';
 import dashboardPoster from '../assets/preply/dashboard-poster.jpg';
 
@@ -272,7 +273,8 @@ const HUBS = [
   { city: 'London', Icon: LondonIcon },
 ] as const;
 
-/** 2 · Meet us at our booth (top left), the cities we hire in (bottom left), «We are hiring» + the
+/** 2 · Meet us at our booth (top left, with the booth itself cut out of Yarik's photo from the
+ *  hall, 25.11.2026), the cities we hire in (bottom left), «We are hiring» + the
  *  careers QR (right). */
 export const PreplyHiringSlide: SlideDefinition = {
   id: 'preply-hiring',
@@ -282,8 +284,16 @@ export const PreplyHiringSlide: SlideDefinition = {
       <div className="ww-preply ww-preply-hiring">
         <div className="ww-preply-hiring__left">
           <div className="ww-preply-hiring__booth">
-            <img className="ww-preply-hiring__logo" src={preplyLogo} alt="Preply" />
-            <h2>Meet us at our booth</h2>
+            <div className="ww-preply-hiring__booth-text">
+              <img className="ww-preply-hiring__logo" src={preplyLogo} alt="Preply" />
+              <h2>Meet us at<br />our booth</h2>
+            </div>
+            <div className="ww-preply-hiring__photo">
+              <img
+                src={boothPhoto}
+                alt="The Preply booth at WAWTech: the pink back wall, the screen and the counter"
+              />
+            </div>
           </div>
           <div className="ww-preply-hubs">
             {HUBS.map(({ city, Icon }) => (
