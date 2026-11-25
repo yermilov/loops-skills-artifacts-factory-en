@@ -274,7 +274,8 @@ const HUBS = [
 ] as const;
 
 /** 2 · Meet us at our booth (top left, with the booth itself cut out of Yarik's photo from the
- *  hall, 25.11.2026), the cities we hire in (bottom left), «We are hiring» + the
+ *  hall, 25.11.2026; the counter's logo was mounted upside down at the venue, so in the cutout that
+ *  plate is turned 180° to match the brand mark), the cities we hire in (bottom left), «We are hiring» + the
  *  careers QR (right). */
 export const PreplyHiringSlide: SlideDefinition = {
   id: 'preply-hiring',
